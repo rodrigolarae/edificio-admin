@@ -22,6 +22,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .user-info{padding:10px 16px;border-top:1px solid #e5e5e5;font-size:11px;color:#6b7280}
 .role-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;margin-top:3px}
 .role-admin{background:#dbeafe;color:#1e40af}
+.role-presidente{background:#ede9fe;color:#5b21b6}
+.role-tesorero{background:#fef3c7;color:#92400e}
 .role-resident{background:#d1fae5;color:#065f46}
 .main{flex:1;overflow-y:auto;padding:20px;background:#f0f2f5}
 .page-header{margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
@@ -41,12 +43,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-primary:hover{background:#1e40af}
 .btn-success{background:#059669;color:#fff;border-color:#059669}
 .btn-danger{background:#dc2626;color:#fff;border-color:#dc2626}
+.btn-danger:hover{background:#991b1b}
 .btn-warning{background:#d97706;color:#fff;border-color:#d97706}
 .btn-purple{background:#7c3aed;color:#fff;border-color:#7c3aed}
 .btn-sm{padding:4px 9px;font-size:11px}
+.btn-ghost{background:none;border:none;color:#6b7280;font-size:11px;cursor:pointer;padding:4px 8px}
+.btn-ghost:hover{color:#dc2626}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;border-bottom:1px solid #e5e5e5;background:#f9fafb}
-td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151}
+td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
 .badge-green{background:#d1fae5;color:#065f46}
@@ -64,7 +69,7 @@ tr:last-child td{border-bottom:none}
 .form-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
 .modal{background:#fff;border-radius:12px;padding:22px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto}
-.modal-lg{max-width:700px}
+.modal-lg{max-width:720px}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .modal-title{font-size:15px;font-weight:700}
 .close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280}
@@ -100,7 +105,7 @@ tr:last-child td{border-bottom:none}
 .doc-icon{font-size:36px;margin-bottom:10px}
 .doc-title{font-size:12px;font-weight:700;margin-bottom:6px}
 .doc-desc{font-size:11px;color:#6b7280;margin-bottom:12px}
-.alert-card{border-left:4px solid #dc2626;padding:10px 14px;background:#fff;border-radius:0 8px 8px 0;margin-bottom:8px;border:1px solid #e5e5e5;border-left:4px solid #dc2626}
+.alert-card{padding:10px 14px;background:#fff;border-radius:8px;margin-bottom:8px;border:1px solid #e5e5e5;border-left:4px solid #dc2626}
 .alert-card.info{border-left-color:#1a56db}
 .alert-card.warning{border-left-color:#d97706}
 .alert-card.success{border-left-color:#059669}
@@ -110,6 +115,10 @@ tr:last-child td{border-bottom:none}
 .tab-bar{display:flex;gap:4px;background:#f3f4f6;padding:4px;border-radius:8px;margin-bottom:14px}
 .tab-btn{flex:1;padding:6px;border:none;background:none;font-size:11px;cursor:pointer;border-radius:6px;font-family:inherit;color:#6b7280;font-weight:500}
 .tab-btn.active{background:#fff;color:#1a56db;font-weight:700}
+.unit-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.unit-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.edit-form{background:#f9fafb;border:1px solid #e5e5e5;border-radius:8px;padding:14px;margin-top:10px;display:none}
+.confirm-box{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:12px;margin-top:8px;font-size:12px;display:none}
 </style>
 </head>
 <body>
@@ -123,6 +132,9 @@ const thisMonth=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.get
 const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const load=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}};
 
+const AFP_LIST=['Capital','Cuprum','Habitat','PlanVital','ProVida','Uno'];
+const ISAPRE_LIST=['Banmédica','Colmena','Cruz Blanca','Más Vida','Nueva Masvida','Vida Tres'];
+const ROLES_ADMIN=['admin','presidente','tesorero'];
 const EXPENSE_CATS=[
   {id:'agua',icon:'💧',label:'Agua',prorate:true},
   {id:'luz',icon:'💡',label:'Electricidad',prorate:true},
@@ -141,16 +153,12 @@ const EXPENSE_CATS=[
   {id:'otros',icon:'➕',label:'Otros',prorate:false},
 ];
 
-const AFP_LIST=['Capital','Cuprum','Habitat','PlanVital','ProVida','Uno'];
-const ISAPRE_LIST=['Banmédica','Colmena','Cruz Blanca','Más Vida','Nueva Masvida','Vida Tres'];
-
-// Cálculos remuneraciones Chile
 function calcLiquidacion(w){
   const bruto=parseInt(w.grossSalary)||0;
   const afpPct=w.afpType==='Uno'?0.0058:0.1027;
   const afp=Math.round(bruto*afpPct);
-  const sis=Math.round(bruto*0.0154);// empleador
-  const segCes=Math.round(bruto*0.006);// trabajador
+  const sis=Math.round(bruto*0.0154);
+  const segCes=Math.round(bruto*0.006);
   const salud=w.healthType==='Fonasa'?Math.round(bruto*0.07):parseInt(w.healthAmount)||0;
   const baseImp=bruto-afp-salud;
   const imp=calcImpuesto(baseImp);
@@ -159,10 +167,8 @@ function calcLiquidacion(w){
   const gratif=Math.round(bruto*0.25);
   return{bruto,afp,sis,segCes,salud,baseImp,imp,descuentos,liquido,gratif,afpPct};
 }
-
 function calcImpuesto(base){
-  const utm=65443;
-  const enUtm=base/utm;
+  const utm=65443;const enUtm=base/utm;
   if(enUtm<=13.5)return 0;
   if(enUtm<=30)return Math.round(base*0.04-0.192*utm);
   if(enUtm<=50)return Math.round(base*0.08-1.392*utm);
@@ -172,11 +178,9 @@ function calcImpuesto(base){
   if(enUtm<=150)return Math.round(base*0.355-23.562*utm);
   return Math.round(base*0.4-30.312*utm);
 }
-
 function calcFiniquito(w,type,lastDay){
   const liq=calcLiquidacion(w);
-  const start=new Date(w.startDate);
-  const end=new Date(lastDay);
+  const start=new Date(w.startDate);const end=new Date(lastDay);
   const years=(end-start)/(1000*60*60*24*365);
   const yearsFloor=Math.floor(years);
   const monthsFrac=Math.round((years-yearsFloor)*12);
@@ -187,21 +191,21 @@ function calcFiniquito(w,type,lastDay){
 }
 
 const INIT_UNITS=[
-  {id:'u1',number:'101',floor:1,sqm:65,parking:true,parkingNum:'E-1',parkingSqm:12,storage:true,storageNum:'B-1',storageSqm:6},
-  {id:'u2',number:'102',floor:1,sqm:72,parking:true,parkingNum:'E-2',parkingSqm:12,storage:false,storageNum:'',storageSqm:0},
-  {id:'u3',number:'201',floor:2,sqm:65,parking:false,parkingNum:'',parkingSqm:0,storage:true,storageNum:'B-2',storageSqm:8},
-  {id:'u4',number:'202',floor:2,sqm:80,parking:true,parkingNum:'E-3',parkingSqm:14,storage:true,storageNum:'B-3',storageSqm:6},
-  {id:'u5',number:'301',floor:3,sqm:65,parking:false,parkingNum:'',parkingSqm:0,storage:false,storageNum:'',storageSqm:0},
+  {id:'u1',number:'101',floor:1,sqm:65,monthlyFee:85000,parking:true,parkingNum:'E-1',parkingSqm:12,storage:true,storageNum:'B-1',storageSqm:6},
+  {id:'u2',number:'102',floor:1,sqm:72,monthlyFee:85000,parking:true,parkingNum:'E-2',parkingSqm:12,storage:false,storageNum:'',storageSqm:0},
+  {id:'u3',number:'201',floor:2,sqm:65,monthlyFee:85000,parking:false,parkingNum:'',parkingSqm:0,storage:true,storageNum:'B-2',storageSqm:8},
+  {id:'u4',number:'202',floor:2,sqm:80,monthlyFee:90000,parking:true,parkingNum:'E-3',parkingSqm:14,storage:true,storageNum:'B-3',storageSqm:6},
+  {id:'u5',number:'301',floor:3,sqm:65,monthlyFee:85000,parking:false,parkingNum:'',parkingSqm:0,storage:false,storageNum:'',storageSqm:0},
 ];
 const INIT_RESIDENTS=[
-  {id:'r1',name:'María González',email:'maria@email.com',phone:'912345678',unitId:'u1',rut:'12.345.678-9'},
-  {id:'r2',name:'Juan Pérez',email:'juan@email.com',phone:'923456789',unitId:'u2',rut:'13.456.789-0'},
-  {id:'r3',name:'Ana Rodríguez',email:'ana@email.com',phone:'934567890',unitId:'u3',rut:'14.567.890-1'},
-  {id:'r4',name:'Carlos López',email:'carlos@email.com',phone:'945678901',unitId:'u4',rut:'15.678.901-2'},
+  {id:'r1',name:'María González',email:'maria@email.com',phone:'912345678',unitId:'u1',rut:'12.345.678-9',role:'residente'},
+  {id:'r2',name:'Juan Pérez',email:'juan@email.com',phone:'923456789',unitId:'u2',rut:'13.456.789-0',role:'presidente'},
+  {id:'r3',name:'Ana Rodríguez',email:'ana@email.com',phone:'934567890',unitId:'u3',rut:'14.567.890-1',role:'tesorero'},
+  {id:'r4',name:'Carlos López',email:'carlos@email.com',phone:'945678901',unitId:'u4',rut:'15.678.901-2',role:'residente'},
 ];
 const INIT_PAYMENTS=[
-  {id:uid(),unitId:'u1',residentId:'r1',amount:85000,date:'2025-06-05',method:'Transferencia',month:'2025-06',receiptId:uid(),fines:[]},
-  {id:uid(),unitId:'u2',residentId:'r2',amount:92000,date:'2025-06-03',method:'Transferencia',month:'2025-06',receiptId:uid(),fines:[]},
+  {id:uid(),unitId:'u1',residentId:'r1',amount:85000,baseAmount:85000,date:'2025-06-05',method:'Transferencia',month:'2025-06',receiptId:uid(),fines:[]},
+  {id:uid(),unitId:'u2',residentId:'r2',amount:92000,baseAmount:85000,date:'2025-06-03',method:'Transferencia',month:'2025-06',receiptId:uid(),fines:[]},
 ];
 const INIT_EXPENSES=[
   {id:uid(),catId:'agua',label:'Agua',icon:'💧',amount:180000,date:'2025-06-01',description:'Cuenta agua junio',month:'2025-06',prorate:true},
@@ -231,10 +235,11 @@ let state={
   modal:null,alert:null,alertTimer:null,
   currentResident:null,
   reportMonth:thisMonth(),
+  reportTab:'general',
   selectedCat:null,
   buildingName:load('ea_bname','EdificioAdmin'),
   workerTab:'contrato',
-  expenseTab:'registrar',
+  editingUnit:null,
 };
 
 function setState(p){state={...state,...p};render();}
@@ -248,23 +253,30 @@ function calcProrate(expense,units){
   const total=units.reduce((s,u)=>s+getTotalSqm(u),0);
   return units.map(u=>({unitId:u.id,sqm:getTotalSqm(u),pct:total>0?getTotalSqm(u)/total:0,amount:total>0?Math.round(expense.amount*getTotalSqm(u)/total):0}));
 }
-function getPendingFines(unitId,month){
-  return state.fines.filter(f=>f.unitId===unitId&&f.status==='pendiente'&&f.month===month);
-}
+function getPendingFines(unitId,month){return state.fines.filter(f=>f.unitId===unitId&&f.status==='pendiente'&&f.month===month);}
 function getTotalDue(unitId,month){
   const unit=state.units.find(u=>u.id===unitId);
   const base=unit?.monthlyFee||85000;
   const finesAmt=getPendingFines(unitId,month).reduce((s,f)=>s+f.amount,0);
   return base+finesAmt;
 }
+function isFullAccess(){
+  if(state.mode==='admin')return true;
+  if(state.mode.startsWith('res_')){
+    const rid=state.mode.replace('res_','');
+    const r=state.residents.find(x=>x.id===rid);
+    return r&&(r.role==='presidente'||r.role==='tesorero');
+  }
+  return false;
+}
 
 function render(){document.getElementById('app').innerHTML=buildApp();attachEvents();}
 
 function buildApp(){
-  const{mode,alert,units,residents,alerts}=state;
-  const isAdmin=mode==='admin';
+  const{mode,units,residents,alerts}=state;
+  const full=isFullAccess();
   const activeAlerts=alerts.filter(a=>a.status==='activa').length;
-  const navAdmin=[
+  const navFull=[
     {id:'dashboard',icon:'⊞',label:'Dashboard'},
     {id:'units',icon:'🏠',label:'Unidades'},
     {id:'residents',icon:'👤',label:'Residentes'},
@@ -281,30 +293,41 @@ function buildApp(){
   const navResident=[
     {id:'my_account',icon:'👤',label:'Mi Cuenta'},
     {id:'my_payments',icon:'📋',label:'Mis Pagos'},
+    {id:'expenses_view',icon:'📉',label:'Gastos comunes'},
     {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
     {id:'documents',icon:'📁',label:'Documentos'},
   ];
-  const nav=isAdmin?navAdmin:navResident;
+  const nav=full?navFull:navResident;
+  let userName='Administrador';
+  let userRole='admin';
+  if(mode.startsWith('res_')){
+    const rid=mode.replace('res_','');
+    const r=residents.find(x=>x.id===rid);
+    userName=r?.name||'Residente';
+    userRole=r?.role||'residente';
+  }
+  const roleBadgeClass={admin:'role-admin',presidente:'role-presidente',tesorero:'role-tesorero',residente:'role-resident'}[userRole]||'role-resident';
+  const roleLabel={admin:'Administrador',presidente:'Presidente',tesorero:'Tesorero',residente:'Residente'}[userRole]||'Residente';
   return`<div class="app">
   <aside class="sidebar">
     <div class="logo"><h1>🏢 ${state.buildingName}</h1><p>${units.length} unidades · Sistema de Gestión</p></div>
     <div class="mode-switch">
       <select id="modeSelect">
         <option value="admin" ${mode==='admin'?'selected':''}>👔 Administrador</option>
-        ${residents.map(r=>`<option value="res_${r.id}" ${mode==='res_'+r.id?'selected':''}>${r.name.split(' ')[0]} (Res.)</option>`).join('')}
+        ${residents.map(r=>`<option value="res_${r.id}" ${mode==='res_'+r.id?'selected':''}>${r.name.split(' ')[0]} (${r.role==='presidente'?'Pres.':r.role==='tesorero'?'Tes.':'Res.'})</option>`).join('')}
       </select>
     </div>
     <nav class="nav">
-      <div class="nav-section">${isAdmin?'Administración':'Mi Portal'}</div>
+      <div class="nav-section">${full?'Administración':'Mi Portal'}</div>
       ${nav.map(n=>`<button class="nav-item${state.view===n.id?' active':''}" data-view="${n.id}">${n.icon} ${n.label}</button>`).join('')}
     </nav>
     <div class="user-info">
-      <div>${isAdmin?'Administrador':state.currentResident?.name||''}</div>
-      <span class="role-badge ${isAdmin?'role-admin':'role-resident'}">${isAdmin?'Admin':'Residente'}</span>
+      <div style="font-weight:600">${userName}</div>
+      <span class="role-badge ${roleBadgeClass}">${roleLabel}</span>
     </div>
   </aside>
   <main class="main">
-    ${alert?`<div class="alert-bar alert-${alert.type}">${alert.msg}</div>`:''}
+    ${state.alert?`<div class="alert-bar alert-${state.alert.type}">${state.alert.msg}</div>`:''}
     ${buildView()}
     ${state.modal?buildModal():''}
   </main>
@@ -317,7 +340,7 @@ function buildView(){
   if(v==='units')return buildUnits();
   if(v==='residents')return buildResidents();
   if(v==='payments')return buildPayments();
-  if(v==='expenses')return buildExpenses();
+  if(v==='expenses'||v==='expenses_view')return buildExpenses(v==='expenses_view');
   if(v==='fines')return buildFines();
   if(v==='workers')return buildWorkers();
   if(v==='bank')return buildBank();
@@ -333,19 +356,17 @@ function buildView(){
 function getMetrics(month){
   const mp=state.payments.filter(p=>p.month===month);
   const me=state.expenses.filter(e=>e.month===month);
-  const mf=state.fines.filter(f=>f.month===month);
   const totalIn=mp.reduce((s,p)=>s+p.amount,0);
   const totalOut=me.reduce((s,e)=>s+e.amount,0);
-  const totalFines=mf.reduce((s,f)=>s+f.amount,0);
   const paidUnits=new Set(mp.map(p=>p.unitId));
   const occupied=state.units.filter(u=>state.residents.some(r=>r.unitId===u.id));
   const morose=occupied.filter(u=>!paidUnits.has(u.id));
-  return{totalIn,totalOut,balance:totalIn-totalOut,paidUnits,occupied,morose,mp,me,mf,totalFines};
+  return{totalIn,totalOut,balance:totalIn-totalOut,paidUnits,occupied,morose,mp,me};
 }
 
 function buildDashboard(){
   const m=thisMonth();
-  const{totalIn,totalOut,balance,paidUnits,occupied,morose,totalFines}=getMetrics(m);
+  const{totalIn,totalOut,balance,paidUnits,occupied,morose}=getMetrics(m);
   const pct=Math.round(paidUnits.size/Math.max(occupied.length,1)*100);
   const pendFines=state.fines.filter(f=>f.status==='pendiente').length;
   const activeAlerts=state.alerts.filter(a=>a.status==='activa').length;
@@ -361,15 +382,15 @@ function buildDashboard(){
   <div class="metrics">
     <div class="metric"><div class="metric-label">Multas pendientes</div><div class="metric-value red">${pendFines}</div></div>
     <div class="metric"><div class="metric-label">Alertas activas</div><div class="metric-value amber">${activeAlerts}</div></div>
-    <div class="metric"><div class="metric-label">Trabajadores activos</div><div class="metric-value blue">${state.workers.filter(w=>w.active).length}</div></div>
-    <div class="metric"><div class="metric-label">Cobro mes actual</div><div class="metric-value purple">${pct}%</div></div>
+    <div class="metric"><div class="metric-label">Trabajadores</div><div class="metric-value blue">${state.workers.filter(w=>w.active).length}</div></div>
+    <div class="metric"><div class="metric-label">Cobro mes</div><div class="metric-value purple">${pct}%</div></div>
   </div>
   <div class="grid-2">
     <div class="card">
       <div class="card-header"><span class="card-title">Estado cobros — ${m}</span></div>
       <div style="font-size:12px;color:#6b7280;margin-bottom:6px">${paidUnits.size} pagados · ${morose.length} pendientes</div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:#059669"></div></div>
-      ${morose.length>0?`<div style="margin-top:8px;font-size:11px;color:#dc2626;font-weight:600">⚠ ${morose.map(u=>`Depto ${u.number}`).join(', ')}</div>`:''}
+      ${morose.length>0?`<div style="margin-top:8px;font-size:11px;color:#dc2626;font-weight:600">⚠ ${morose.map(u=>`Depto ${u.number}`).join(', ')}</div>`:'<div style="margin-top:8px;font-size:11px;color:#059669;font-weight:600">✓ Todos al día</div>'}
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Balance mes</span></div>
@@ -391,7 +412,7 @@ function buildDashboard(){
 }
 
 function buildUnits(){
-  const{units,residents}=state;
+  const{units,residents,editingUnit}=state;
   return`
   <div class="page-header">
     <div><h2>Unidades</h2><p>${units.length} unidades · ${units.filter(u=>!residents.some(r=>r.unitId===u.id)).length} disponibles</p></div>
@@ -402,7 +423,7 @@ function buildUnits(){
     <div class="form-row-3">
       <div class="form-group"><label class="form-label">N° Depto *</label><input class="form-control" id="uNumber" placeholder="101"></div>
       <div class="form-group"><label class="form-label">Piso *</label><input class="form-control" id="uFloor" type="number" placeholder="1"></div>
-      <div class="form-group"><label class="form-label">Metraje depto (m²) *</label><input class="form-control" id="uSqm" type="number" placeholder="65"></div>
+      <div class="form-group"><label class="form-label">Metraje (m²) *</label><input class="form-control" id="uSqm" type="number" placeholder="65"></div>
     </div>
     <div class="form-group"><label class="form-label">GC mensual base ($)</label><input class="form-control" id="uFee" type="number" value="85000" style="max-width:200px"></div>
     <div class="section-div">Estacionamiento</div>
@@ -422,20 +443,56 @@ function buildUnits(){
       <button class="btn" id="btnCancelUnit">Cancelar</button>
     </div>
   </div>
-  <div class="card">
-    <table><thead><tr><th>Depto</th><th>Piso</th><th>m² Depto</th><th>Estacionamiento</th><th>Bodega</th><th>Total m²</th><th>GC Base</th><th>Residente</th></tr></thead>
-    <tbody>${units.map(u=>{
-      const r=residents.find(x=>x.unitId===u.id);
-      return`<tr>
-        <td><b>Depto ${u.number}</b></td><td>Piso ${u.floor}</td><td>${u.sqm}m²</td>
-        <td>${u.parking?`<span class="badge badge-blue">${u.parkingNum} · ${u.parkingSqm}m²</span>`:'<span class="badge badge-gray">No</span>'}</td>
-        <td>${u.storage?`<span class="badge badge-amber">${u.storageNum} · ${u.storageSqm}m²</span>`:'<span class="badge badge-gray">No</span>'}</td>
-        <td><b>${getTotalSqm(u)}m²</b></td>
-        <td>${fmt(u.monthlyFee||85000)}</td>
-        <td>${r?`<span class="badge badge-green">${r.name}</span>`:'<span class="badge badge-gray">Disponible</span>'}</td>
-      </tr>`;
-    }).join('')}</tbody></table>
-  </div>`;
+  ${units.map(u=>{
+    const r=residents.find(x=>x.unitId===u.id);
+    const isEditing=editingUnit===u.id;
+    return`<div class="unit-card">
+      <div class="unit-card-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px">🏠</div>
+          <div>
+            <div style="font-weight:700;font-size:14px">Depto ${u.number} · Piso ${u.floor}</div>
+            <div style="font-size:11px;color:#6b7280">${u.sqm}m²${u.parking?` · Est. ${u.parkingNum} (${u.parkingSqm}m²)`:''}${u.storage?` · Bod. ${u.storageNum} (${u.storageSqm}m²)`:''}  · Total: <b>${getTotalSqm(u)}m²</b> · GC: ${fmt(u.monthlyFee||85000)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${r?`<span class="badge badge-green">${r.name}</span>`:'<span class="badge badge-gray">Disponible</span>'}
+          <button class="btn btn-sm" onclick="setState({editingUnit:'${isEditing?'null':u.id}'})">✏️ Editar</button>
+          ${!r?`<button class="btn btn-sm btn-danger" onclick="deleteUnit('${u.id}')">🗑 Eliminar</button>`:''}
+        </div>
+      </div>
+      ${isEditing?`<div class="edit-form" style="display:block">
+        <div class="form-row-3" style="margin-bottom:10px">
+          <div class="form-group"><label class="form-label">N° Depto</label><input class="form-control" id="eu_number_${u.id}" value="${u.number}"></div>
+          <div class="form-group"><label class="form-label">Piso</label><input class="form-control" id="eu_floor_${u.id}" type="number" value="${u.floor}"></div>
+          <div class="form-group"><label class="form-label">Metraje depto (m²)</label><input class="form-control" id="eu_sqm_${u.id}" type="number" value="${u.sqm}"></div>
+        </div>
+        <div class="form-group" style="max-width:200px"><label class="form-label">GC mensual ($)</label><input class="form-control" id="eu_fee_${u.id}" type="number" value="${u.monthlyFee||85000}"></div>
+        <div class="section-div">Estacionamiento</div>
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox" id="eu_parking_${u.id}" ${u.parking?'checked':''} onchange="toggleEditField('eu_parkFields_${u.id}')"><span class="toggle-slider"></span></label>
+          <span style="font-size:12px">¿Tiene estacionamiento?</span>
+        </div>
+        <div id="eu_parkFields_${u.id}" style="display:${u.parking?'grid':'none'}" class="form-row">
+          <div class="form-group"><label class="form-label">N° Estacionamiento</label><input class="form-control" id="eu_parkNum_${u.id}" value="${u.parkingNum||''}"></div>
+          <div class="form-group"><label class="form-label">Metraje (m²)</label><input class="form-control" id="eu_parkSqm_${u.id}" type="number" value="${u.parkingSqm||0}"></div>
+        </div>
+        <div class="section-div">Bodega</div>
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox" id="eu_storage_${u.id}" ${u.storage?'checked':''} onchange="toggleEditField('eu_storFields_${u.id}')"><span class="toggle-slider"></span></label>
+          <span style="font-size:12px">¿Tiene bodega?</span>
+        </div>
+        <div id="eu_storFields_${u.id}" style="display:${u.storage?'grid':'none'}" class="form-row">
+          <div class="form-group"><label class="form-label">N° Bodega</label><input class="form-control" id="eu_storNum_${u.id}" value="${u.storageNum||''}"></div>
+          <div class="form-group"><label class="form-label">Metraje (m²)</label><input class="form-control" id="eu_storSqm_${u.id}" type="number" value="${u.storageSqm||0}"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-primary" onclick="saveEditUnit('${u.id}')">Guardar cambios</button>
+          <button class="btn" onclick="setState({editingUnit:null})">Cancelar</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('')}`;
 }
 
 function buildResidents(){
@@ -457,11 +514,20 @@ function buildResidents(){
       <div class="form-group"><label class="form-label">Email *</label><input class="form-control" id="rEmail" type="email"></div>
       <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="rPhone" placeholder="9XXXXXXXX"></div>
     </div>
-    <div class="form-group"><label class="form-label">Unidad *</label>
-      <select class="form-control" id="rUnit">
-        <option value="">Seleccionar...</option>
-        ${availUnits.map(u=>`<option value="${u.id}">Depto ${u.number} · Piso ${u.floor} · ${u.sqm}m²</option>`).join('')}
-      </select>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Unidad *</label>
+        <select class="form-control" id="rUnit">
+          <option value="">Seleccionar...</option>
+          ${availUnits.map(u=>`<option value="${u.id}">Depto ${u.number} · Piso ${u.floor} · ${u.sqm}m²</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Rol</label>
+        <select class="form-control" id="rRole">
+          <option value="residente">Residente</option>
+          <option value="presidente">Presidente de comunidad</option>
+          <option value="tesorero">Tesorero</option>
+        </select>
+      </div>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-primary" id="btnSaveResident">Registrar</button>
@@ -469,20 +535,23 @@ function buildResidents(){
     </div>
   </div>
   <div class="card">
-    <table><thead><tr><th>Residente</th><th>Unidad</th><th>Superficie</th><th>GC Base</th><th>Multas pend.</th><th>Total a pagar</th><th>Estado</th></tr></thead>
+    <table><thead><tr><th>Residente</th><th>Rol</th><th>Unidad</th><th>GC Base</th><th>Multas</th><th>Total mes</th><th>Estado</th><th>Acciones</th></tr></thead>
     <tbody>${residents.map(r=>{
       const u=units.find(x=>x.id===r.unitId);
       const paid=state.payments.some(p=>p.residentId===r.id&&p.month===curM);
       const pendFines=getPendingFines(r.unitId,curM);
       const totalDue=getTotalDue(r.unitId,curM);
+      const roleLabel={residente:'Residente',presidente:'Presidente',tesorero:'Tesorero'}[r.role]||'Residente';
+      const roleBadge={residente:'badge-gray',presidente:'badge-purple',tesorero:'badge-amber'}[r.role]||'badge-gray';
       return`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.name.charAt(0)}</div><div><div style="font-weight:600;font-size:12px">${r.name}</div><div style="font-size:10px;color:#6b7280">${r.rut||'—'}</div></div></div></td>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.name.charAt(0)}</div><div><div style="font-weight:600;font-size:12px">${r.name}</div><div style="font-size:10px;color:#6b7280">${r.rut||'—'} · ${r.email}</div></div></div></td>
+        <td><span class="badge ${roleBadge}">${roleLabel}</span></td>
         <td>${u?`Depto ${u.number} P${u.floor}`:'—'}</td>
-        <td style="font-size:11px">${u?`${u.sqm}m²${u.parking?` +${u.parkingSqm}m²`:''}${u.storage?` +${u.storageSqm}m²`:''} = <b>${getTotalSqm(u)}m²</b>`:'—'}</td>
         <td>${fmt(u?.monthlyFee||85000)}</td>
-        <td>${pendFines.length>0?`<span class="badge badge-red">${pendFines.length} · ${fmt(pendFines.reduce((s,f)=>s+f.amount,0))}</span>`:'<span class="badge badge-gray">Sin multas</span>'}</td>
+        <td>${pendFines.length>0?`<span class="badge badge-red">${fmt(pendFines.reduce((s,f)=>s+f.amount,0))}</span>`:'—'}</td>
         <td style="font-weight:700">${fmt(totalDue)}</td>
         <td><span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Al día':'⚠ Moroso'}</span></td>
+        <td><button class="btn btn-sm btn-danger" onclick="confirmDeleteResident('${r.id}')">🗑 Eliminar</button></td>
       </tr>`;
     }).join('')}</tbody></table>
   </div>`;
@@ -507,7 +576,7 @@ function buildPayments(){
       </div>
       <div class="form-group"><label class="form-label">Unidad</label><input class="form-control" id="pUnit" readonly></div>
     </div>
-    <div id="pFinesInfo" style="display:none" class="alert-bar alert-error" style="margin-bottom:10px"></div>
+    <div id="pFinesInfo" style="display:none" class="alert-bar alert-error"></div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">GC Base ($)</label><input class="form-control" id="pBase" readonly></div>
       <div class="form-group"><label class="form-label">Multas pendientes ($)</label><input class="form-control" id="pFinesAmt" readonly></div>
@@ -525,7 +594,7 @@ function buildPayments(){
     </div>
   </div>
   <div class="card">
-    <table><thead><tr><th>Residente</th><th>Depto</th><th>Mes</th><th>GC</th><th>Multas</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+    <table><thead><tr><th>Residente</th><th>Depto</th><th>Mes</th><th>GC Base</th><th>Multas</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${payments.map(p=>{
       const r=residents.find(x=>x.id===p.residentId);
       const u=units.find(x=>x.id===p.unitId);
@@ -545,6 +614,49 @@ function buildPayments(){
   </div>`;
 }
 
+function buildExpenses(viewOnly=false){
+  const{expenses,selectedCat}=state;
+  const cat=selectedCat?EXPENSE_CATS.find(c=>c.id===selectedCat):null;
+  const byCat=EXPENSE_CATS.map(c=>({...c,total:expenses.filter(e=>e.catId===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.total>0);
+  const maxVal=Math.max(...byCat.map(x=>x.total),1);
+  return`
+  <div class="page-header"><div><h2>${viewOnly?'Gastos Comunes':'Gastos del Edificio'}</h2><p>${expenses.length} gastos registrados</p></div></div>
+  ${!viewOnly?`<div class="card">
+    <div class="card-title" style="margin-bottom:12px">Selecciona categoría</div>
+    <div class="cat-grid">${EXPENSE_CATS.map(c=>`<button class="cat-btn${selectedCat===c.id?' selected':''}" onclick="setState({selectedCat:'${c.id}'})">
+      <span class="cat-icon">${c.icon}</span><span>${c.label}</span>${c.prorate?'<span style="font-size:9px;opacity:.7">prorrateo</span>':''}
+    </button>`).join('')}</div>
+    ${cat?`<div style="background:#f9fafb;border-radius:8px;padding:14px;border:1px solid #e5e5e5">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">${cat.icon} ${cat.label} ${cat.prorate?'<span class="badge badge-blue">Se distribuye por m²</span>':''}</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Monto ($) *</label><input class="form-control" id="eAmount" type="number" oninput="updateProrate()"></div>
+        <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="eDate" type="date" value="${today()}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descripción / N° Factura</label><input class="form-control" id="eDesc"></div>
+      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px">
+        <div style="font-size:11px;font-weight:700;color:#1a56db;margin-bottom:6px">📊 Vista previa prorrateo:</div>
+        <table><thead><tr><th>Depto</th><th>m² Depto</th><th>m² Est.</th><th>m² Bod.</th><th>Total m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table>
+      </div>`:''}
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" id="btnSaveExpense">Registrar gasto</button>
+        <button class="btn" onclick="setState({selectedCat:null})">Cancelar</button>
+      </div>
+    </div>`:''}
+  </div>`:''}
+  ${byCat.length>0?`<div class="card"><div class="card-header"><span class="card-title">Resumen por categoría</span></div>
+    ${byCat.sort((a,b)=>b.total-a.total).map(c=>`<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.icon} ${c.label}</span><span style="font-weight:700">${fmt(c.total)}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.total/maxVal*100)}%;background:#1a56db"></div></div>
+    </div>`).join('')}
+  </div>`:''}
+  <div class="card"><table><thead><tr><th>Categoría</th><th>Descripción</th><th>Mes</th><th>Fecha</th><th>Monto</th><th>Tipo</th></tr></thead>
+  <tbody>${expenses.map(e=>`<tr>
+    <td>${e.icon} <b>${e.label}</b></td><td>${e.description||'—'}</td><td>${e.month}</td>
+    <td>${fmtD(e.date)}</td><td style="font-weight:700;color:#dc2626">${fmt(e.amount)}</td>
+    <td>${e.prorate?'<span class="badge badge-blue">Prorrateo</span>':'<span class="badge badge-gray">Fijo</span>'}</td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+
 function buildFines(){
   const{fines,residents,units}=state;
   const curM=thisMonth();
@@ -562,7 +674,7 @@ function buildFines(){
           ${residents.map(r=>{const u=units.find(x=>x.id===r.unitId);return`<option value="${r.id}|${r.unitId}">Depto ${u?.number||''} · ${r.name}</option>`}).join('')}
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Monto multa ($) *</label><input class="form-control" id="fAmount" type="number" placeholder="50000"></div>
+      <div class="form-group"><label class="form-label">Monto ($) *</label><input class="form-control" id="fAmount" type="number" placeholder="50000"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="fDate" type="date" value="${today()}"></div>
@@ -582,7 +694,7 @@ function buildFines(){
       return`<tr>
         <td><b>Depto ${u?.number||'—'}</b></td>
         <td>${r?.name||'—'}</td>
-        <td style="max-width:200px">${f.reason}</td>
+        <td>${f.reason}</td>
         <td>${f.month}</td>
         <td>${fmtD(f.date)}</td>
         <td style="font-weight:700;color:#dc2626">${fmt(f.amount)}</td>
@@ -599,10 +711,8 @@ function buildWorkers(){
   const honor=active.filter(w=>w.type==='honorarios');
   return`
   <div class="page-header">
-    <div><h2>Trabajadores</h2><p>${active.length} activos · ${workers.filter(w=>!w.active).length} desvinculados</p></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" id="btnAddWorker">+ Agregar trabajador</button>
-    </div>
+    <div><h2>Trabajadores</h2><p>${active.length} activos</p></div>
+    <button class="btn btn-primary" id="btnAddWorker">+ Agregar trabajador</button>
   </div>
   <div class="tab-bar">
     <button class="tab-btn${workerTab==='contrato'?' active':''}" onclick="setState({workerTab:'contrato'})">📋 Contrato (${contrato.length})</button>
@@ -617,14 +727,14 @@ function buildWorkers(){
     </div>
     <input type="hidden" id="wType" value="contrato">
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-control" id="wName"></div>
+      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="wName"></div>
       <div class="form-group"><label class="form-label">RUT *</label><input class="form-control" id="wRut" placeholder="12.345.678-9"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Cargo / Rol *</label><input class="form-control" id="wRole" placeholder="Ej: Conserje"></div>
+      <div class="form-group"><label class="form-label">Cargo *</label><input class="form-control" id="wRole" placeholder="Ej: Conserje"></div>
       <div class="form-group"><label class="form-label">Fecha inicio *</label><input class="form-control" id="wStart" type="date" value="${today()}"></div>
     </div>
-    <div class="form-group"><label class="form-label">Sueldo bruto / Honorario mensual ($) *</label><input class="form-control" id="wSalary" type="number" placeholder="650000"></div>
+    <div class="form-group"><label class="form-label">Sueldo bruto / Honorario ($) *</label><input class="form-control" id="wSalary" type="number" placeholder="650000"></div>
     <div id="contratoFields">
       <div class="form-row">
         <div class="form-group"><label class="form-label">AFP</label>
@@ -632,8 +742,7 @@ function buildWorkers(){
         </div>
         <div class="form-group"><label class="form-label">Salud</label>
           <select class="form-control" id="wHealth" onchange="toggleIsapre()">
-            <option>Fonasa</option>
-            <option>Isapre</option>
+            <option>Fonasa</option><option>Isapre</option>
           </select>
         </div>
       </div>
@@ -645,7 +754,7 @@ function buildWorkers(){
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-primary" id="btnSaveWorker">Guardar trabajador</button>
+      <button class="btn btn-primary" id="btnSaveWorker">Guardar</button>
       <button class="btn" id="btnCancelWorker">Cancelar</button>
     </div>
   </div>
@@ -677,8 +786,8 @@ function buildContratoList(workers){
           <tr class="total"><td>Líquido a pagar</td><td style="text-align:right;color:#059669">${fmt(liq.liquido)}</td></tr>
         </table>
         <table class="liq-table">
-          <tr><td>SIS (empleador)</td><td style="text-align:right;color:#dc2626">${fmt(liq.sis)}</td></tr>
-          <tr><td>Gratificación (25%)</td><td style="text-align:right;color:#1a56db">${fmt(liq.gratif)}</td></tr>
+          <tr><td>SIS empleador</td><td style="text-align:right;color:#dc2626">${fmt(liq.sis)}</td></tr>
+          <tr><td>Gratificación 25%</td><td style="text-align:right;color:#1a56db">${fmt(liq.gratif)}</td></tr>
           <tr><td>Costo total empleador</td><td style="text-align:right;font-weight:700">${fmt(liq.bruto+liq.sis)}</td></tr>
         </table>
       </div>
@@ -696,7 +805,7 @@ function buildHonorariosList(workers){
       <div class="card-header">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="avatar" style="background:#fef3c7;color:#92400e">${w.name.charAt(0)}</div>
-          <div><div style="font-weight:700">${w.name}</div><div style="font-size:11px;color:#6b7280">${w.role} · ${w.rut} · Desde ${fmtD(w.startDate)}</div></div>
+          <div><div style="font-weight:700">${w.name}</div><div style="font-size:11px;color:#6b7280">${w.role} · ${w.rut}</div></div>
         </div>
         <div style="display:flex;gap:6px">
           <button class="btn btn-sm btn-warning" onclick="viewBoleta('${w.id}')">Ver boleta</button>
@@ -713,13 +822,12 @@ function buildHonorariosList(workers){
 }
 
 function buildDesvinculadosList(workers){
-  if(workers.length===0)return'<div class="card"><div class="empty">Sin trabajadores desvinculados</div></div>';
+  if(workers.length===0)return'<div class="card"><div class="empty">Sin desvinculados</div></div>';
   return`<div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Tipo</th><th>Fecha término</th><th>Motivo</th></tr></thead>
   <tbody>${workers.map(w=>`<tr>
     <td>${w.name}</td><td>${w.role}</td>
     <td><span class="badge ${w.type==='contrato'?'badge-blue':'badge-amber'}">${w.type}</span></td>
-    <td>${fmtD(w.endDate||'')}</td>
-    <td>${w.endReason||'—'}</td>
+    <td>${fmtD(w.endDate||'')}</td><td>${w.endReason||'—'}</td>
   </tr>`).join('')}</tbody></table></div>`;
 }
 
@@ -731,14 +839,13 @@ function buildBank(){
   let saldo=totalIn-totalOut;
   const movs=allMovs.map(m=>{const s=saldo;saldo+=m._t==='débito'?m.amount:-m.amount;return{...m,saldo:s}});
   return`
-  <div class="page-header"><div><h2>Cuenta Corriente</h2><p>Cartola de movimientos</p></div><span class="badge badge-amber" style="padding:5px 10px;font-size:11px">Simulación · Lista para integrar banco vía Fintoc</span></div>
+  <div class="page-header"><div><h2>Cuenta Corriente</h2></div><span class="badge badge-amber" style="padding:5px 10px">Simulación · Integración Fintoc disponible</span></div>
   <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
     <div class="metric"><div class="metric-label">Total créditos</div><div class="metric-value green">${fmt(totalIn)}</div></div>
     <div class="metric"><div class="metric-label">Total débitos</div><div class="metric-value red">${fmt(totalOut)}</div></div>
-    <div class="metric"><div class="metric-label">Saldo disponible</div><div class="metric-value ${totalIn-totalOut>=0?'green':'red'}">${fmt(totalIn-totalOut)}</div></div>
+    <div class="metric"><div class="metric-label">Saldo</div><div class="metric-value ${totalIn-totalOut>=0?'green':'red'}">${fmt(totalIn-totalOut)}</div></div>
   </div>
   <div class="card">
-    <div class="card-header"><span class="card-title">Cartola</span><span style="font-size:11px;color:#6b7280">Integración bancaria real disponible con Fintoc API</span></div>
     <table><thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th><th>Saldo</th></tr></thead>
     <tbody>${movs.map(m=>`<tr>
       <td>${fmtD(m.date)}</td><td>${m._desc}</td>
@@ -751,8 +858,10 @@ function buildBank(){
 
 function buildReports(){
   const months=[...new Set([...state.payments.map(p=>p.month),...state.expenses.map(e=>e.month)])].sort().reverse();
+  if(months.length===0)months.push(thisMonth());
   const sel=state.reportMonth||thisMonth();
-  const{totalIn,totalOut,balance,morose,mp,me}=getMetrics(sel);
+  const tab=state.reportTab||'general';
+  const{totalIn,totalOut,balance,morose,mp,me,paidUnits,occupied}=getMetrics(sel);
   const prorateExpenses=me.filter(e=>e.prorate);
   return`
   <div class="page-header">
@@ -761,6 +870,18 @@ function buildReports(){
       ${months.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}</option>`).join('')}
     </select>
   </div>
+  <div class="tab-bar">
+    <button class="tab-btn${tab==='general'?' active':''}" onclick="setState({reportTab:'general'})">📊 Balance general</button>
+    <button class="tab-btn${tab==='unidades'?' active':''}" onclick="setState({reportTab:'unidades'})">🏠 Por unidad</button>
+    <button class="tab-btn${tab==='prorate'?' active':''}" onclick="setState({reportTab:'prorate'})">📐 Prorrateo</button>
+  </div>
+  ${tab==='general'?buildReportGeneral(sel,totalIn,totalOut,balance,morose,mp,me):''}
+  ${tab==='unidades'?buildReportUnidades(sel,paidUnits):''}
+  ${tab==='prorate'?buildReportProrate(sel,prorateExpenses):''}`;
+}
+
+function buildReportGeneral(sel,totalIn,totalOut,balance,morose,mp,me){
+  return`
   <div class="grid-2">
     <div class="card">
       <div class="card-header"><span class="card-title">Ingresos — ${sel}</span></div>
@@ -769,74 +890,127 @@ function buildReports(){
         <td><b>${state.units.find(u=>u.id===p.unitId)?.number||'—'}</b></td>
         <td>${state.residents.find(r=>r.id===p.residentId)?.name||'—'}</td>
         <td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td>
-      </tr>`).join('')}</tbody></table>
+      </tr>`).join('')}${mp.length===0?'<tr><td colspan="4" class="empty">Sin ingresos</td></tr>':''}</tbody></table>
       <div style="margin-top:10px;font-weight:700">Total: <span class="green">${fmt(totalIn)}</span></div>
       <div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="window.print()">⬇ Imprimir</button></div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Gastos — ${sel}</span></div>
-      <table><thead><tr><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Tipo</th></tr></thead>
+      <table><thead><tr><th>Categoría</th><th>Descripción</th><th>Monto</th></tr></thead>
       <tbody>${me.map(e=>`<tr>
         <td>${e.icon} ${e.label}</td><td>${e.description||'—'}</td>
         <td class="red" style="font-weight:700">${fmt(e.amount)}</td>
-        <td>${e.prorate?'<span class="badge badge-blue">Prorrateo</span>':'Fijo'}</td>
-      </tr>`).join('')}</tbody></table>
+      </tr>`).join('')}${me.length===0?'<tr><td colspan="3" class="empty">Sin gastos</td></tr>':''}</tbody></table>
       <div style="margin-top:10px;font-weight:700">Total: <span class="red">${fmt(totalOut)}</span></div>
       <div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="window.print()">⬇ Imprimir</button></div>
     </div>
   </div>
-  ${prorateExpenses.length>0?`<div class="card">
-    <div class="card-header"><span class="card-title">Distribución prorrateo — ${sel}</span></div>
-    ${prorateExpenses.map(e=>`<div style="margin-bottom:18px">
-      <div style="font-weight:700;margin-bottom:8px;font-size:13px">${e.icon} ${e.label} · ${fmt(e.amount)}</div>
-      <table><thead><tr><th>Depto</th><th>Residente</th><th>m² total</th><th>%</th><th>A cobrar</th></tr></thead>
-      <tbody>${calcProrate(e,state.units).map(p=>{
-        const u=state.units.find(x=>x.id===p.unitId);
-        const r=state.residents.find(x=>x.unitId===p.unitId);
-        return`<tr><td>Depto ${u?.number||''}</td><td>${r?.name||'<span style="color:#9ca3af">Disponible</span>'}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;
-      }).join('')}</tbody></table>
-    </div>`).join('')}
-  </div>`:''}
   <div class="card">
     <div class="card-header"><span class="card-title">Balance general — ${sel}</span></div>
     <div class="stat-row"><span>Total ingresos</span><span class="green" style="font-weight:700">${fmt(totalIn)}</span></div>
     <div class="stat-row"><span>Total gastos</span><span class="red" style="font-weight:700">${fmt(totalOut)}</span></div>
     <div class="stat-row"><span>Unidades morosas</span><span class="badge badge-red">${morose.length}</span></div>
     <div class="stat-row" style="font-weight:700;font-size:14px"><span>Saldo neto</span><span class="${balance>=0?'green':'red'}">${fmt(balance)}</span></div>
-    <div style="margin-top:12px"><button class="btn btn-primary" onclick="window.print()">⬇ Imprimir balance completo</button></div>
+    <div style="margin-top:12px"><button class="btn btn-primary" onclick="window.print()">⬇ Imprimir balance</button></div>
+  </div>`;
+}
+
+function buildReportUnidades(sel,paidUnits){
+  const{units,residents,expenses}=state;
+  const prorateExps=expenses.filter(e=>e.month===sel&&e.prorate);
+  const fixedExps=expenses.filter(e=>e.month===sel&&!e.prorate);
+  const totalFixed=fixedExps.reduce((s,e)=>s+e.amount,0);
+  const totalUnits=units.filter(u=>residents.some(r=>r.unitId===u.id)).length;
+  const fixedPerUnit=totalUnits>0?Math.round(totalFixed/totalUnits):0;
+  return`
+  <div class="card">
+    <div class="card-header"><span class="card-title">Estado de cuenta por unidad — ${sel}</span></div>
+    ${units.map(u=>{
+      const r=residents.find(x=>x.unitId===u.id);
+      if(!r)return'';
+      const paid=paidUnits.has(u.id);
+      const payment=state.payments.find(p=>p.unitId===u.id&&p.month===sel);
+      const pendFines=getPendingFines(u.id,sel);
+      const finesAmt=pendFines.reduce((s,f)=>s+f.amount,0);
+      const base=u.monthlyFee||85000;
+      const prorateRows=prorateExps.map(e=>{
+        const rows=calcProrate(e,units);
+        const row=rows.find(x=>x.unitId===u.id);
+        return row?{label:e.icon+' '+e.label,amount:row.amount}:null;
+      }).filter(Boolean);
+      const totalProrate=prorateRows.reduce((s,x)=>s+x.amount,0);
+      const totalDue=base+finesAmt+totalProrate;
+      return`<div style="border:1px solid #e5e5e5;border-radius:8px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;font-size:14px">🏠 Depto ${u.number} · Piso ${u.floor}</div>
+            <div style="font-size:12px;color:#6b7280">${r.name} · ${r.email} · ${r.phone||'—'}</div>
+          </div>
+          <span class="badge ${paid?'badge-green':'badge-red'}" style="font-size:11px">${paid?'✓ Pagado':'⚠ Pendiente'}</span>
+        </div>
+        <table style="font-size:12px;margin-bottom:8px">
+          <tr><td style="padding:4px 8px;color:#6b7280">GC base</td><td style="padding:4px 8px;font-weight:600">${fmt(base)}</td></tr>
+          ${prorateRows.map(x=>`<tr><td style="padding:4px 8px;color:#6b7280">${x.label}</td><td style="padding:4px 8px">${fmt(x.amount)}</td></tr>`).join('')}
+          ${finesAmt>0?`<tr><td style="padding:4px 8px;color:#dc2626">Multas</td><td style="padding:4px 8px;color:#dc2626;font-weight:600">${fmt(finesAmt)}</td></tr>`:''}
+          <tr style="border-top:1px solid #e5e5e5"><td style="padding:6px 8px;font-weight:700">Total a pagar</td><td style="padding:6px 8px;font-weight:700;color:#1a56db">${fmt(totalDue)}</td></tr>
+          ${paid&&payment?`<tr><td style="padding:4px 8px;color:#059669">Pagado el</td><td style="padding:4px 8px;color:#059669">${fmtD(payment.date)} · ${payment.method} · ${fmt(payment.amount)}</td></tr>`:''}
+        </table>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${paid&&payment?`<button class="btn btn-sm btn-primary" onclick="viewReceipt('${payment.id}')">⬇ Comprobante</button>`:''}
+          <button class="btn btn-sm" onclick="printUnitReport('${u.id}','${sel}')">🖨 Imprimir ficha</button>
+          <span style="font-size:11px;color:#6b7280">📧 ${r.email}</span>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function buildReportProrate(sel,prorateExpenses){
+  if(prorateExpenses.length===0)return'<div class="card"><div class="empty">Sin gastos con prorrateo en este período</div></div>';
+  return`<div class="card">
+    <div class="card-header"><span class="card-title">Distribución por prorrateo — ${sel}</span></div>
+    ${prorateExpenses.map(e=>`<div style="margin-bottom:20px">
+      <div style="font-weight:700;margin-bottom:8px;font-size:13px">${e.icon} ${e.label} · ${fmt(e.amount)}</div>
+      <table><thead><tr><th>Depto</th><th>Residente</th><th>m² total</th><th>%</th><th>A cobrar</th></tr></thead>
+      <tbody>${calcProrate(e,state.units).map(p=>{
+        const u=state.units.find(x=>x.id===p.unitId);
+        const r=state.residents.find(x=>x.unitId===p.unitId);
+        return`<tr><td>Depto ${u?.number||''}</td><td>${r?.name||'<span style="color:#9ca3af">Sin residente</span>'}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;
+      }).join('')}</tbody></table>
+    </div>`).join('')}
+    <button class="btn btn-primary" onclick="window.print()">⬇ Imprimir prorrateo</button>
   </div>`;
 }
 
 function buildCommunity(){
   const{alerts,residents,units}=state;
-  const isAdmin=state.mode==='admin';
+  const full=isFullAccess();
   const ALERT_TYPES=[{id:'ruido',icon:'🔊',label:'Ruido molesto'},{id:'seguridad',icon:'🚨',label:'Seguridad'},{id:'daño',icon:'🔨',label:'Daño común'},{id:'aviso',icon:'📢',label:'Aviso general'},{id:'emergencia',icon:'🚒',label:'Emergencia'}];
   return`
   <div class="page-header">
-    <div><h2>Alertas Comunitarias</h2><p>${alerts.filter(a=>a.status==='activa').length} alertas activas</p></div>
+    <div><h2>Alertas Comunitarias</h2><p>${alerts.filter(a=>a.status==='activa').length} activas</p></div>
     <button class="btn btn-danger" id="btnAddAlert">+ Nueva alerta</button>
   </div>
   <div id="alertForm" style="display:none" class="card">
-    <div class="card-title" style="margin-bottom:14px">Reportar alerta</div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Tipo de alerta</label>
+      <div class="form-group"><label class="form-label">Tipo</label>
         <select class="form-control" id="aType">${ALERT_TYPES.map(t=>`<option value="${t.id}">${t.icon} ${t.label}</option>`).join('')}</select>
       </div>
-      ${isAdmin?`<div class="form-group"><label class="form-label">Reportado por</label>
+      ${full?`<div class="form-group"><label class="form-label">Reportado por</label>
         <select class="form-control" id="aResident">
           <option value="admin">Administración</option>
           ${residents.map(r=>`<option value="${r.id}">${r.name} — Depto ${units.find(u=>u.id===r.unitId)?.number||''}</option>`).join('')}
         </select>
       </div>`:''}
     </div>
-    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="aTitle" placeholder="Breve descripción del problema"></div>
-    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="aDesc" rows="2" placeholder="Detalles adicionales..."></textarea></div>
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="aTitle" placeholder="Breve descripción"></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="aDesc" rows="2"></textarea></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-danger" id="btnSaveAlert">Enviar alerta</button>
       <button class="btn" id="btnCancelAlert">Cancelar</button>
     </div>
   </div>
-  ${alerts.length===0?'<div class="card"><div class="empty">Sin alertas registradas</div></div>':
+  ${alerts.length===0?'<div class="card"><div class="empty">Sin alertas</div></div>':
   alerts.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(a=>{
     const r=residents.find(x=>x.id===a.residentId);
     const u=units.find(x=>x.id===a.unitId);
@@ -846,14 +1020,12 @@ function buildCommunity(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-weight:700;font-size:13px">${typeMap[a.type]||'📢'} ${a.title}</div>
-          <div style="font-size:11px;color:#6b7280;margin-top:3px">${a.description||''}</div>
-          <div style="font-size:10px;color:#9ca3af;margin-top:5px">
-            ${r?`Depto ${u?.number||''} · ${r.name}`:'Administración'} · ${fmtD(a.date)} ${a.time||''}
-          </div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px">${a.description||''}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:4px">${r?`Depto ${u?.number||''} · ${r.name}`:'Administración'} · ${fmtD(a.date)} ${a.time||''}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <span class="badge ${a.status==='activa'?'badge-red':'badge-green'}">${a.status}</span>
-          ${isAdmin&&a.status==='activa'?`<button class="btn btn-sm btn-success" onclick="resolveAlert('${a.id}')">Resolver</button>`:''}
+          ${full&&a.status==='activa'?`<button class="btn btn-sm btn-success" onclick="resolveAlert('${a.id}')">Resolver</button>`:''}
         </div>
       </div>
     </div>`;
@@ -862,28 +1034,24 @@ function buildCommunity(){
 
 function buildDocuments(){
   const docs=[
-    {icon:'🚨',title:'Plan de Emergencia',desc:'Procedimientos en caso de sismo, incendio u otra emergencia',file:'plan_emergencia.pdf'},
-    {icon:'📜',title:'Reglamento de Copropiedad',desc:'Normas y regulaciones del edificio',file:'reglamento_copropiedad.pdf'},
-    {icon:'📝',title:'Ficha Ingreso Residente',desc:'Formulario para nuevos residentes',file:'ficha_ingreso.pdf'},
-    {icon:'🔑',title:'Contrato de Arrendamiento',desc:'Modelo de contrato de arrendamiento',file:'contrato_arrendamiento.pdf'},
-    {icon:'📋',title:'Reglamento de Convivencia',desc:'Normas de convivencia y uso de espacios comunes',file:'reglamento_convivencia.pdf'},
-    {icon:'🏊',title:'Reglamento Piscina',desc:'Normas de uso de la piscina y áreas húmedas',file:'reglamento_piscina.pdf'},
-    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas de uso de estacionamientos y bodegas',file:'reglamento_estacionamiento.pdf'},
-    {icon:'📞',title:'Contactos de Emergencia',desc:'Números útiles: bomberos, carabineros, ambulancia',file:'contactos_emergencia.pdf'},
+    {icon:'🚨',title:'Plan de Emergencia',desc:'Procedimientos ante sismo, incendio u emergencia'},
+    {icon:'📜',title:'Reglamento de Copropiedad',desc:'Normas y regulaciones del edificio'},
+    {icon:'📝',title:'Ficha Ingreso Residente',desc:'Formulario para nuevos residentes'},
+    {icon:'🔑',title:'Contrato de Arrendamiento',desc:'Modelo de contrato de arrendamiento'},
+    {icon:'📋',title:'Reglamento de Convivencia',desc:'Normas de uso de espacios comunes'},
+    {icon:'🏊',title:'Reglamento Piscina',desc:'Normas de uso de piscina y áreas húmedas'},
+    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas de uso de estacionamientos y bodegas'},
+    {icon:'📞',title:'Contactos de Emergencia',desc:'Bomberos, Carabineros, Ambulancia'},
   ];
   return`
-  <div class="page-header"><div><h2>Documentos</h2><p>Documentación oficial del edificio</p></div></div>
+  <div class="page-header"><h2>Documentos</h2></div>
   <div class="doc-grid">
     ${docs.map(d=>`<div class="doc-card">
       <div class="doc-icon">${d.icon}</div>
       <div class="doc-title">${d.title}</div>
       <div class="doc-desc">${d.desc}</div>
-      <button class="btn btn-primary btn-sm" onclick="downloadDoc('${d.file}','${d.title}')">⬇ Descargar PDF</button>
+      <button class="btn btn-primary btn-sm" onclick="downloadDoc('${d.title}')">⬇ Descargar PDF</button>
     </div>`).join('')}
-  </div>
-  <div class="card" style="margin-top:14px">
-    <div class="card-header"><span class="card-title">ℹ️ Sobre los documentos</span></div>
-    <p style="font-size:12px;color:#6b7280">Los documentos marcados con ⬇ están listos para descarga una vez que el administrador suba los archivos PDF correspondientes. Para cargar un documento, contáctese con el administrador del sistema.</p>
   </div>`;
 }
 
@@ -892,14 +1060,16 @@ function buildSettings(){
   <div class="page-header"><h2>Configuración</h2></div>
   <div class="card">
     <div class="card-title" style="margin-bottom:14px">Datos del edificio</div>
-    <div class="form-group" style="max-width:400px"><label class="form-label">Nombre del edificio</label><input class="form-control" id="bName" value="${state.buildingName}"></div>
+    <div class="form-group" style="max-width:400px"><label class="form-label">Nombre del edificio</label>
+      <input class="form-control" id="bName" value="${state.buildingName}">
+    </div>
     <button class="btn btn-primary" id="btnSaveName">Guardar</button>
   </div>`;
 }
 
 function buildMyAccount(){
   const r=state.currentResident;
-  if(!r)return'<div class="card"><div class="empty">Selecciona tu cuenta en el menú</div></div>';
+  if(!r)return'<div class="card"><div class="empty">Selecciona tu cuenta</div></div>';
   const u=state.units.find(x=>x.id===r.unitId);
   const myP=state.payments.filter(p=>p.residentId===r.id);
   const curM=thisMonth();
@@ -913,10 +1083,11 @@ function buildMyAccount(){
       <div class="avatar" style="width:50px;height:50px;font-size:18px">${r.name.charAt(0)}</div>
       <div>
         <h3 style="font-size:16px;font-weight:700">${r.name}</h3>
-        <p style="color:#6b7280;font-size:12px">Depto ${u?.number||'—'} · Piso ${u?.floor||'—'} · ${r.rut||''}</p>
+        <p style="color:#6b7280;font-size:12px">Depto ${u?.number||'—'} · Piso ${u?.floor||'—'}</p>
+        <p style="color:#6b7280;font-size:11px">${r.rut||''} · ${r.email||''}</p>
       </div>
     </div>
-    ${u?`<div style="background:#f9fafb;border-radius:8px;padding:12px;font-size:12px;margin-bottom:14px">
+    ${u?`<div style="background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
       <div style="font-weight:700;margin-bottom:6px">📐 Mis superficies</div>
       <div class="stat-row"><span>Departamento</span><span>${u.sqm}m²</span></div>
       ${u.parking?`<div class="stat-row"><span>Estacionamiento ${u.parkingNum}</span><span>${u.parkingSqm}m²</span></div>`:''}
@@ -929,9 +1100,8 @@ function buildMyAccount(){
       <div class="metric"><div class="metric-label">Multas pend.</div><div class="metric-value red">${fmt(pendFines.reduce((s,f)=>s+f.amount,0))}</div></div>
       <div class="metric"><div class="metric-label">Total a pagar</div><div class="metric-value ${paid?'green':'amber'}">${fmt(paid?0:totalDue)}</div></div>
     </div>
-    ${pendFines.length>0?`<div style="margin-top:12px;background:#fee2e2;border-radius:8px;padding:12px">
-      <div style="font-weight:700;font-size:12px;color:#991b1b;margin-bottom:8px">⚠ Multas pendientes incluidas en su cobro:</div>
-      ${pendFines.map(f=>`<div style="font-size:11px;color:#991b1b;padding:3px 0">• ${f.reason} — ${fmt(f.amount)} (${f.month})</div>`).join('')}
+    ${pendFines.length>0?`<div style="margin-top:12px;background:#fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#991b1b">
+      <b>⚠ Multas pendientes:</b><br>${pendFines.map(f=>`• ${f.reason} — ${fmt(f.amount)}`).join('<br>')}
     </div>`:''}
   </div>
   <div class="card">
@@ -939,11 +1109,10 @@ function buildMyAccount(){
     ${myP.length===0?'<div class="empty">Sin pagos</div>':
     `<table><thead><tr><th>Mes</th><th>GC Base</th><th>Multas</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${myP.map(p=>{
-      const finesAmt=p.fines?p.fines.reduce((s,f)=>s+f.amount,0):0;
+      const fa=p.fines?p.fines.reduce((s,f)=>s+f.amount,0):0;
       return`<tr>
-        <td>${p.month}</td>
-        <td>${fmt(p.baseAmount||p.amount)}</td>
-        <td>${finesAmt>0?`<span class="badge badge-red">${fmt(finesAmt)}</span>`:'—'}</td>
+        <td>${p.month}</td><td>${fmt(p.baseAmount||p.amount)}</td>
+        <td>${fa>0?`<span class="badge badge-red">${fmt(fa)}</span>`:'—'}</td>
         <td class="green" style="font-weight:700">${fmt(p.amount)}</td>
         <td>${p.method}</td><td>${fmtD(p.date)}</td>
         <td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td>
@@ -956,71 +1125,38 @@ function buildMyPayments(){
   const r=state.currentResident;
   const myP=r?state.payments.filter(p=>p.residentId===r.id):[];
   return`
-  <div class="page-header"><div><h2>Mis Comprobantes</h2></div></div>
+  <div class="page-header"><h2>Mis Comprobantes</h2></div>
   <div class="card">
     ${myP.length===0?'<div class="empty">Sin comprobantes</div>':
-    `<table><thead><tr><th>Mes</th><th>GC Base</th><th>Multas</th><th>Total pagado</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+    `<table><thead><tr><th>Mes</th><th>GC Base</th><th>Multas</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${myP.map(p=>{
-      const finesAmt=p.fines?p.fines.reduce((s,f)=>s+f.amount,0):0;
+      const fa=p.fines?p.fines.reduce((s,f)=>s+f.amount,0):0;
       return`<tr>
-        <td><b>${p.month}</b></td>
-        <td>${fmt(p.baseAmount||p.amount)}</td>
-        <td>${finesAmt>0?`<span class="badge badge-red">${fmt(finesAmt)}</span>`:'—'}</td>
+        <td><b>${p.month}</b></td><td>${fmt(p.baseAmount||p.amount)}</td>
+        <td>${fa>0?`<span class="badge badge-red">${fmt(fa)}</span>`:'—'}</td>
         <td class="green" style="font-weight:700">${fmt(p.amount)}</td>
-        <td><span class="badge badge-blue">${p.method}</span></td>
-        <td>${fmtD(p.date)}</td>
+        <td><span class="badge badge-blue">${p.method}</span></td><td>${fmtD(p.date)}</td>
         <td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td>
       </tr>`;
     }).join('')}</tbody></table>`}
   </div>`;
 }
 
-function buildExpenses(){
-  const{expenses,selectedCat}=state;
-  const cat=selectedCat?EXPENSE_CATS.find(c=>c.id===selectedCat):null;
-  const byCat=EXPENSE_CATS.map(c=>({...c,total:expenses.filter(e=>e.catId===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.total>0);
-  const maxVal=Math.max(...byCat.map(x=>x.total),1);
-  return`
-  <div class="page-header"><div><h2>Gastos del Edificio</h2><p>${expenses.length} gastos registrados</p></div></div>
-  <div class="card">
-    <div class="card-title" style="margin-bottom:12px">Selecciona categoría de gasto</div>
-    <div class="cat-grid">${EXPENSE_CATS.map(c=>`<button class="cat-btn${selectedCat===c.id?' selected':''}" onclick="setState({selectedCat:'${c.id}'})">
-      <span class="cat-icon">${c.icon}</span><span>${c.label}</span>${c.prorate?'<span style="font-size:9px;opacity:.7">prorrateo</span>':''}
-    </button>`).join('')}</div>
-    ${cat?`<div style="background:#f9fafb;border-radius:8px;padding:14px;border:1px solid #e5e5e5">
-      <div style="font-size:13px;font-weight:700;margin-bottom:12px">${cat.icon} ${cat.label} ${cat.prorate?'<span class="badge badge-blue">Se distribuye por m²</span>':''}</div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Monto total ($) *</label><input class="form-control" id="eAmount" type="number" placeholder="0" oninput="updateProrate()"></div>
-        <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="eDate" type="date" value="${today()}"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Descripción / N° Factura</label><input class="form-control" id="eDesc" placeholder="Ej: Factura N°12345"></div>
-      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px">
-        <div style="font-size:11px;font-weight:700;color:#1a56db;margin-bottom:6px">📊 Vista previa prorrateo:</div>
-        <table><thead><tr><th>Depto</th><th>m² Depto</th><th>m² Est.</th><th>m² Bod.</th><th>Total m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table>
-      </div>`:''}
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-primary" id="btnSaveExpense">Registrar gasto</button>
-        <button class="btn" onclick="setState({selectedCat:null})">Cancelar</button>
-      </div>
-    </div>`:''}
-  </div>
-  ${byCat.length>0?`<div class="card"><div class="card-header"><span class="card-title">Por categoría</span></div>
-    ${byCat.sort((a,b)=>b.total-a.total).map(c=>`<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.icon} ${c.label}</span><span style="font-weight:700">${fmt(c.total)}</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.total/maxVal*100)}%;background:#1a56db"></div></div>
-    </div>`).join('')}
-  </div>`:''}
-  <div class="card"><table><thead><tr><th>Categoría</th><th>Descripción</th><th>Mes</th><th>Fecha</th><th>Monto</th><th>Distribución</th></tr></thead>
-  <tbody>${expenses.map(e=>`<tr>
-    <td>${e.icon} <b>${e.label}</b></td><td>${e.description||'—'}</td><td>${e.month}</td>
-    <td>${fmtD(e.date)}</td><td style="font-weight:700;color:#dc2626">${fmt(e.amount)}</td>
-    <td>${e.prorate?'<span class="badge badge-blue">Prorrateo</span>':'<span class="badge badge-gray">Fijo</span>'}</td>
-  </tr>`).join('')}</tbody></table></div>`;
-}
-
 function buildModal(){
   const m=state.modal;
   if(!m)return'';
+  if(m.type==='confirm'){
+    return`<div class="modal-overlay" id="modalOverlay">
+      <div class="modal" style="max-width:400px">
+        <div class="modal-header"><span class="modal-title">⚠️ Confirmar acción</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+        <p style="font-size:13px;color:#374151;margin-bottom:20px">${m.message}</p>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="setState({modal:null})">Cancelar</button>
+          <button class="btn btn-danger" onclick="${m.onConfirm}">Confirmar</button>
+        </div>
+      </div>
+    </div>`;
+  }
   if(m.type==='receipt'){
     const{payment:p,resident:r,unit:u}=m;
     const finesAmt=p.fines?p.fines.reduce((s,f)=>s+f.amount,0):0;
@@ -1046,9 +1182,9 @@ function buildModal(){
           <div style="height:8px"></div>
           <div class="receipt-row"><span>Gasto común base</span><span>${fmt(base)}</span></div>
           ${finesAmt>0?`<div class="receipt-row"><span style="color:#dc2626">Multas incluidas</span><span style="color:#dc2626">${fmt(finesAmt)}</span></div>`:''}
-          ${p.fines&&p.fines.length>0?p.fines.map(f=>`<div style="font-size:10px;color:#9ca3af;padding:2px 0 2px 10px">• ${f.reason}</div>`).join(''):''}
+          ${p.fines&&p.fines.length>0?p.fines.map(f=>`<div style="font-size:10px;color:#9ca3af;padding:2px 0 2px 12px">• ${f.reason}</div>`).join(''):''}
           <div class="receipt-total"><span>TOTAL PAGADO</span><span style="color:#059669">${fmt(p.amount)}</span></div>
-          <div style="margin-top:16px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px dashed #e5e5e5;padding-top:10px">Comprobante válido · ${state.buildingName} · ${new Date().getFullYear()}</div>
+          <div style="margin-top:14px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px dashed #e5e5e5;padding-top:10px">Comprobante válido · ${state.buildingName} · ${new Date().getFullYear()}</div>
         </div>
         <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
           <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
@@ -1058,22 +1194,18 @@ function buildModal(){
     </div>`;
   }
   if(m.type==='liquidacion'){
-    const w=m.worker;
-    const liq=calcLiquidacion(w);
+    const w=m.worker;const liq=calcLiquidacion(w);
     const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
     return`<div class="modal-overlay" id="modalOverlay">
       <div class="modal modal-lg">
         <div class="modal-header"><span class="modal-title">Liquidación de Sueldo</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
         <div class="receipt">
-          <div class="receipt-header">
-            <h2 style="font-size:16px;font-weight:800">${state.buildingName}</h2>
-            <p style="font-size:12px;color:#6b7280">Liquidación de Remuneraciones — ${mes}</p>
-          </div>
+          <div class="receipt-header"><h2 style="font-size:16px;font-weight:800">${state.buildingName}</h2><p style="font-size:12px;color:#6b7280">Liquidación — ${mes}</p></div>
           <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.name}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.role}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">AFP</span><span>${w.afpType}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Salud</span><span>${w.healthType}${w.healthType==='Isapre'?' — '+w.isapre:''}</span></div>
+          <div class="receipt-row"><span style="color:#6b7280">Salud</span><span>${w.healthType}</span></div>
           <div style="height:8px"></div>
           <div class="receipt-row" style="font-weight:700"><span>Sueldo bruto</span><span>${fmt(liq.bruto)}</span></div>
           <div class="receipt-row"><span style="color:#dc2626">AFP (${(liq.afpPct*100).toFixed(2)}%)</span><span style="color:#dc2626">-${fmt(liq.afp)}</span></div>
@@ -1081,10 +1213,9 @@ function buildModal(){
           <div class="receipt-row"><span style="color:#dc2626">Seg. cesantía (0.6%)</span><span style="color:#dc2626">-${fmt(liq.segCes)}</span></div>
           <div class="receipt-row"><span style="color:#dc2626">Imp. 2° categoría</span><span style="color:#dc2626">-${fmt(liq.imp)}</span></div>
           <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:#059669">${fmt(liq.liquido)}</span></div>
-          <div style="margin-top:12px;background:#f9fafb;padding:10px;border-radius:6px">
-            <div style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:6px">COSTO EMPLEADOR</div>
-            <div class="receipt-row"><span>SIS (1.54%)</span><span style="color:#dc2626">${fmt(liq.sis)}</span></div>
-            <div class="receipt-row" style="font-weight:700"><span>Costo total</span><span>${fmt(liq.bruto+liq.sis)}</span></div>
+          <div style="margin-top:10px;background:#f9fafb;padding:10px;border-radius:6px">
+            <div class="receipt-row"><span>SIS empleador (1.54%)</span><span style="color:#dc2626">${fmt(liq.sis)}</span></div>
+            <div class="receipt-row" style="font-weight:700"><span>Costo total empleador</span><span>${fmt(liq.bruto+liq.sis)}</span></div>
           </div>
         </div>
         <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
@@ -1095,28 +1226,22 @@ function buildModal(){
     </div>`;
   }
   if(m.type==='boleta'){
-    const w=m.worker;
-    const bruto=parseInt(w.grossSalary)||0;
-    const retencion=Math.round(bruto*0.1525);
-    const liquido=bruto-retencion;
+    const w=m.worker;const bruto=parseInt(w.grossSalary)||0;
+    const retencion=Math.round(bruto*0.1525);const liquido=bruto-retencion;
     const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
     return`<div class="modal-overlay" id="modalOverlay">
       <div class="modal">
         <div class="modal-header"><span class="modal-title">Boleta de Honorarios</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
         <div class="receipt">
-          <div class="receipt-header">
-            <h2 style="font-size:16px;font-weight:800">${state.buildingName}</h2>
-            <p style="font-size:12px;color:#6b7280">Boleta de Honorarios — ${mes}</p>
-          </div>
+          <div class="receipt-header"><h2 style="font-size:16px;font-weight:800">${state.buildingName}</h2><p style="font-size:12px;color:#6b7280">Boleta de Honorarios — ${mes}</p></div>
           <div class="receipt-row"><span style="color:#6b7280">Prestador</span><span style="font-weight:700">${w.name}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">Servicio</span><span>${w.role}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Mes</span><span>${mes}</span></div>
           <div style="height:8px"></div>
           <div class="receipt-row" style="font-weight:700"><span>Honorario bruto</span><span>${fmt(bruto)}</span></div>
           <div class="receipt-row"><span style="color:#dc2626">Retención 15.25%</span><span style="color:#dc2626">-${fmt(retencion)}</span></div>
           <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:#059669">${fmt(liquido)}</span></div>
-          <div style="margin-top:12px;font-size:10px;color:#9ca3af;text-align:center">Retención vigente desde 01/01/2026 — Art. 74 LIR</div>
+          <div style="margin-top:10px;font-size:10px;color:#9ca3af;text-align:center">Retención vigente desde 01/01/2026 — Art. 74 LIR</div>
         </div>
         <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
           <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
@@ -1126,11 +1251,8 @@ function buildModal(){
     </div>`;
   }
   if(m.type==='finiquito'){
-    const w=m.worker;
-    const type=m.finType||'renuncia';
-    const lastDay=m.lastDay||today();
-    const fin=calcFiniquito(w,type,lastDay);
-    const liq=calcLiquidacion(w);
+    const w=m.worker;const type=m.finType||'renuncia';const lastDay=m.lastDay||today();
+    const fin=calcFiniquito(w,type,lastDay);const liq=calcLiquidacion(w);
     return`<div class="modal-overlay" id="modalOverlay">
       <div class="modal modal-lg">
         <div class="modal-header"><span class="modal-title">Cálculo de Finiquito</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
@@ -1149,25 +1271,21 @@ function buildModal(){
           </div>
         </div>
         <div class="receipt">
-          <div class="receipt-header">
-            <h2 style="font-size:16px;font-weight:800">${state.buildingName}</h2>
-            <p style="font-size:12px;color:#6b7280">Finiquito de Trabajo</p>
-          </div>
+          <div class="receipt-header"><h2 style="font-size:16px;font-weight:800">${state.buildingName}</h2><p style="font-size:12px;color:#6b7280">Finiquito de Trabajo</p></div>
           <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.name}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.role}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Inicio contrato</span><span>${fmtD(w.startDate)}</span></div>
+          <div class="receipt-row"><span style="color:#6b7280">Inicio</span><span>${fmtD(w.startDate)}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">Término</span><span>${fmtD(lastDay)}</span></div>
           <div class="receipt-row"><span style="color:#6b7280">Antigüedad</span><span>${fin.years} años ${fin.months} meses</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Tipo</span><span><b>${type==='renuncia'?'Renuncia voluntaria':type==='despido'?'Despido Art. 161':'Mutuo acuerdo'}</b></span></div>
           <div style="height:8px"></div>
           <div class="receipt-row"><span>Días proporcionales</span><span>${fmt(fin.diasProp)}</span></div>
           <div class="receipt-row"><span>Vacaciones proporcionales</span><span>${fmt(fin.vacProp)}</span></div>
-          ${type==='despido'?`<div class="receipt-row"><span>Indemnización por años (máx 11)</span><span>${fmt(fin.indemnizacion)}</span></div>`:''}
+          ${type==='despido'?`<div class="receipt-row"><span>Indemnización años servicio</span><span>${fmt(fin.indemnizacion)}</span></div>`:''}
           <div class="receipt-total"><span>TOTAL FINIQUITO</span><span style="color:#1a56db">${fmt(fin.total)}</span></div>
         </div>
         <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir finiquito</button>
+          <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
           <button class="btn btn-danger" onclick="confirmarFiniquito('${w.id}')">Confirmar desvinculación</button>
           <button class="btn" onclick="setState({modal:null})">Cerrar</button>
         </div>
@@ -1181,7 +1299,12 @@ function attachEvents(){
   document.getElementById('modeSelect')?.addEventListener('change',function(){
     const v=this.value;
     if(v==='admin'){setState({mode:'admin',view:'dashboard'});}
-    else{const rid=v.replace('res_','');setState({mode:v,view:'my_account',currentResident:state.residents.find(r=>r.id===rid)||state.residents[0]});}
+    else{
+      const rid=v.replace('res_','');
+      const r=state.residents.find(x=>x.id===rid);
+      const full=r&&(r.role==='presidente'||r.role==='tesorero');
+      setState({mode:v,view:full?'dashboard':'my_account',currentResident:r||state.residents[0]});
+    }
   });
   document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>setState({view:btn.dataset.view})));
   document.getElementById('btnAddUnit')?.addEventListener('click',()=>toggleForm('unitForm'));
@@ -1190,7 +1313,7 @@ function attachEvents(){
     const number=document.getElementById('uNumber').value.trim();
     const floor=document.getElementById('uFloor').value;
     const sqm=document.getElementById('uSqm').value;
-    if(!number||!floor||!sqm){showAlert('Completa los campos obligatorios','error');return;}
+    if(!number||!floor||!sqm){showAlert('Completa campos obligatorios','error');return;}
     const parking=document.getElementById('uParking').checked;
     const storage=document.getElementById('uStorage').checked;
     const units=[...state.units,{id:'u'+uid(),number,floor:parseInt(floor),sqm:parseInt(sqm),monthlyFee:parseInt(document.getElementById('uFee').value)||85000,parking,parkingNum:parking?document.getElementById('uParkingNum').value:'',parkingSqm:parking?parseInt(document.getElementById('uParkingSqm').value||0):0,storage,storageNum:storage?document.getElementById('uStorageNum').value:'',storageSqm:storage?parseInt(document.getElementById('uStorageSqm').value||0):0}];
@@ -1202,8 +1325,9 @@ function attachEvents(){
     const name=document.getElementById('rName').value.trim();
     const email=document.getElementById('rEmail').value.trim();
     const unitId=document.getElementById('rUnit').value;
+    const role=document.getElementById('rRole').value;
     if(!name||!email||!unitId){showAlert('Completa campos obligatorios','error');return;}
-    const residents=[...state.residents,{id:'r'+uid(),name,email,rut:document.getElementById('rRut').value,phone:document.getElementById('rPhone').value,unitId}];
+    const residents=[...state.residents,{id:'r'+uid(),name,email,rut:document.getElementById('rRut').value,phone:document.getElementById('rPhone').value,unitId,role}];
     save('ea_residents',residents);setState({residents});showAlert('Residente registrado');
   });
   document.getElementById('btnAddPayment')?.addEventListener('click',()=>toggleForm('paymentForm'));
@@ -1220,7 +1344,6 @@ function attachEvents(){
     const finesAmt=pendFines.reduce((s,f)=>s+f.amount,0);
     const base=parseInt(amount)-finesAmt;
     const p={id:uid(),receiptId:uid(),residentId,unitId:r?.unitId,amount:parseInt(amount),baseAmount:base,date,method,month:curM,fines:pendFines};
-    // marcar multas como pagadas
     const fines=state.fines.map(f=>pendFines.find(x=>x.id===f.id)?{...f,status:'pagada'}:f);
     const payments=[p,...state.payments];
     save('ea_payments',payments);save('ea_fines',fines);
@@ -1237,7 +1360,7 @@ function attachEvents(){
     if(!sel||!amount||!reason){showAlert('Completa campos obligatorios','error');return;}
     const[residentId,unitId]=sel.split('|');
     const fines=[...state.fines,{id:uid(),residentId,unitId,amount:parseInt(amount),reason,date,month,status:'pendiente'}];
-    save('ea_fines',fines);setState({fines});showAlert('Multa aplicada y sumada al GC del residente');
+    save('ea_fines',fines);setState({fines});showAlert('Multa aplicada');
   });
   document.getElementById('btnAddWorker')?.addEventListener('click',()=>toggleForm('workerForm'));
   document.getElementById('btnCancelWorker')?.addEventListener('click',()=>toggleForm('workerForm',false));
@@ -1263,12 +1386,12 @@ function attachEvents(){
     const type=document.getElementById('aType').value;
     const desc=document.getElementById('aDesc')?.value||'';
     if(!title){showAlert('Ingresa un título','error');return;}
-    const isAdmin=state.mode==='admin';
-    const residentSel=isAdmin?document.getElementById('aResident')?.value:'';
-    const residentId=isAdmin&&residentSel!=='admin'?residentSel:state.currentResident?.id||null;
+    const full=isFullAccess();
+    const residentSel=full?document.getElementById('aResident')?.value:'';
+    const residentId=full&&residentSel&&residentSel!=='admin'?residentSel:state.currentResident?.id||null;
     const unitId=residentId?state.residents.find(r=>r.id===residentId)?.unitId:null;
     const alerts=[{id:uid(),type,title,description:desc,residentId,unitId,date:today(),time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),status:'activa'},...state.alerts];
-    save('ea_alerts',alerts);setState({alerts});showAlert('Alerta enviada a la comunidad');
+    save('ea_alerts',alerts);setState({alerts});showAlert('Alerta enviada');
   });
   document.getElementById('reportMonth')?.addEventListener('change',function(){setState({reportMonth:this.value});});
   document.getElementById('btnSaveName')?.addEventListener('click',()=>{
@@ -1280,8 +1403,7 @@ function attachEvents(){
     const date=document.getElementById('eDate')?.value;
     if(!amount||!date){showAlert('Completa campos obligatorios','error');return;}
     const cat=EXPENSE_CATS.find(c=>c.id===state.selectedCat);
-    const e={id:uid(),catId:cat.id,label:cat.label,icon:cat.icon,prorate:cat.prorate,amount:parseInt(amount),date,description:document.getElementById('eDesc')?.value||'',month:date.substr(0,7)};
-    const expenses=[e,...state.expenses];
+    const expenses=[{id:uid(),catId:cat.id,label:cat.label,icon:cat.icon,prorate:cat.prorate,amount:parseInt(amount),date,description:document.getElementById('eDesc')?.value||'',month:date.substr(0,7)},...state.expenses];
     save('ea_expenses',expenses);setState({expenses,selectedCat:null});showAlert('Gasto registrado');
   });
   document.getElementById('modalOverlay')?.addEventListener('click',function(e){if(e.target===this)setState({modal:null});});
@@ -1296,25 +1418,50 @@ function toggleForm(id,show=null){
 window.onResidentChange=function(sel){
   const r=state.residents.find(x=>x.id===sel.value);
   const u=r?state.units.find(d=>d.id===r.unitId):null;
+  const curM=today().substr(0,7);
+  const pendFines=r?getPendingFines(r.unitId,curM):[];
+  const finesAmt=pendFines.reduce((s,f)=>s+f.amount,0);
+  const base=u?.monthlyFee||85000;
   const unitInp=document.getElementById('pUnit');
   const baseInp=document.getElementById('pBase');
   const finesInp=document.getElementById('pFinesAmt');
   const amtInp=document.getElementById('pAmount');
   const finesInfo=document.getElementById('pFinesInfo');
   if(unitInp)unitInp.value=u?`Depto ${u.number} · Piso ${u.floor}`:'—';
-  const curM=today().substr(0,7);
-  const pendFines=r?getPendingFines(r.unitId,curM):[];
-  const finesAmt=pendFines.reduce((s,f)=>s+f.amount,0);
-  const base=u?.monthlyFee||85000;
   if(baseInp)baseInp.value=base;
   if(finesInp)finesInp.value=finesAmt;
   if(amtInp)amtInp.value=base+finesAmt;
   if(finesInfo){
     if(pendFines.length>0){finesInfo.style.display='block';finesInfo.innerHTML=`⚠ Multas pendientes: ${pendFines.map(f=>f.reason).join(' | ')} — Total: ${fmt(finesAmt)}`;}
-    else{finesInfo.style.display='none';}
+    else finesInfo.style.display='none';
   }
 };
-
+window.saveEditUnit=function(id){
+  const number=document.getElementById(`eu_number_${id}`)?.value.trim();
+  const floor=parseInt(document.getElementById(`eu_floor_${id}`)?.value);
+  const sqm=parseInt(document.getElementById(`eu_sqm_${id}`)?.value);
+  const fee=parseInt(document.getElementById(`eu_fee_${id}`)?.value)||85000;
+  const parking=document.getElementById(`eu_parking_${id}`)?.checked;
+  const storage=document.getElementById(`eu_storage_${id}`)?.checked;
+  if(!number||!floor||!sqm){showAlert('Completa campos obligatorios','error');return;}
+  const units=state.units.map(u=>u.id===id?{...u,number,floor,sqm,monthlyFee:fee,parking,parkingNum:parking?document.getElementById(`eu_parkNum_${id}`)?.value||'':'',parkingSqm:parking?parseInt(document.getElementById(`eu_parkSqm_${id}`)?.value||0):0,storage,storageNum:storage?document.getElementById(`eu_storNum_${id}`)?.value||'':'',storageSqm:storage?parseInt(document.getElementById(`eu_storSqm_${id}`)?.value||0):0}:u);
+  save('ea_units',units);setState({units,editingUnit:null});showAlert('Unidad actualizada');
+};
+window.deleteUnit=function(id){
+  setState({modal:{type:'confirm',message:'¿Eliminar esta unidad? Esta acción no se puede deshacer.',onConfirm:`doDeleteUnit('${id}')`}});
+};
+window.doDeleteUnit=function(id){
+  const units=state.units.filter(u=>u.id!==id);
+  save('ea_units',units);setState({units,modal:null});showAlert('Unidad eliminada');
+};
+window.confirmDeleteResident=function(id){
+  const r=state.residents.find(x=>x.id===id);
+  setState({modal:{type:'confirm',message:`¿Eliminar a ${r?.name}? Su unidad quedará disponible nuevamente.`,onConfirm:`doDeleteResident('${id}')`}});
+};
+window.doDeleteResident=function(id){
+  const residents=state.residents.filter(r=>r.id!==id);
+  save('ea_residents',residents);setState({residents,modal:null});showAlert('Residente eliminado');
+};
 window.viewReceipt=id=>{
   const p=state.payments.find(x=>x.id===id);
   if(!p)return;
@@ -1335,15 +1482,18 @@ window.confirmarFiniquito=id=>{
   save('ea_workers',workers);setState({workers,modal:null});showAlert('Trabajador desvinculado');
 };
 window.desvincularWorker=id=>{
-  if(!confirm('¿Confirmar desvinculación?'))return;
+  setState({modal:{type:'confirm',message:'¿Confirmar desvinculación de este trabajador?',onConfirm:`doDesvincular('${id}')`}});
+};
+window.doDesvincular=id=>{
   const workers=state.workers.map(w=>w.id===id?{...w,active:false,endDate:today(),endReason:'honorarios'}:w);
-  save('ea_workers',workers);setState({workers});showAlert('Trabajador desvinculado');
+  save('ea_workers',workers);setState({workers,modal:null});showAlert('Trabajador desvinculado');
 };
 window.resolveAlert=id=>{
   const alerts=state.alerts.map(a=>a.id===id?{...a,status:'resuelta'}:a);
-  save('ea_alerts',alerts);setState({alerts});showAlert('Alerta marcada como resuelta');
+  save('ea_alerts',alerts);setState({alerts});showAlert('Alerta resuelta');
 };
 window.toggleField=id=>{const f=document.getElementById(id);if(f)f.style.display=f.style.display==='none'?'grid':'none';};
+window.toggleEditField=id=>{const f=document.getElementById(id);if(f)f.style.display=f.style.display==='none'?'grid':'none';};
 window.switchWorkerType=type=>{
   document.getElementById('wType').value=type;
   document.getElementById('wTypeContrato').className='tab-btn'+(type==='contrato'?' active':'');
@@ -1367,11 +1517,10 @@ window.updateProrate=()=>{
       const u=state.units.find(x=>x.id===p.unitId);
       return`<tr><td>Depto ${u?.number||''}</td><td>${u?.sqm||0}</td><td>${u?.parking?u.parkingSqm:0}</td><td>${u?.storage?u.storageSqm:0}</td><td><b>${p.sqm}</b></td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;
     }).join('');
-  }else{prev.style.display='none';}
+  }else prev.style.display='none';
 };
-window.downloadDoc=(file,title)=>{
-  alert(`📄 "${title}"\n\nEste documento estará disponible para descarga una vez que el administrador suba el archivo PDF.\n\nPara subir documentos, contacte al administrador del sistema.`);
-};
+window.printUnitReport=(unitId,month)=>{window.print();};
+window.downloadDoc=title=>{alert(`📄 "${title}"\n\nEste documento estará disponible para descarga una vez que el administrador suba el archivo PDF correspondiente.`);};
 window.setState=setState;
 
 render();
