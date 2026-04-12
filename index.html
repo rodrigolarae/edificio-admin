@@ -66,6 +66,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-danger{background:#dc2626;color:#fff;border-color:#dc2626}
 .btn-warning{background:#d97706;color:#fff;border-color:#d97706}
 .btn-dark{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-purple{background:#7c3aed;color:#fff;border-color:#7c3aed}
 .btn-sm{padding:4px 9px;font-size:11px}
 .btn-block{width:100%;margin-top:8px}
 table{width:100%;border-collapse:collapse;font-size:12px}
@@ -145,6 +146,17 @@ tr:last-child td{border-bottom:none}
 .plan-enterprise{background:#ede9fe;color:#5b21b6}
 .locked-badge{background:#fef3c7;color:#92400e;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
 .install-banner{background:#1a56db;color:#fff;padding:10px 16px;font-size:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.votacion-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:16px;margin-bottom:12px}
+.votacion-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.opcion-voto{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:2px solid #e5e5e5;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.opcion-voto:hover{border-color:#1a56db;background:#eff6ff}
+.opcion-voto.selected{border-color:#1a56db;background:#1a56db;color:#fff}
+.opcion-voto.voted{cursor:default}
+.voto-bar{height:8px;background:#e5e5e5;border-radius:4px;overflow:hidden;margin-top:4px}
+.voto-fill{height:100%;background:#1a56db;border-radius:4px;transition:width .5s}
+.resultado-row{padding:10px 0;border-bottom:1px solid #f3f4f6}
+.resultado-row:last-child{border-bottom:none}
+.acta-box{background:#f9fafb;border:1px solid #e5e5e5;border-radius:8px;padding:14px;font-size:12px;margin-top:12px}
 @media(max-width:768px){
   .metrics{grid-template-columns:1fr 1fr}
   .grid-2{grid-template-columns:1fr}
@@ -229,28 +241,15 @@ function calcProrate(amount,units){
   return units.map(u=>({unitId:u.id,sqm:getTotalSqm(u),pct:total>0?getTotalSqm(u)/total:0,amount:total>0?Math.round(amount*getTotalSqm(u)/total):0}));
 }
 
-// ROLES
-// superadmin: tú — control total de la plataforma, único que gestiona unidades
-// admin: administrador del edificio — gestiona residentes, pagos, gastos, etc.
-// presidente / tesorero: residente con acceso ampliado igual que admin
-// residente: solo ve su cuenta
-
 let state={
-  screen:'login', // login | superadmin | app
-  loginStep:1,
-  comunidades:[],
-  selectedComunidad:null,
-  currentUser:null,
-  isSuperAdmin:false,
-  comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[]},
-  view:'dashboard',
-  modal:null,
-  alert:null,alertTimer:null,
-  loading:false,
-  selectedCat:null,
-  workerTab:'contrato',
-  reportMonth:thisMonth(),
-  reportTab:'general',
+  screen:'login',loginStep:1,
+  comunidades:[],selectedComunidad:null,
+  currentUser:null,isSuperAdmin:false,
+  comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[],votaciones:[],votos:[]},
+  view:'dashboard',modal:null,
+  alert:null,alertTimer:null,loading:false,
+  selectedCat:null,workerTab:'contrato',
+  reportMonth:thisMonth(),reportTab:'general',
   installPrompt:null,
 };
 
@@ -270,7 +269,7 @@ async function loadAllComunidades(){
   return data||[];
 }
 async function loadComunidadData(id){
-  const[u,r,p,g,m,t,a,d]=await Promise.all([
+  const[u,r,p,g,m,t,a,d,v,vo]=await Promise.all([
     sb.from('unidades').select('*').eq('comunidad_id',id).order('numero'),
     sb.from('usuarios').select('*').eq('comunidad_id',id).eq('activo',true),
     sb.from('pagos').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
@@ -279,8 +278,15 @@ async function loadComunidadData(id){
     sb.from('trabajadores').select('*').eq('comunidad_id',id),
     sb.from('alertas').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
     sb.from('documentos').select('*').eq('comunidad_id',id),
+    sb.from('votaciones').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('votos').select('*'),
   ]);
-  return{unidades:u.data||[],residentes:r.data||[],pagos:p.data||[],gastos:g.data||[],multas:m.data||[],trabajadores:t.data||[],alertas:a.data||[],documentos:d.data||[]};
+  return{
+    unidades:u.data||[],residentes:r.data||[],pagos:p.data||[],
+    gastos:g.data||[],multas:m.data||[],trabajadores:t.data||[],
+    alertas:a.data||[],documentos:d.data||[],
+    votaciones:v.data||[],votos:vo.data||[]
+  };
 }
 
 function isFullAccess(){
@@ -303,7 +309,6 @@ function render(){
   attachEvents();
 }
 
-// ===== LOGIN =====
 function buildLogin(){
   const{loginStep,comunidades,selectedComunidad,loading}=state;
   return`
@@ -338,7 +343,6 @@ function buildLogin(){
         <div class="form-group">
           <label class="form-label">CLAVE DE ACCESO</label>
           <input class="form-control" id="claveInput" type="password" placeholder="Tu clave personal" style="font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')doLogin()">
-          <p style="font-size:10px;color:#6b7280;margin-top:3px">Ingresa la clave de tu unidad</p>
         </div>
         ${loading?`<div class="loading"><span class="spinner"></span>Verificando...</div>`:`<button class="btn btn-primary btn-block" onclick="doLogin()">Ingresar →</button>`}
         <button class="btn btn-block" onclick="setState({loginStep:1})" style="margin-top:6px">← Volver</button>
@@ -361,7 +365,6 @@ function buildLogin(){
   </div>`;
 }
 
-// ===== SUPERADMIN =====
 function buildSuperAdminApp(){
   const{comunidades,view,alert}=state;
   const navItems=[
@@ -390,7 +393,7 @@ function buildSuperAdminApp(){
       <main class="main">
         <div class="topbar"><button class="hamburger" onclick="openSidebar()">☰</button><span style="font-weight:600;font-size:13px">Panel Maestro</span><span></span></div>
         ${alert?`<div class="alert-bar alert-${alert.type}">${alert.msg}</div>`:''}
-        ${view==='sa_dashboard'?buildSADashboard():view==='sa_comunidades'?buildSAComunidades():view==='sa_nueva'?buildSANueva():view==='sa_facturacion'?buildSAFacturacion():''}
+        ${view==='sa_dashboard'||view==='sa_comunidades'?buildSADashboard():view==='sa_nueva'?buildSANueva():view==='sa_facturacion'?buildSAFacturacion():''}
         ${state.modal?buildModal():''}
       </main>
     </div>
@@ -402,7 +405,7 @@ function buildSADashboard(){
   const totalMant=comunidades.reduce((s,c)=>s+(c.monto_mantencion||0),0);
   const totalImpl=comunidades.reduce((s,c)=>s+(c.monto_implementacion||0),0);
   return`
-  <div class="page-header"><div><h2>Panel Maestro</h2><p>Vista global de la plataforma EdificioAdmin</p></div></div>
+  <div class="page-header"><div><h2>Panel Maestro</h2><p>Vista global de la plataforma</p></div><button class="btn btn-primary" onclick="setState({view:'sa_nueva'})">+ Nueva comunidad</button></div>
   <div class="metrics">
     <div class="metric"><div class="metric-label">Comunidades</div><div class="metric-value blue">${comunidades.length}</div></div>
     <div class="metric"><div class="metric-label">Activas</div><div class="metric-value green">${comunidades.filter(c=>c.activa).length}</div></div>
@@ -410,7 +413,6 @@ function buildSADashboard(){
     <div class="metric"><div class="metric-label">Total implementado</div><div class="metric-value amber">${fmt(totalImpl)}</div></div>
   </div>
   <div class="card">
-    <div class="card-header"><span class="card-title">Comunidades registradas</span><button class="btn btn-sm btn-primary" onclick="setState({view:'sa_nueva'})">+ Nueva comunidad</button></div>
     <table><thead><tr><th>Comunidad</th><th>Ciudad</th><th>Plan</th><th>Mantención/mes</th><th>Estado</th><th></th></tr></thead>
     <tbody>${comunidades.map(c=>`<tr>
       <td><div style="font-weight:600">${c.nombre}</div><div style="font-size:10px;color:#6b7280">Código: ${c.codigo_acceso}</div></td>
@@ -420,31 +422,28 @@ function buildSADashboard(){
       <td><span class="badge ${c.activa?'badge-green':'badge-red'}">${c.activa?'Activa':'Inactiva'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm btn-primary" onclick="enterComunidad('${c.id}')" style="margin-right:4px">Entrar</button>
-        <button class="btn btn-sm" onclick="editComunidad('${c.id}')">✏️</button>
+        <button class="btn btn-sm" onclick="editComunidad('${c.id}')" style="margin-right:4px">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteComunidad('${c.id}','${c.nombre}')">🗑</button>
       </td>
     </tr>`).join('')}</tbody></table>
   </div>`;
 }
 
-function buildSAComunidades(){
-  return buildSADashboard();
-}
-
 function buildSANueva(){
   return`
-  <div class="page-header"><h2>Nueva comunidad</h2><p>Completa los datos y carga las unidades del edificio</p></div>
+  <div class="page-header"><h2>Nueva comunidad</h2></div>
   <div class="card">
     <div class="section-div">Datos del edificio</div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre del edificio *</label><input class="form-control" id="ncNombre" placeholder="Edificio Los Almendros"></div>
-      <div class="form-group"><label class="form-label">Código de acceso *</label><input class="form-control" id="ncCodigo" placeholder="ALMENDROS2024" style="text-transform:uppercase"><p style="font-size:10px;color:#6b7280;margin-top:2px">Identificador único del edificio</p></div>
+      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="ncNombre" placeholder="Edificio Los Almendros"></div>
+      <div class="form-group"><label class="form-label">Código de acceso *</label><input class="form-control" id="ncCodigo" placeholder="ALMENDROS2024" style="text-transform:uppercase"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir" placeholder="Av. Principal 123"></div>
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir"></div>
       <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ncCiudad" placeholder="Santiago"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Región</label><input class="form-control" id="ncRegion" placeholder="Metropolitana"></div>
+      <div class="form-group"><label class="form-label">Región</label><input class="form-control" id="ncRegion"></div>
       <div class="form-group"><label class="form-label">Plan</label>
         <select class="form-control" id="ncPlan">
           <option value="basico">Básico</option>
@@ -454,28 +453,23 @@ function buildSANueva(){
       </div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Monto implementación ($)</label><input class="form-control" id="ncImpl" type="number" placeholder="0"></div>
-      <div class="form-group"><label class="form-label">Mantención mensual ($)</label><input class="form-control" id="ncMant" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Implementación ($)</label><input class="form-control" id="ncImpl" type="number" placeholder="200000"></div>
+      <div class="form-group"><label class="form-label">Mantención mensual ($)</label><input class="form-control" id="ncMant" type="number" placeholder="20000"></div>
     </div>
-    <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ncNotas" rows="2" placeholder="Notas privadas"></textarea></div>
-
+    <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ncNotas" rows="2"></textarea></div>
     <div class="section-div">Administrador del edificio</div>
-    <p style="font-size:11px;color:#6b7280;margin-bottom:10px">Este usuario tendrá acceso total al edificio. Tú cargas las unidades, él gestiona los residentes.</p>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre administrador *</label><input class="form-control" id="ncAdminNombre" placeholder="Nombre completo"></div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="ncAdminEmail" type="email" placeholder="admin@edificio.cl"></div>
+      <div class="form-group"><label class="form-label">Nombre admin *</label><input class="form-control" id="ncAdminNombre"></div>
+      <div class="form-group"><label class="form-label">Email admin</label><input class="form-control" id="ncAdminEmail" type="email"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Clave inicial *</label><input class="form-control" id="ncAdminClave" placeholder="Clave para ingresar"><p style="font-size:10px;color:#6b7280;margin-top:2px">El admin puede cambiarla después</p></div>
-      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="ncAdminPhone" placeholder="9XXXXXXXX"></div>
+      <div class="form-group"><label class="form-label">Clave inicial *</label><input class="form-control" id="ncAdminClave"></div>
+      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="ncAdminPhone"></div>
     </div>
-
     <div class="section-div">Unidades del edificio <span class="locked-badge">🔒 Solo modificables por superadmin</span></div>
-    <p style="font-size:11px;color:#6b7280;margin-bottom:10px">Agrega todas las unidades. Una vez creadas, solo tú podrás editarlas.</p>
     <div id="unidadesContainer"></div>
     <button class="btn btn-sm" id="btnAddUnidadForm" style="margin-bottom:12px">+ Agregar unidad</button>
-
-    ${state.loading?`<div class="loading"><span class="spinner"></span>Creando comunidad...</div>`:`<div style="display:flex;gap:8px"><button class="btn btn-primary" id="btnCrearComunidad">Crear comunidad con unidades</button><button class="btn" onclick="setState({view:'sa_dashboard'})">Cancelar</button></div>`}
+    ${state.loading?`<div class="loading"><span class="spinner"></span>Creando...</div>`:`<div style="display:flex;gap:8px"><button class="btn btn-primary" id="btnCrearComunidad">Crear comunidad</button><button class="btn" onclick="setState({view:'sa_dashboard'})">Cancelar</button></div>`}
   </div>`;
 }
 
@@ -486,31 +480,29 @@ function buildSAFacturacion(){
   <div class="page-header"><h2>Facturación</h2></div>
   <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
     <div class="metric"><div class="metric-label">Ingresos mensuales</div><div class="metric-value green">${fmt(totalMes)}</div></div>
-    <div class="metric"><div class="metric-label">Comunidades activas</div><div class="metric-value blue">${comunidades.filter(c=>c.activa).length}</div></div>
-    <div class="metric"><div class="metric-label">Promedio por comunidad</div><div class="metric-value purple">${comunidades.length>0?fmt(Math.round(totalMes/comunidades.length)):fmt(0)}</div></div>
+    <div class="metric"><div class="metric-label">Activas</div><div class="metric-value blue">${comunidades.filter(c=>c.activa).length}</div></div>
+    <div class="metric"><div class="metric-label">Promedio</div><div class="metric-value purple">${comunidades.length>0?fmt(Math.round(totalMes/comunidades.length)):fmt(0)}</div></div>
   </div>
   <div class="card">
-    <table><thead><tr><th>Comunidad</th><th>Plan</th><th>Implementación</th><th>Mantención/mes</th><th>Desde</th><th>Estado</th></tr></thead>
+    <table><thead><tr><th>Comunidad</th><th>Plan</th><th>Implementación</th><th>Mantención/mes</th><th>Estado</th></tr></thead>
     <tbody>${comunidades.map(c=>`<tr>
       <td><div style="font-weight:600">${c.nombre}</div><div style="font-size:10px;color:#6b7280">${c.ciudad||''}</div></td>
       <td><span class="plan-badge plan-${c.plan||'basico'}">${c.plan||'básico'}</span></td>
       <td>${fmt(c.monto_implementacion||0)}</td>
       <td style="font-weight:700">${fmt(c.monto_mantencion||0)}</td>
-      <td>${fmtD(c.fecha_inicio)}</td>
       <td><span class="badge ${c.activa?'badge-green':'badge-red'}">${c.activa?'Activa':'Inactiva'}</span></td>
     </tr>`).join('')}
-    <tr style="font-weight:700;background:#f9fafb"><td colspan="3">Total mensual</td><td class="green" style="font-size:14px">${fmt(totalMes)}</td><td colspan="2"></td></tr>
+    <tr style="font-weight:700;background:#f9fafb"><td colspan="3">Total mensual</td><td class="green">${fmt(totalMes)}</td><td></td></tr>
     </tbody></table>
   </div>`;
 }
 
-// ===== APP COMUNIDAD =====
 function buildApp(){
   const{currentUser,comunidadData,view,alert,isSuperAdmin}=state;
   const com=state.selectedComunidad;
   const full=isFullAccess();
   const activeAlerts=comunidadData.alertas.filter(a=>a.status==='activa').length;
-
+  const activeVotaciones=comunidadData.votaciones.filter(v=>v.estado==='activa').length;
   const navFull=[
     {id:'dashboard',icon:'⊞',label:'Dashboard'},
     {id:'units',icon:'🏠',label:'Unidades'},
@@ -521,6 +513,7 @@ function buildApp(){
     {id:'workers',icon:'👷',label:'Trabajadores'},
     {id:'bank',icon:'🏦',label:'Cuenta Corriente'},
     {id:'reports',icon:'📄',label:'Informes'},
+    {id:'votaciones',icon:'🗳️',label:`Votaciones${activeVotaciones>0?` (${activeVotaciones})`:''}` },
     {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
     {id:'documents',icon:'📁',label:'Documentos'},
     {id:'change_password',icon:'🔑',label:'Cambiar clave'},
@@ -530,6 +523,7 @@ function buildApp(){
     {id:'my_account',icon:'👤',label:'Mi Cuenta'},
     {id:'my_payments',icon:'📋',label:'Mis Pagos'},
     {id:'expenses_view',icon:'📉',label:'Gastos comunes'},
+    {id:'votaciones',icon:'🗳️',label:`Votaciones${activeVotaciones>0?` (${activeVotaciones})`:''}` },
     {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
     {id:'documents',icon:'📁',label:'Documentos'},
     {id:'change_password',icon:'🔑',label:'Cambiar clave'},
@@ -537,7 +531,6 @@ function buildApp(){
   const nav=full?navFull:navResident;
   const roleLabel={admin:'Administrador',presidente:'Presidente',tesorero:'Tesorero',residente:'Residente'}[currentUser?.rol]||'Residente';
   const roleBadge={admin:'role-admin',presidente:'role-presidente',tesorero:'role-tesorero',residente:'role-resident'}[currentUser?.rol]||'role-resident';
-
   return`<div>
     <div class="superadmin-bar">
       <span>🏢 ${com?.nombre||''} ${com?.ciudad?'· '+com.ciudad:''}</span>
@@ -548,7 +541,7 @@ function buildApp(){
     </div>
     <div class="app">
       <aside class="sidebar" id="mainSidebar">
-        <div class="logo"><h1>🏢 ${com?.nombre||''}</h1><p>${comunidadData.unidades.length} unidades registradas</p></div>
+        <div class="logo"><h1>🏢 ${com?.nombre||''}</h1><p>${comunidadData.unidades.length} unidades</p></div>
         <nav class="nav">
           <div class="nav-section">${full?'Administración':'Mi Portal'}</div>
           ${nav.map(n=>`<button class="nav-item${view===n.id?' active':''}" data-view="${n.id}" onclick="closeSidebar()">${n.icon} ${n.label}</button>`).join('')}
@@ -580,6 +573,7 @@ function buildView(){
   if(v==='workers')return buildWorkers();
   if(v==='bank')return buildBank();
   if(v==='reports')return buildReports();
+  if(v==='votaciones')return buildVotaciones();
   if(v==='community')return buildCommunity();
   if(v==='documents')return buildDocuments();
   if(v==='change_password')return buildChangePassword();
@@ -607,6 +601,7 @@ function buildDashboard(){
   const pct=Math.round(paidUnits.size/Math.max(occupied.length,1)*100);
   const pendFines=state.comunidadData.multas.filter(f=>f.status==='pendiente').length;
   const activeAlerts=state.comunidadData.alertas.filter(a=>a.status==='activa').length;
+  const activeVot=state.comunidadData.votaciones.filter(v=>v.estado==='activa').length;
   const recents=[...state.comunidadData.pagos.map(p=>({...p,_t:'ingreso'})),...state.comunidadData.gastos.map(g=>({...g,_t:'gasto'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,6);
   return`
   <div class="page-header"><div><h2>Dashboard</h2><p>${new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div></div>
@@ -618,9 +613,9 @@ function buildDashboard(){
   </div>
   <div class="metrics">
     <div class="metric"><div class="metric-label">Multas pend.</div><div class="metric-value red">${pendFines}</div></div>
-    <div class="metric"><div class="metric-label">Alertas</div><div class="metric-value amber">${activeAlerts}</div></div>
-    <div class="metric"><div class="metric-label">Trabajadores</div><div class="metric-value blue">${state.comunidadData.trabajadores.filter(w=>w.activo).length}</div></div>
-    <div class="metric"><div class="metric-label">Cobro mes</div><div class="metric-value purple">${pct}%</div></div>
+    <div class="metric"><div class="metric-label">Alertas activas</div><div class="metric-value amber">${activeAlerts}</div></div>
+    <div class="metric"><div class="metric-label">Votaciones activas</div><div class="metric-value purple">${activeVot}</div></div>
+    <div class="metric"><div class="metric-label">Cobro mes</div><div class="metric-value blue">${pct}%</div></div>
   </div>
   <div class="grid-2">
     <div class="card">
@@ -646,6 +641,105 @@ function buildDashboard(){
       <td style="font-weight:700;color:${r._t==='ingreso'?'#059669':'#dc2626'}">${r._t==='ingreso'?'+':'-'}${fmt(r.amount)}</td>
     </tr>`).join('')}</tbody></table>
   </div>`;
+}
+
+// ===== VOTACIONES =====
+function buildVotaciones(){
+  const{votaciones,votos,residentes,unidades}=state.comunidadData;
+  const full=isFullAccess();
+  const userId=state.currentUser?.id;
+  const activas=votaciones.filter(v=>v.estado==='activa');
+  const cerradas=votaciones.filter(v=>v.estado==='cerrada');
+
+  function buildVotacionCard(v,readonly=false){
+    const opciones=v.opciones||[];
+    const votosDev=votos.filter(x=>x.votacion_id===v.id);
+    const miVoto=votos.find(x=>x.votacion_id===v.id&&x.usuario_id===userId);
+    const yaVote=!!miVoto;
+    const totalVotos=votosDev.length;
+    const vencida=new Date(v.fecha_cierre)<new Date();
+    const mostrarResultados=yaVote||readonly||vencida||!full&&yaVote;
+
+    return`<div class="votacion-card">
+      <div class="votacion-header">
+        <div>
+          <div style="font-weight:700;font-size:14px">${v.titulo}</div>
+          ${v.descripcion?`<div style="font-size:12px;color:#6b7280;margin-top:3px">${v.descripcion}</div>`:''}
+          <div style="font-size:10px;color:#9ca3af;margin-top:5px">Cierre: ${fmtD(v.fecha_cierre)} · ${totalVotos} votos emitidos</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <span class="badge ${v.estado==='activa'?'badge-green':'badge-gray'}">${v.estado==='activa'?'✓ Activa':'Cerrada'}</span>
+          ${yaVote?`<span class="badge badge-blue">✓ Ya votaste</span>`:''}
+          ${full&&v.estado==='activa'?`<button class="btn btn-sm btn-danger" onclick="cerrarVotacion('${v.id}')">Cerrar votación</button>`:''}
+          ${full?`<button class="btn btn-sm btn-danger" onclick="deleteVotacion('${v.id}')">🗑 Eliminar</button>`:''}
+        </div>
+      </div>
+      ${mostrarResultados?
+        opciones.map(op=>{
+          const votosOp=votosDev.filter(x=>x.opcion_elegida===op).length;
+          const pct=totalVotos>0?Math.round(votosOp/totalVotos*100):0;
+          const esMiVoto=miVoto?.opcion_elegida===op;
+          return`<div class="resultado-row">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+              <span style="font-weight:${esMiVoto?'700':'400'}">${esMiVoto?'✓ ':''} ${op}</span>
+              <span style="font-weight:700">${votosOp} votos · ${pct}%</span>
+            </div>
+            <div class="voto-bar"><div class="voto-fill" style="width:${pct}%;background:${esMiVoto?'#059669':'#1a56db'}"></div></div>
+          </div>`;
+        }).join('')
+      :
+        `<div style="margin-top:8px">
+          ${opciones.map(op=>`<div class="opcion-voto" onclick="emitirVoto('${v.id}','${op}')">
+            <span style="font-size:13px">${op}</span>
+            <span style="font-size:11px;color:#6b7280">Votar →</span>
+          </div>`).join('')}
+          <p style="font-size:10px;color:#9ca3af;margin-top:8px">Tu voto es anónimo y solo puede emitirse una vez</p>
+        </div>`
+      }
+      ${(yaVote||readonly)&&totalVotos>0?`
+      <div class="acta-box">
+        <div style="font-weight:700;margin-bottom:6px">📋 Acta de votación</div>
+        <div style="color:#6b7280">Total votos emitidos: <b>${totalVotos}</b> de <b>${residentes.length}</b> residentes</div>
+        <div style="color:#6b7280">Participación: <b>${Math.round(totalVotos/Math.max(residentes.length,1)*100)}%</b></div>
+        ${opciones.map(op=>{
+          const n=votosDev.filter(x=>x.opcion_elegida===op).length;
+          return`<div style="color:#374151">${op}: <b>${n} votos (${totalVotos>0?Math.round(n/totalVotos*100):0}%)</b></div>`;
+        }).join('')}
+        <div style="font-size:10px;color:#9ca3af;margin-top:6px">Fecha de cierre: ${fmtD(v.fecha_cierre)}</div>
+      </div>`:''}
+    </div>`;
+  }
+
+  return`
+  <div class="page-header">
+    <div><h2>Votaciones</h2><p>${activas.length} activas · ${cerradas.length} cerradas</p></div>
+    ${full?`<button class="btn btn-purple" id="btnAddVotacion">🗳️ Nueva votación</button>`:''}
+  </div>
+  ${full?`<div id="votacionForm" style="display:none" class="card">
+    <div class="card-title" style="margin-bottom:14px">Crear nueva votación</div>
+    <div class="form-group"><label class="form-label">Título de la votación *</label><input class="form-control" id="vTitulo" placeholder="Ej: ¿Aprobamos pintar el edificio?"></div>
+    <div class="form-group"><label class="form-label">Descripción / contexto</label><textarea class="form-control" id="vDesc" rows="2" placeholder="Explica el contexto de la votación..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Fecha inicio *</label><input class="form-control" id="vInicio" type="date" value="${today()}"></div>
+      <div class="form-group"><label class="form-label">Fecha cierre *</label><input class="form-control" id="vCierre" type="date"></div>
+    </div>
+    <div class="section-div">Opciones de voto</div>
+    <p style="font-size:11px;color:#6b7280;margin-bottom:10px">Agrega las opciones que podrán elegir los residentes</p>
+    <div id="opcionesContainer">
+      <div class="form-row" style="margin-bottom:8px">
+        <input class="form-control opcion-input" placeholder="Opción 1 (ej: A favor)">
+        <input class="form-control opcion-input" placeholder="Opción 2 (ej: En contra)">
+      </div>
+    </div>
+    <button class="btn btn-sm" id="btnAddOpcion" style="margin-bottom:12px">+ Agregar opción</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-purple" id="btnSaveVotacion">Publicar votación</button>
+      <button class="btn" id="btnCancelVotacion">Cancelar</button>
+    </div>
+  </div>`:''}
+  ${activas.length>0?`<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Votaciones activas</div>${activas.map(v=>buildVotacionCard(v,false)).join('')}</div>`:''}
+  ${cerradas.length>0?`<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Votaciones cerradas</div>${cerradas.map(v=>buildVotacionCard(v,true)).join('')}</div>`:
+  activas.length===0?`<div class="card"><div class="empty">Sin votaciones registradas</div></div>`:''}`;
 }
 
 function buildUnits(){
@@ -681,10 +775,7 @@ function buildUnits(){
       <button class="btn" id="btnCancelUnit">Cancelar</button>
     </div>
   </div>`:''}
-  ${!superAdmin?`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#92400e">
-    <b>🔒 Las unidades son configuradas por el administrador de la plataforma.</b><br>
-    Si necesitas agregar, editar o eliminar una unidad, contacta al soporte de EdificioAdmin.
-  </div>`:''}
+  ${!superAdmin?`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#92400e"><b>🔒 Las unidades son configuradas por el administrador de la plataforma.</b></div>`:''}
   <div class="card">
     <table><thead><tr><th>Depto</th><th>Piso</th><th>m²</th><th>Estac.</th><th>Bodega</th><th>Total m²</th><th>GC</th><th>Residente</th>${superAdmin?'<th></th>':''}</tr></thead>
     <tbody>${unidades.map(u=>{
@@ -742,8 +833,8 @@ function buildResidents(){
       </div>
     </div>
     <div class="form-group"><label class="form-label">Clave de acceso *</label>
-      <input class="form-control" id="rClave" placeholder="Clave inicial del residente">
-      <p style="font-size:10px;color:#6b7280;margin-top:2px">El residente puede cambiarla desde su perfil</p>
+      <input class="form-control" id="rClave" placeholder="Clave inicial">
+      <p style="font-size:10px;color:#6b7280;margin-top:2px">El residente puede cambiarla después</p>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-primary" id="btnSaveResident">Registrar</button>
@@ -755,15 +846,14 @@ function buildResidents(){
     <tbody>${residentes.map(r=>{
       const u=unidades.find(x=>x.id===r.unidad_id);
       const paid=state.comunidadData.pagos.some(p=>p.usuario_id===r.id&&p.month===curM);
-      const pf=getPendingFines(r.unidad_id,curM);
       return`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.nombre.charAt(0)}</div><div><div style="font-weight:600;font-size:12px">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.rut||''} ${r.email?'· '+r.email:''}</div></div></div></td>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.nombre.charAt(0)}</div><div><div style="font-weight:600;font-size:12px">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.rut||''}</div></div></div></td>
         <td><span class="badge ${roleBadge[r.rol]||'badge-gray'}">${roleLabel[r.rol]||r.rol}</span></td>
         <td>${u?`Depto ${u.numero} P${u.piso}`:'—'}</td>
         <td style="font-weight:700">${fmt(getTotalDue(r.unidad_id,curM))}</td>
         <td><span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Al día':'⚠ Moroso'}</span></td>
         <td style="white-space:nowrap">
-          <button class="btn btn-sm btn-primary" onclick="setState({modal:{type:'manage_resident',resident:${JSON.stringify(r).replace(/"/g,'&quot;')}}})" style="margin-right:4px">🔑 Clave</button>
+          <button class="btn btn-sm btn-primary" onclick="setState({modal:{type:'manage_resident',resident:${JSON.stringify(r).replace(/"/g,'&quot;')}}})" style="margin-right:4px">🔑</button>
           <button class="btn btn-sm btn-danger" onclick="deleteResident('${r.id}','${r.nombre}')">🗑</button>
         </td>
       </tr>`;
@@ -771,28 +861,11 @@ function buildResidents(){
   </div>`;
 }
 
-function buildChangePassword(){
-  const u=state.currentUser;
-  const isSA=isSuperAdminMode();
-  return`
-  <div class="page-header"><h2>Cambiar clave de acceso</h2></div>
-  <div class="card" style="max-width:440px">
-    <div style="margin-bottom:14px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px">
-      <div style="font-weight:700">${u?.nombre||''}</div>
-      <div style="color:#6b7280">${u?.email||''}</div>
-    </div>
-    <div class="form-group"><label class="form-label">Clave actual *</label><input class="form-control" id="pwActual" type="password" placeholder="Tu clave actual"></div>
-    <div class="form-group"><label class="form-label">Nueva clave *</label><input class="form-control" id="pwNueva" type="password" placeholder="Mínimo 6 caracteres"></div>
-    <div class="form-group"><label class="form-label">Confirmar nueva clave *</label><input class="form-control" id="pwConfirm" type="password" placeholder="Repite la nueva clave"></div>
-    <button class="btn btn-primary" id="btnCambiarClave">Cambiar clave</button>
-  </div>`;
-}
-
 function buildPayments(){
   const{pagos,residentes,unidades}=state.comunidadData;
   return`
   <div class="page-header">
-    <div><h2>Ingresos — GC</h2><p>${pagos.length} pagos registrados</p></div>
+    <div><h2>Ingresos — GC</h2><p>${pagos.length} pagos</p></div>
     <button class="btn btn-primary" id="btnAddPayment">+ Registrar pago</button>
   </div>
   <div id="paymentForm" style="display:none" class="card">
@@ -824,7 +897,7 @@ function buildPayments(){
   </div>
   <div class="card">
     <table><thead><tr><th>Residente</th><th>Depto</th><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
-    <tbody>${pagos.length===0?`<tr><td colspan="7" class="empty">Sin pagos registrados</td></tr>`:pagos.map(p=>{
+    <tbody>${pagos.length===0?`<tr><td colspan="7" class="empty">Sin pagos</td></tr>`:pagos.map(p=>{
       const r=residentes.find(x=>x.id===p.usuario_id);
       const u=unidades.find(x=>x.id===p.unidad_id);
       return`<tr>
@@ -848,7 +921,7 @@ function buildExpenses(viewOnly=false){
   return`
   <div class="page-header"><div><h2>${viewOnly?'Gastos Comunes':'Gastos del Edificio'}</h2></div></div>
   ${!viewOnly?`<div class="card">
-    <div class="card-title" style="margin-bottom:10px">Selecciona categoría de gasto</div>
+    <div class="card-title" style="margin-bottom:10px">Selecciona categoría</div>
     <div class="cat-grid">${EXPENSE_CATS.map(c=>`<button class="cat-btn${selectedCat===c.id?' selected':''}" onclick="setState({selectedCat:'${c.id}'})">
       <span class="cat-icon">${c.icon}</span><span>${c.label}</span>${c.prorate?'<span style="font-size:9px;opacity:.7">prorrateo</span>':''}
     </button>`).join('')}</div>
@@ -859,9 +932,9 @@ function buildExpenses(viewOnly=false){
         <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="eDate" type="date" value="${today()}"></div>
       </div>
       <div class="form-group"><label class="form-label">Descripción / N° Factura</label><input class="form-control" id="eDesc"></div>
-      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px"><div style="font-size:11px;font-weight:700;color:#1a56db;margin-bottom:5px">📊 Prorrateo por m²:</div><table><thead><tr><th>Depto</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table></div>`:''}
+      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px"><div style="font-size:11px;font-weight:700;color:#1a56db;margin-bottom:5px">📊 Prorrateo:</div><table><thead><tr><th>Depto</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table></div>`:''}
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn btn-primary" id="btnSaveExpense">Registrar gasto</button>
+        <button class="btn btn-primary" id="btnSaveExpense">Registrar</button>
         <button class="btn" onclick="setState({selectedCat:null})">Cancelar</button>
       </div>
     </div>`:''}
@@ -870,7 +943,7 @@ function buildExpenses(viewOnly=false){
     ${byCat.sort((a,b)=>b.total-a.total).map(c=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.icon} ${c.label}</span><span style="font-weight:700">${fmt(c.total)}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.total/maxVal*100)}%;background:#1a56db"></div></div></div>`).join('')}
   </div>`:''}
   <div class="card"><table><thead><tr><th>Categoría</th><th>Descripción</th><th>Mes</th><th>Fecha</th><th>Monto</th><th>Tipo</th></tr></thead>
-  <tbody>${state.comunidadData.gastos.length===0?`<tr><td colspan="6" class="empty">Sin gastos registrados</td></tr>`:state.comunidadData.gastos.map(e=>`<tr>
+  <tbody>${state.comunidadData.gastos.length===0?`<tr><td colspan="6" class="empty">Sin gastos</td></tr>`:state.comunidadData.gastos.map(e=>`<tr>
     <td>${e.icon} <b>${e.label}</b></td><td>${e.description||'—'}</td><td>${e.month}</td>
     <td>${fmtD(e.date)}</td><td style="font-weight:700;color:#dc2626">${fmt(e.amount)}</td>
     <td>${e.prorate?'<span class="badge badge-blue">Prorrateo</span>':'<span class="badge badge-gray">Fijo</span>'}</td>
@@ -881,7 +954,7 @@ function buildFines(){
   const{multas,residentes,unidades}=state.comunidadData;
   const curM=thisMonth();
   return`
-  <div class="page-header"><div><h2>Multas</h2><p>${multas.filter(f=>f.status==='pendiente').length} pendientes · ${multas.filter(f=>f.status==='pagada').length} pagadas</p></div><button class="btn btn-danger" id="btnAddFine">+ Nueva multa</button></div>
+  <div class="page-header"><div><h2>Multas</h2><p>${multas.filter(f=>f.status==='pendiente').length} pendientes</p></div><button class="btn btn-danger" id="btnAddFine">+ Nueva multa</button></div>
   <div id="fineForm" style="display:none" class="card">
     <div class="form-row">
       <div class="form-group"><label class="form-label">Residente *</label>
@@ -956,11 +1029,12 @@ function buildContratoList(workers){
       <div class="card-header">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="avatar" style="background:#ede9fe;color:#5b21b6">${w.nombre.charAt(0)}</div>
-          <div><div style="font-weight:700">${w.nombre}</div><div style="font-size:11px;color:#6b7280">${w.rol} · ${w.rut} · Desde ${fmtD(w.start_date)}</div></div>
+          <div><div style="font-weight:700">${w.nombre}</div><div style="font-size:11px;color:#6b7280">${w.rol} · ${w.rut}</div></div>
         </div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn btn-sm btn-primary" onclick="viewLiquidacion('${w.id}')">Liquidación</button>
           <button class="btn btn-sm btn-danger" onclick="openFiniquito('${w.id}')">Finiquito</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="deleteWorker('${w.id}','${w.nombre}')">🗑 Eliminar</button>
         </div>
       </div>
       <div class="grid-2">
@@ -992,9 +1066,10 @@ function buildHonorariosList(workers){
           <div class="avatar" style="background:#fef3c7;color:#92400e">${w.nombre.charAt(0)}</div>
           <div><div style="font-weight:700">${w.nombre}</div><div style="font-size:11px;color:#6b7280">${w.rol} · ${w.rut}</div></div>
         </div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn btn-sm btn-warning" onclick="viewBoleta('${w.id}')">Boleta</button>
           <button class="btn btn-sm btn-danger" onclick="desvincularWorker('${w.id}')">Desvincular</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="deleteWorker('${w.id}','${w.nombre}')">🗑 Eliminar</button>
         </div>
       </div>
       <table class="liq-table" style="max-width:300px">
@@ -1008,15 +1083,18 @@ function buildHonorariosList(workers){
 
 function buildDesvinculadosList(workers){
   if(!workers.length)return'<div class="card"><div class="empty">Sin desvinculados</div></div>';
-  return`<div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Tipo</th><th>Término</th><th>Motivo</th></tr></thead>
-  <tbody>${workers.map(w=>`<tr><td>${w.nombre}</td><td>${w.rol}</td><td>${w.tipo}</td><td>${fmtD(w.end_date)}</td><td>${w.end_reason||'—'}</td></tr>`).join('')}</tbody></table></div>`;
+  return`<div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Tipo</th><th>Término</th><th></th></tr></thead>
+  <tbody>${workers.map(w=>`<tr>
+    <td>${w.nombre}</td><td>${w.rol}</td><td>${w.tipo}</td><td>${fmtD(w.end_date)}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteWorker('${w.id}','${w.nombre}')">🗑 Eliminar</button></td>
+  </tr>`).join('')}</tbody></table></div>`;
 }
 
 function buildBank(){
   const{pagos,gastos,unidades}=state.comunidadData;
   const totalIn=pagos.reduce((s,p)=>s+p.amount,0);
   const totalOut=gastos.reduce((s,g)=>s+g.amount,0);
-  const allMovs=[...pagos.map(p=>({...p,_t:'crédito',_desc:`GC Depto ${unidades.find(u=>u.id===p.unidad_id)?.numero||''}`})),...gastos.map(g=>({...g,_t:'débito',_desc:`${g.icon} ${g.label} · ${g.description||''}`}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const allMovs=[...pagos.map(p=>({...p,_t:'crédito',_desc:`GC Depto ${unidades.find(u=>u.id===p.unidad_id)?.numero||''}`})),...gastos.map(g=>({...g,_t:'débito',_desc:`${g.icon} ${g.label}`}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   let saldo=totalIn-totalOut;
   const movs=allMovs.map(m=>{const s=saldo;saldo+=m._t==='débito'?m.amount:-m.amount;return{...m,saldo:s}});
   return`
@@ -1031,7 +1109,7 @@ function buildBank(){
     <td>${fmtD(m.date)}</td><td>${m._desc}</td>
     <td><span class="badge ${m._t==='crédito'?'badge-green':'badge-red'}">${m._t}</span></td>
     <td style="font-weight:700;color:${m._t==='crédito'?'#059669':'#dc2626'}">${m._t==='crédito'?'+':'-'}${fmt(m.amount)}</td>
-    <td style="font-weight:600">${fmt(m.saldo)}</td>
+    <td>${fmt(m.saldo)}</td>
   </tr>`).join('')}</tbody></table></div>`;
 }
 
@@ -1072,7 +1150,7 @@ function buildReports(){
     <div class="stat-row"><span>Total gastos</span><span class="red" style="font-weight:700">${fmt(totalOut)}</span></div>
     <div class="stat-row"><span>Morosos</span><span class="badge badge-red">${morose.length}</span></div>
     <div class="stat-row" style="font-weight:700;font-size:14px"><span>Saldo neto</span><span class="${balance>=0?'green':'red'}">${fmt(balance)}</span></div>
-    <div style="margin-top:10px"><button class="btn btn-primary" onclick="window.print()">⬇ Imprimir balance completo</button></div>
+    <div style="margin-top:10px"><button class="btn btn-primary" onclick="window.print()">⬇ Imprimir balance</button></div>
   </div>`:''}
   ${tab==='unidades'?`<div class="card">${state.comunidadData.unidades.map(u=>{
     const r=state.comunidadData.residentes.find(x=>x.unidad_id===u.id);
@@ -1102,13 +1180,13 @@ function buildReports(){
     </div>`;
   }).join('')}</div>`:''}
   ${tab==='prorate'?`<div class="card">
-    ${me.filter(e=>e.prorate).length===0?'<div class="empty">Sin gastos con prorrateo en este período</div>':
+    ${me.filter(e=>e.prorate).length===0?'<div class="empty">Sin gastos con prorrateo</div>':
     me.filter(e=>e.prorate).map(e=>`<div style="margin-bottom:16px">
       <div style="font-weight:700;margin-bottom:6px">${e.icon} ${e.label} · ${fmt(e.amount)}</div>
       <table><thead><tr><th>Depto</th><th>Residente</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead>
       <tbody>${calcProrate(e.amount,state.comunidadData.unidades).map(p=>{const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);const r=state.comunidadData.residentes.find(x=>x.unidad_id===p.unitId);return`<tr><td>Depto ${u?.numero||''}</td><td>${r?.nombre||'—'}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;}).join('')}</tbody></table>
     </div>`).join('')}
-    <button class="btn btn-primary" onclick="window.print()">⬇ Imprimir prorrateo</button>
+    <button class="btn btn-primary" onclick="window.print()">⬇ Imprimir</button>
   </div>`:''}`;
 }
 
@@ -1124,11 +1202,11 @@ function buildCommunity(){
       <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="aType">${ALERT_TYPES.map(t=>`<option value="${t.id}">${t.icon} ${t.label}</option>`).join('')}</select></div>
       ${full?`<div class="form-group"><label class="form-label">Reportado por</label><select class="form-control" id="aResident"><option value="">Administración</option>${residentes.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('')}</select></div>`:''}
     </div>
-    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="aTitle" placeholder="Breve descripción del problema"></div>
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="aTitle"></div>
     <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="aDesc" rows="2"></textarea></div>
-    <div style="display:flex;gap:8px"><button class="btn btn-danger" id="btnSaveAlert">Enviar alerta</button><button class="btn" id="btnCancelAlert">Cancelar</button></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-danger" id="btnSaveAlert">Enviar</button><button class="btn" id="btnCancelAlert">Cancelar</button></div>
   </div>
-  ${alertas.length===0?'<div class="card"><div class="empty">Sin alertas registradas</div></div>':
+  ${alertas.length===0?'<div class="card"><div class="empty">Sin alertas</div></div>':
   alertas.map(a=>{
     const r=residentes.find(x=>x.id===a.usuario_id);
     const u=unidades.find(x=>x.id===a.unidad_id);
@@ -1137,7 +1215,7 @@ function buildCommunity(){
         <div>
           <div style="font-weight:700;font-size:13px">${typeMap[a.tipo]||'📢'} ${a.titulo}</div>
           <div style="font-size:11px;color:#6b7280;margin-top:2px">${a.descripcion||''}</div>
-          <div style="font-size:10px;color:#9ca3af;margin-top:3px">${r?`${r.nombre} · Depto ${u?.numero||''}`:'Administración'} · ${fmtD(a.date)} ${a.time||''}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px">${r?`${r.nombre} · Depto ${u?.numero||''}`:'Administración'} · ${fmtD(a.date)}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <span class="badge ${a.status==='activa'?'badge-red':'badge-green'}">${a.status}</span>
@@ -1156,7 +1234,7 @@ function buildDocuments(){
     {icon:'📝',title:'Ficha Ingreso Residente',desc:'Formulario para nuevos residentes'},
     {icon:'📋',title:'Reglamento de Convivencia',desc:'Normas de convivencia'},
     {icon:'🏊',title:'Reglamento Piscina',desc:'Normas piscina y áreas húmedas'},
-    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas estacionamientos y bodegas'},
+    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas estacionamientos'},
     {icon:'📞',title:'Contactos de Emergencia',desc:'Bomberos, Carabineros, SAMU'},
     {icon:'🔑',title:'Contrato de Arrendamiento',desc:'Modelo de contrato'},
   ];
@@ -1167,8 +1245,24 @@ function buildDocuments(){
     <div class="doc-icon">${d.icon}</div>
     <div class="doc-title">${d.title||d.titulo}</div>
     <div class="doc-desc">${d.desc||d.descripcion||''}</div>
-    ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-primary btn-sm">⬇ Descargar</a>`:`<button class="btn btn-sm" onclick="alert('Documento pendiente de carga por el administrador de la plataforma')">⬇ Descargar PDF</button>`}
+    ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-primary btn-sm">⬇ Descargar</a>`:`<button class="btn btn-sm" onclick="alert('Documento pendiente de carga')">⬇ Descargar PDF</button>`}
   </div>`).join('')}</div>`;
+}
+
+function buildChangePassword(){
+  const u=state.currentUser;
+  return`
+  <div class="page-header"><h2>Cambiar clave</h2></div>
+  <div class="card" style="max-width:440px">
+    <div style="margin-bottom:14px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px">
+      <div style="font-weight:700">${u?.nombre||''}</div>
+      <div style="color:#6b7280">${u?.email||''}</div>
+    </div>
+    <div class="form-group"><label class="form-label">Clave actual *</label><input class="form-control" id="pwActual" type="password"></div>
+    <div class="form-group"><label class="form-label">Nueva clave *</label><input class="form-control" id="pwNueva" type="password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="form-group"><label class="form-label">Confirmar nueva clave *</label><input class="form-control" id="pwConfirm" type="password"></div>
+    <button class="btn btn-primary" id="btnCambiarClave">Cambiar clave</button>
+  </div>`;
 }
 
 function buildSettings(){
@@ -1176,14 +1270,13 @@ function buildSettings(){
   return`
   <div class="page-header"><h2>Configuración</h2></div>
   <div class="card">
-    <div class="card-title" style="margin-bottom:12px">Datos de la comunidad</div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Nombre</label><input class="form-control" id="bName" value="${com?.nombre||''}"></div>
       <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="bCity" value="${com?.ciudad||''}"></div>
     </div>
     <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="bAddr" value="${com?.direccion||''}"></div>
-    <div class="form-group"><label class="form-label">Código de acceso (solo lectura)</label><input class="form-control" value="${com?.codigo_acceso||''}" disabled></div>
-    <button class="btn btn-primary" id="btnSaveSettings">Guardar cambios</button>
+    <div class="form-group"><label class="form-label">Código (solo lectura)</label><input class="form-control" value="${com?.codigo_acceso||''}" disabled></div>
+    <button class="btn btn-primary" id="btnSaveSettings">Guardar</button>
   </div>`;
 }
 
@@ -1218,11 +1311,11 @@ function buildMyAccount(){
       <div class="metric"><div class="metric-label">GC Base</div><div class="metric-value blue">${fmt(unit?.monthly_fee||85000)}</div></div>
       <div class="metric"><div class="metric-label">Total a pagar</div><div class="metric-value ${paid?'green':'amber'}">${fmt(paid?0:totalDue)}</div></div>
     </div>
-    ${pf.length>0?`<div style="margin-top:10px;background:#fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#991b1b"><b>⚠ Multas pendientes incluidas en tu cobro:</b><br>${pf.map(f=>`• ${f.reason} — ${fmt(f.amount)}`).join('<br>')}</div>`:''}
+    ${pf.length>0?`<div style="margin-top:10px;background:#fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#991b1b"><b>⚠ Multas pendientes:</b><br>${pf.map(f=>`• ${f.reason} — ${fmt(f.amount)}`).join('<br>')}</div>`:''}
   </div>
   <div class="card">
     <div class="card-header"><span class="card-title">Historial de pagos</span></div>
-    ${myP.length===0?'<div class="empty">Sin pagos registrados</div>':
+    ${myP.length===0?'<div class="empty">Sin pagos</div>':
     `<table><thead><tr><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${myP.map(p=>`<tr><td>${p.month}</td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td><td>${fmtD(p.date)}</td><td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td></tr>`).join('')}</tbody></table>`}
   </div>`;
@@ -1234,25 +1327,22 @@ function buildMyPayments(){
   return`
   <div class="page-header"><h2>Mis Comprobantes</h2></div>
   <div class="card">
-    ${myP.length===0?'<div class="empty">Sin comprobantes disponibles</div>':
+    ${myP.length===0?'<div class="empty">Sin comprobantes</div>':
     `<table><thead><tr><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${myP.map(p=>`<tr><td><b>${p.month}</b></td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td><span class="badge badge-blue">${p.method}</span></td><td>${fmtD(p.date)}</td><td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td></tr>`).join('')}</tbody></table>`}
   </div>`;
 }
 
-// ===== MODALES =====
 function buildModal(){
   const m=state.modal;
   if(!m)return'';
-
   if(m.type==='confirm'){
-    return`<div class="modal-overlay" id="modalOverlay"><div class="modal" style="max-width:380px">
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal" style="max-width:400px">
       <div class="modal-header"><span class="modal-title">⚠️ Confirmar</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-      <p style="font-size:13px;margin-bottom:18px">${m.message}</p>
+      <p style="font-size:13px;margin-bottom:18px;line-height:1.6">${m.message}</p>
       <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="setState({modal:null})">Cancelar</button><button class="btn btn-danger" onclick="${m.onConfirm}">Confirmar</button></div>
     </div></div>`;
   }
-
   if(m.type==='manage_resident'){
     const r=m.resident;
     return`<div class="modal-overlay" id="modalOverlay"><div class="modal" style="max-width:420px">
@@ -1260,10 +1350,10 @@ function buildModal(){
       <div style="background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
         <div style="font-weight:700">${r.nombre}</div>
         <div style="color:#6b7280">${r.rut||''} · ${r.email||''}</div>
-        <div style="margin-top:6px">
-          <span class="badge badge-gray">Clave actual: </span>
-          <span id="claveVisible" style="font-family:monospace;font-size:13px;background:#e5e5e5;padding:2px 8px;border-radius:4px;margin-left:6px">••••••••</span>
-          <button class="btn btn-sm" style="margin-left:8px" onclick="toggleClaveVisible('${r.clave}')">👁 Ver</button>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+          <span style="color:#6b7280">Clave actual:</span>
+          <code id="claveVisible" style="background:#e5e5e5;padding:2px 8px;border-radius:4px;font-size:13px">••••••••</code>
+          <button class="btn btn-sm" onclick="toggleClaveVisible('${r.clave}')">👁 Ver</button>
         </div>
       </div>
       <div class="form-group"><label class="form-label">Nueva clave *</label><input class="form-control" id="mrNuevaClave" placeholder="Ingresa la nueva clave" type="text"></div>
@@ -1273,7 +1363,6 @@ function buildModal(){
       </div>
     </div></div>`;
   }
-
   if(m.type==='edit_comunidad'){
     const c=m.comunidad;
     return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
@@ -1288,12 +1377,11 @@ function buildModal(){
       <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ec_notas" rows="2">${c.notas||''}</textarea></div>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn btn-primary" onclick="saveEditComunidad('${c.id}')">Guardar</button>
-        <button class="btn btn-danger" onclick="toggleComunidad('${c.id}',${c.activa})">${c.activa?'Desactivar':'Activar'}</button>
+        <button class="btn btn-warning" onclick="toggleComunidad('${c.id}',${c.activa})">${c.activa?'Desactivar':'Activar'}</button>
         <button class="btn" onclick="setState({modal:null})">Cancelar</button>
       </div>
     </div></div>`;
   }
-
   if(m.type==='edit_unit'){
     const u=m.unit;
     return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
@@ -1317,12 +1405,11 @@ function buildModal(){
         <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_storSqm" type="number" value="${u.storage_sqm||0}"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-primary" onclick="saveEditUnit('${u.id}')">Guardar cambios</button>
+        <button class="btn btn-primary" onclick="saveEditUnit('${u.id}')">Guardar</button>
         <button class="btn" onclick="setState({modal:null})">Cancelar</button>
       </div>
     </div></div>`;
   }
-
   if(m.type==='receipt'){
     const p=m.payment;
     const r=state.comunidadData.residentes.find(x=>x.id===p.usuario_id);
@@ -1331,31 +1418,22 @@ function buildModal(){
     return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
       <div class="modal-header"><span class="modal-title">Comprobante de Pago</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
       <div class="receipt">
-        <div class="receipt-header">
-          <div style="font-size:26px">🏢</div>
-          <h2 style="font-size:16px;font-weight:800;margin:4px 0">${com?.nombre||''}</h2>
-          <p style="color:#6b7280;font-size:12px">Comprobante de Gasto Común</p>
-          <p style="font-size:10px;color:#9ca3af">N° ${p.receipt_id}</p>
-        </div>
+        <div class="receipt-header"><div style="font-size:26px">🏢</div><h2 style="font-size:16px;font-weight:800;margin:4px 0">${com?.nombre||''}</h2><p style="color:#6b7280;font-size:12px">Comprobante de Gasto Común</p><p style="font-size:10px;color:#9ca3af">N° ${p.receipt_id}</p></div>
         <div class="receipt-row"><span style="color:#6b7280">Residente</span><span style="font-weight:700">${r?.nombre||'—'}</span></div>
         <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${r?.rut||'—'}</span></div>
         <div class="receipt-row"><span style="color:#6b7280">Departamento</span><span>Depto ${u?.numero||'—'} · Piso ${u?.piso||'—'}</span></div>
         ${u?.parking?`<div class="receipt-row"><span style="color:#6b7280">Estacionamiento</span><span>${u.parking_num} · ${u.parking_sqm}m²</span></div>`:''}
         ${u?.storage?`<div class="receipt-row"><span style="color:#6b7280">Bodega</span><span>${u.storage_num} · ${u.storage_sqm}m²</span></div>`:''}
         <div class="receipt-row"><span style="color:#6b7280">Período</span><span>${p.month}</span></div>
-        <div class="receipt-row"><span style="color:#6b7280">Fecha de pago</span><span>${fmtD(p.date)}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Fecha</span><span>${fmtD(p.date)}</span></div>
         <div class="receipt-row"><span style="color:#6b7280">Método</span><span>${p.method}</span></div>
         <div class="receipt-row"><span>GC Base</span><span>${fmt(p.base_amount||p.amount)}</span></div>
         <div class="receipt-total"><span>TOTAL PAGADO</span><span style="color:#059669">${fmt(p.amount)}</span></div>
         <div style="margin-top:12px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px dashed #e5e5e5;padding-top:10px">Comprobante válido · ${com?.nombre||''} · ${new Date().getFullYear()}</div>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
-        <button class="btn" onclick="setState({modal:null})">Cerrar</button>
-      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
     </div></div>`;
   }
-
   if(m.type==='liquidacion'){
     const w=m.worker;const liq=calcLiquidacion(w);
     const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
@@ -1382,7 +1460,6 @@ function buildModal(){
       <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
     </div></div>`;
   }
-
   if(m.type==='boleta'){
     const w=m.worker;const bruto=w.gross_salary||0;const ret=Math.round(bruto*0.1525);
     const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
@@ -1402,14 +1479,13 @@ function buildModal(){
       <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
     </div></div>`;
   }
-
   if(m.type==='finiquito'){
     const w=m.worker;const type=m.finType||'renuncia';const lastDay=m.lastDay||today();
     const fin=calcFiniquito(w,type,lastDay);
     return`<div class="modal-overlay" id="modalOverlay"><div class="modal modal-lg">
       <div class="modal-header"><span class="modal-title">Cálculo de Finiquito</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
       <div class="form-row" style="margin-bottom:12px">
-        <div class="form-group"><label class="form-label">Tipo de término</label>
+        <div class="form-group"><label class="form-label">Tipo</label>
           <select class="form-control" id="finType" onchange="updateFiniquito('${w.id}')">
             <option value="renuncia" ${type==='renuncia'?'selected':''}>Renuncia voluntaria</option>
             <option value="despido" ${type==='despido'?'selected':''}>Despido Art. 161</option>
@@ -1423,16 +1499,13 @@ function buildModal(){
       <div class="receipt">
         <div class="receipt-header"><h2 style="font-size:15px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Finiquito de Trabajo</p></div>
         <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
-        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
         <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.rol}</span></div>
-        <div class="receipt-row"><span style="color:#6b7280">Inicio contrato</span><span>${fmtD(w.start_date)}</span></div>
-        <div class="receipt-row"><span style="color:#6b7280">Término</span><span>${fmtD(lastDay)}</span></div>
         <div class="receipt-row"><span style="color:#6b7280">Antigüedad</span><span>${fin.years} años ${fin.months} meses</span></div>
-        <div class="receipt-row"><span style="color:#6b7280">Tipo</span><span style="font-weight:600">${type==='renuncia'?'Renuncia voluntaria':type==='despido'?'Despido Art. 161':'Mutuo acuerdo'}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Tipo término</span><span style="font-weight:600">${type==='renuncia'?'Renuncia voluntaria':type==='despido'?'Despido Art. 161':'Mutuo acuerdo'}</span></div>
         <div style="height:6px"></div>
         <div class="receipt-row"><span>Días proporcionales</span><span>${fmt(fin.dias)}</span></div>
         <div class="receipt-row"><span>Vacaciones proporcionales</span><span>${fmt(fin.vac)}</span></div>
-        ${type==='despido'?`<div class="receipt-row"><span>Indemnización años servicio</span><span>${fmt(fin.ind)}</span></div>`:''}
+        ${type==='despido'?`<div class="receipt-row"><span>Indemnización</span><span>${fmt(fin.ind)}</span></div>`:''}
         <div class="receipt-total"><span>TOTAL FINIQUITO</span><span style="color:#1a56db">${fmt(fin.total)}</span></div>
       </div>
       <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
@@ -1445,11 +1518,10 @@ function buildModal(){
   return'';
 }
 
-// ===== EVENTOS =====
 function attachEvents(){
   document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>setState({view:btn.dataset.view})));
 
-  // UNIDADES (solo superadmin)
+  // UNIDADES
   document.getElementById('btnAddUnit')?.addEventListener('click',()=>toggleForm('unitForm'));
   document.getElementById('btnCancelUnit')?.addEventListener('click',()=>toggleForm('unitForm',false));
   document.getElementById('btnSaveUnit')?.addEventListener('click',async()=>{
@@ -1468,8 +1540,7 @@ function attachEvents(){
       storage_sqm:storage?parseFloat(document.getElementById('uStorageSqm').value||0):0
     }).select();
     if(error){showAlert('Error al guardar','error');return;}
-    setState({comunidadData:{...state.comunidadData,unidades:[...state.comunidadData.unidades,...data]}});
-    showAlert('Unidad agregada');
+    setState({comunidadData:{...state.comunidadData,unidades:[...state.comunidadData.unidades,...data]}});showAlert('Unidad agregada');
   });
 
   // RESIDENTES
@@ -1489,8 +1560,7 @@ function attachEvents(){
       rol,clave,activo:true
     }).select();
     if(error){showAlert('Error: '+error.message,'error');return;}
-    setState({comunidadData:{...state.comunidadData,residentes:[...state.comunidadData.residentes,...data]}});
-    showAlert('Residente registrado exitosamente');
+    setState({comunidadData:{...state.comunidadData,residentes:[...state.comunidadData.residentes,...data]}});showAlert('Residente registrado');
   });
 
   // PAGOS
@@ -1510,7 +1580,7 @@ function attachEvents(){
       comunidad_id:state.selectedComunidad.id,unidad_id:r?.unidad_id,usuario_id:userId,
       amount:parseInt(amount),base_amount:parseInt(amount)-finesAmt,date,method,month:curM
     }).select();
-    if(error){showAlert('Error al registrar pago','error');return;}
+    if(error){showAlert('Error','error');return;}
     if(pf.length>0){
       await sb.from('multas').update({status:'pagada'}).in('id',pf.map(f=>f.id));
       const multas=state.comunidadData.multas.map(f=>pf.find(x=>x.id===f.id)?{...f,status:'pagada'}:f);
@@ -1536,8 +1606,7 @@ function attachEvents(){
       amount:parseInt(amount),reason,date,month,status:'pendiente'
     }).select();
     if(error){showAlert('Error','error');return;}
-    setState({comunidadData:{...state.comunidadData,multas:[...data,...state.comunidadData.multas]}});
-    showAlert('Multa aplicada y sumada al GC del residente');
+    setState({comunidadData:{...state.comunidadData,multas:[...data,...state.comunidadData.multas]}});showAlert('Multa aplicada');
   });
 
   // TRABAJADORES
@@ -1560,8 +1629,37 @@ function attachEvents(){
       activo:true
     }).select();
     if(error){showAlert('Error','error');return;}
-    setState({comunidadData:{...state.comunidadData,trabajadores:[...state.comunidadData.trabajadores,...data]}});
-    showAlert('Trabajador agregado');
+    setState({comunidadData:{...state.comunidadData,trabajadores:[...state.comunidadData.trabajadores,...data]}});showAlert('Trabajador agregado');
+  });
+
+  // VOTACIONES
+  document.getElementById('btnAddVotacion')?.addEventListener('click',()=>toggleForm('votacionForm'));
+  document.getElementById('btnCancelVotacion')?.addEventListener('click',()=>toggleForm('votacionForm',false));
+  document.getElementById('btnAddOpcion')?.addEventListener('click',()=>{
+    const container=document.getElementById('opcionesContainer');
+    if(!container)return;
+    const div=document.createElement('div');
+    div.style.marginBottom='8px';
+    div.innerHTML=`<input class="form-control opcion-input" placeholder="Nueva opción">`;
+    container.appendChild(div);
+  });
+  document.getElementById('btnSaveVotacion')?.addEventListener('click',async()=>{
+    const titulo=document.getElementById('vTitulo').value.trim();
+    const desc=document.getElementById('vDesc').value;
+    const inicio=document.getElementById('vInicio').value;
+    const cierre=document.getElementById('vCierre').value;
+    const inputs=document.querySelectorAll('.opcion-input');
+    const opciones=[...inputs].map(i=>i.value.trim()).filter(Boolean);
+    if(!titulo||!cierre||opciones.length<2){showAlert('Completa todos los campos y agrega al menos 2 opciones','error');return;}
+    const{data,error}=await sb.from('votaciones').insert({
+      comunidad_id:state.selectedComunidad.id,titulo,descripcion:desc,
+      opciones:JSON.stringify(opciones),fecha_inicio:inicio,fecha_cierre:cierre,
+      estado:'activa',creada_por:state.currentUser?.nombre||'Admin'
+    }).select();
+    if(error){showAlert('Error al crear votación','error');return;}
+    setState({comunidadData:{...state.comunidadData,votaciones:[...data,...state.comunidadData.votaciones]}});
+    showAlert('Votación publicada. Los residentes ya pueden votar.');
+    toggleForm('votacionForm',false);
   });
 
   // ALERTAS
@@ -1581,8 +1679,7 @@ function attachEvents(){
       date:today(),time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),status:'activa'
     }).select();
     if(error){showAlert('Error','error');return;}
-    setState({comunidadData:{...state.comunidadData,alertas:[...data,...state.comunidadData.alertas]}});
-    showAlert('Alerta enviada a la comunidad');
+    setState({comunidadData:{...state.comunidadData,alertas:[...data,...state.comunidadData.alertas]}});showAlert('Alerta enviada');
   });
 
   // GASTOS
@@ -1597,11 +1694,10 @@ function attachEvents(){
       description:document.getElementById('eDesc')?.value||'',month:date.substr(0,7)
     }).select();
     if(error){showAlert('Error','error');return;}
-    setState({comunidadData:{...state.comunidadData,gastos:[...data,...state.comunidadData.gastos]},selectedCat:null});
-    showAlert('Gasto registrado');
+    setState({comunidadData:{...state.comunidadData,gastos:[...data,...state.comunidadData.gastos]},selectedCat:null});showAlert('Gasto registrado');
   });
 
-  // CAMBIAR CLAVE (residente cambia la suya)
+  // CAMBIAR CLAVE
   document.getElementById('btnCambiarClave')?.addEventListener('click',async()=>{
     const actual=document.getElementById('pwActual').value;
     const nueva=document.getElementById('pwNueva').value;
@@ -1614,9 +1710,7 @@ function attachEvents(){
     if(error){showAlert('Error al cambiar clave','error');return;}
     setState({currentUser:{...state.currentUser,clave:nueva}});
     showAlert('Clave cambiada exitosamente ✓');
-    document.getElementById('pwActual').value='';
-    document.getElementById('pwNueva').value='';
-    document.getElementById('pwConfirm').value='';
+    ['pwActual','pwNueva','pwConfirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   });
 
   // CONFIGURACIÓN
@@ -1625,8 +1719,7 @@ function attachEvents(){
     const ciudad=document.getElementById('bCity').value.trim();
     const direccion=document.getElementById('bAddr').value.trim();
     await sb.from('comunidades').update({nombre,ciudad,direccion}).eq('id',state.selectedComunidad.id);
-    setState({selectedComunidad:{...state.selectedComunidad,nombre,ciudad,direccion}});
-    showAlert('Configuración guardada');
+    setState({selectedComunidad:{...state.selectedComunidad,nombre,ciudad,direccion}});showAlert('Guardado');
   });
 
   // INFORMES
@@ -1638,31 +1731,31 @@ function attachEvents(){
     if(!container)return;
     const idx=container.children.length;
     const div=document.createElement('div');
+    div.setAttribute('data-unit','true');
     div.style.cssText='border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;background:#f9fafb';
     div.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <span style="font-size:12px;font-weight:600">Unidad ${idx+1}</span>
-        <button class="btn btn-sm btn-danger" onclick="this.closest('div[data-unit]').remove()" style="font-size:10px">✕</button>
+        <button class="btn btn-sm btn-danger" onclick="this.closest('[data-unit]').remove()" style="font-size:10px">✕ Quitar</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label class="form-label">N° Depto *</label><input class="form-control unit-numero" placeholder="101"></div>
         <div><label class="form-label">Piso *</label><input class="form-control unit-piso" type="number" placeholder="1"></div>
-        <div><label class="form-label">m² *</label><input class="form-control unit-sqm" type="number" placeholder="65"></div>
+        <div><label class="form-label">m² depto *</label><input class="form-control unit-sqm" type="number" placeholder="65"></div>
       </div>
       <div style="margin-bottom:8px"><label class="form-label">GC mensual ($)</label><input class="form-control unit-fee" type="number" value="85000" style="max-width:160px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div>
-          <label class="form-label">Estacionamiento N°</label>
-          <input class="form-control unit-park-num" placeholder="E-01 (dejar vacío si no tiene)">
+          <label class="form-label">N° Estacionamiento (vacío = no tiene)</label>
+          <input class="form-control unit-park-num" placeholder="E-01">
           <input class="form-control unit-park-sqm" type="number" placeholder="m² estacionamiento" style="margin-top:4px">
         </div>
         <div>
-          <label class="form-label">Bodega N°</label>
-          <input class="form-control unit-stor-num" placeholder="B-01 (dejar vacío si no tiene)">
+          <label class="form-label">N° Bodega (vacío = no tiene)</label>
+          <input class="form-control unit-stor-num" placeholder="B-01">
           <input class="form-control unit-stor-sqm" type="number" placeholder="m² bodega" style="margin-top:4px">
         </div>
       </div>`;
-    div.setAttribute('data-unit','true');
     container.appendChild(div);
   });
 
@@ -1683,16 +1776,14 @@ function attachEvents(){
       notas:document.getElementById('ncNotas').value,
       activa:true,fecha_inicio:today()
     }).select();
-    if(comError){setState({loading:false});showAlert('Error: el código ya existe o hay un problema de conexión','error');return;}
+    if(comError){setState({loading:false});showAlert('Error: el código ya existe','error');return;}
     const comId=comData[0].id;
-    // Crear admin
     await sb.from('usuarios').insert({
       comunidad_id:comId,nombre:adminNombre,
       email:document.getElementById('ncAdminEmail').value,
       phone:document.getElementById('ncAdminPhone').value,
       rol:'admin',clave:adminClave,activo:true
     });
-    // Crear unidades
     const unitDivs=document.querySelectorAll('[data-unit]');
     for(const div of unitDivs){
       const numero=div.querySelector('.unit-numero').value.trim();
@@ -1712,8 +1803,8 @@ function attachEvents(){
       }
     }
     const comunidades=await loadAllComunidades();
-    setState({loading:false,comunidades,view:'sa_comunidades'});
-    showAlert(`Comunidad "${nombre}" creada con ${unitDivs.length} unidades`);
+    setState({loading:false,comunidades,view:'sa_dashboard'});
+    showAlert(`✓ Comunidad "${nombre}" creada con ${unitDivs.length} unidades`);
   });
 
   document.getElementById('modalOverlay')?.addEventListener('click',function(e){if(e.target===this)setState({modal:null});});
@@ -1726,20 +1817,13 @@ function toggleForm(id,show=null){
 }
 
 // SIDEBAR MOBILE
-window.openSidebar=()=>{
-  document.getElementById('mainSidebar')?.classList.add('open');
-  document.getElementById('sidebar-overlay').style.display='block';
-};
-window.closeSidebar=()=>{
-  document.getElementById('mainSidebar')?.classList.remove('open');
-  document.getElementById('sidebar-overlay').style.display='none';
-};
+window.openSidebar=()=>{document.getElementById('mainSidebar')?.classList.add('open');document.getElementById('sidebar-overlay').style.display='block';};
+window.closeSidebar=()=>{document.getElementById('mainSidebar')?.classList.remove('open');document.getElementById('sidebar-overlay').style.display='none';};
 
-// LOGIN ACTIONS
+// LOGIN
 window.selectComunidad=id=>setState({selectedComunidad:state.comunidades.find(x=>x.id===id)});
 window.goToStep2=()=>{if(state.selectedComunidad){setState({loginStep:2});setTimeout(()=>document.getElementById('claveInput')?.focus(),100);}};
 window.goToSuperAdminLogin=()=>{setState({loginStep:3});setTimeout(()=>document.getElementById('superClave')?.focus(),100);};
-
 window.doSuperLogin=async()=>{
   const clave=document.getElementById('superClave')?.value?.trim();
   if(!clave)return;
@@ -1750,52 +1834,29 @@ window.doSuperLogin=async()=>{
   const comunidades=await loadAllComunidades();
   setState({screen:'superadmin',isSuperAdmin:true,view:'sa_dashboard',comunidades});
 };
-
 window.doLogin=async()=>{
   const clave=document.getElementById('claveInput')?.value?.trim();
   if(!clave){showAlert('Ingresa tu clave','error');return;}
   setState({loading:true});
-  const{data,error}=await sb.from('usuarios')
-    .select('*')
-    .eq('comunidad_id',state.selectedComunidad.id)
-    .eq('clave',clave)
-    .eq('activo',true)
-    .maybeSingle();
-  if(error||!data){setState({loading:false});showAlert('Clave incorrecta. Intenta nuevamente.','error');return;}
+  const{data,error}=await sb.from('usuarios').select('*').eq('comunidad_id',state.selectedComunidad.id).eq('clave',clave).eq('activo',true).maybeSingle();
+  if(error||!data){setState({loading:false});showAlert('Clave incorrecta','error');return;}
   const comunidadData=await loadComunidadData(state.selectedComunidad.id);
   const full=data.rol==='admin'||data.rol==='presidente'||data.rol==='tesorero';
   setState({loading:false,screen:'app',currentUser:data,comunidadData,view:full?'dashboard':'my_account'});
 };
-
-window.logout=()=>setState({
-  screen:'login',loginStep:1,currentUser:null,
-  selectedComunidad:null,isSuperAdmin:false,
-  comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[]}
-});
-window.backToSuperAdmin=async()=>{
-  const comunidades=await loadAllComunidades();
-  setState({screen:'superadmin',view:'sa_dashboard',comunidades});
-};
+window.logout=()=>setState({screen:'login',loginStep:1,currentUser:null,selectedComunidad:null,isSuperAdmin:false,comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[],votaciones:[],votos:[]}});
+window.backToSuperAdmin=async()=>{const comunidades=await loadAllComunidades();setState({screen:'superadmin',view:'sa_dashboard',comunidades});};
 window.enterComunidad=async id=>{
   setState({loading:true});
   const com=state.comunidades.find(x=>x.id===id);
   const comunidadData=await loadComunidadData(id);
-  setState({loading:false,screen:'app',selectedComunidad:com,comunidadData,view:'dashboard',
-    currentUser:{nombre:'Rodrigo (Superadmin)',rol:'admin',id:'superadmin',clave:''}});
+  setState({loading:false,screen:'app',selectedComunidad:com,comunidadData,view:'dashboard',currentUser:{nombre:'Rodrigo (Superadmin)',rol:'admin',id:'superadmin',clave:''}});
 };
 
 // SUPERADMIN ACTIONS
 window.editComunidad=id=>{const c=state.comunidades.find(x=>x.id===id);if(c)setState({modal:{type:'edit_comunidad',comunidad:c}});};
 window.saveEditComunidad=async id=>{
-  const updates={
-    nombre:document.getElementById('ec_nombre').value.trim(),
-    ciudad:document.getElementById('ec_ciudad').value.trim(),
-    direccion:document.getElementById('ec_dir').value.trim(),
-    plan:document.getElementById('ec_plan').value,
-    monto_mantencion:parseInt(document.getElementById('ec_mant').value||0),
-    monto_implementacion:parseInt(document.getElementById('ec_impl').value||0),
-    notas:document.getElementById('ec_notas').value
-  };
+  const updates={nombre:document.getElementById('ec_nombre').value.trim(),ciudad:document.getElementById('ec_ciudad').value.trim(),direccion:document.getElementById('ec_dir').value.trim(),plan:document.getElementById('ec_plan').value,monto_mantencion:parseInt(document.getElementById('ec_mant').value||0),monto_implementacion:parseInt(document.getElementById('ec_impl').value||0),notas:document.getElementById('ec_notas').value};
   await sb.from('comunidades').update(updates).eq('id',id);
   const comunidades=state.comunidades.map(c=>c.id===id?{...c,...updates}:c);
   setState({comunidades,modal:null});showAlert('Comunidad actualizada');
@@ -1805,20 +1866,30 @@ window.toggleComunidad=async(id,activa)=>{
   const comunidades=state.comunidades.map(c=>c.id===id?{...c,activa:!activa}:c);
   setState({comunidades,modal:null});showAlert(activa?'Comunidad desactivada':'Comunidad activada');
 };
+window.deleteComunidad=(id,nombre)=>setState({modal:{type:'confirm',message:`⚠️ ¿Eliminar la comunidad "${nombre}"?\n\nSe eliminarán TODOS sus datos incluyendo unidades, residentes, pagos, gastos, multas y votaciones.\n\nEsta acción es IRREVERSIBLE.`,onConfirm:`doDeleteComunidad('${id}')`}});
+window.doDeleteComunidad=async id=>{
+  setState({loading:true});
+  await sb.from('votos').delete().in('votacion_id',(await sb.from('votaciones').select('id').eq('comunidad_id',id)).data?.map(v=>v.id)||[]);
+  await sb.from('votaciones').delete().eq('comunidad_id',id);
+  await sb.from('alertas').delete().eq('comunidad_id',id);
+  await sb.from('multas').delete().eq('comunidad_id',id);
+  await sb.from('gastos').delete().eq('comunidad_id',id);
+  await sb.from('pagos').delete().eq('comunidad_id',id);
+  await sb.from('trabajadores').delete().eq('comunidad_id',id);
+  await sb.from('usuarios').delete().eq('comunidad_id',id);
+  await sb.from('unidades').delete().eq('comunidad_id',id);
+  await sb.from('documentos').delete().eq('comunidad_id',id);
+  await sb.from('comunidades').delete().eq('id',id);
+  const comunidades=state.comunidades.filter(c=>c.id!==id);
+  setState({loading:false,comunidades,modal:null});showAlert('Comunidad eliminada permanentemente');
+};
 
 // APP ACTIONS
-window.viewReceipt=id=>{
-  const p=state.comunidadData.pagos.find(x=>x.id===id);
-  if(p)setState({modal:{type:'receipt',payment:p}});
-};
+window.viewReceipt=id=>{const p=state.comunidadData.pagos.find(x=>x.id===id);if(p)setState({modal:{type:'receipt',payment:p}});};
 window.viewLiquidacion=id=>setState({modal:{type:'liquidacion',worker:state.comunidadData.trabajadores.find(w=>w.id===id)}});
 window.viewBoleta=id=>setState({modal:{type:'boleta',worker:state.comunidadData.trabajadores.find(w=>w.id===id)}});
 window.openFiniquito=id=>setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:'renuncia',lastDay:today()}});
-window.updateFiniquito=id=>{
-  const type=document.getElementById('finType')?.value;
-  const lastDay=document.getElementById('finLastDay')?.value;
-  setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:type,lastDay}});
-};
+window.updateFiniquito=id=>{const type=document.getElementById('finType')?.value;const lastDay=document.getElementById('finLastDay')?.value;setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:type,lastDay}});};
 window.confirmarFiniquito=async id=>{
   const type=document.getElementById('finType')?.value||'renuncia';
   const lastDay=document.getElementById('finLastDay')?.value||today();
@@ -1826,45 +1897,73 @@ window.confirmarFiniquito=async id=>{
   const trabajadores=state.comunidadData.trabajadores.map(w=>w.id===id?{...w,activo:false,end_date:lastDay}:w);
   setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador desvinculado');
 };
-window.desvincularWorker=id=>setState({modal:{type:'confirm',message:'¿Confirmar desvinculación de este trabajador?',onConfirm:`doDesvincular('${id}')`}});
+window.desvincularWorker=id=>setState({modal:{type:'confirm',message:'¿Confirmar desvinculación?',onConfirm:`doDesvincular('${id}')`}});
 window.doDesvincular=async id=>{
   await sb.from('trabajadores').update({activo:false,end_date:today()}).eq('id',id);
   const trabajadores=state.comunidadData.trabajadores.map(w=>w.id===id?{...w,activo:false}:w);
   setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador desvinculado');
+};
+window.deleteWorker=(id,nombre)=>setState({modal:{type:'confirm',message:`¿Eliminar definitivamente a ${nombre}? Esta acción no se puede deshacer.`,onConfirm:`doDeleteWorker('${id}')`}});
+window.doDeleteWorker=async id=>{
+  await sb.from('trabajadores').delete().eq('id',id);
+  const trabajadores=state.comunidadData.trabajadores.filter(w=>w.id!==id);
+  setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador eliminado');
 };
 window.resolveAlert=async id=>{
   await sb.from('alertas').update({status:'resuelta'}).eq('id',id);
   const alertas=state.comunidadData.alertas.map(a=>a.id===id?{...a,status:'resuelta'}:a);
   setState({comunidadData:{...state.comunidadData,alertas}});showAlert('Alerta resuelta');
 };
-window.deleteUnit=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta unidad? Esta acción no se puede deshacer.',onConfirm:`doDeleteUnit('${id}')`}});
+window.deleteUnit=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta unidad?',onConfirm:`doDeleteUnit('${id}')`}});
 window.doDeleteUnit=async id=>{
   await sb.from('unidades').delete().eq('id',id);
-  setState({comunidadData:{...state.comunidadData,unidades:state.comunidadData.unidades.filter(u=>u.id!==id)},modal:null});
-  showAlert('Unidad eliminada');
+  setState({comunidadData:{...state.comunidadData,unidades:state.comunidadData.unidades.filter(u=>u.id!==id)},modal:null});showAlert('Unidad eliminada');
 };
 window.deleteResident=(id,nombre)=>setState({modal:{type:'confirm',message:`¿Eliminar a ${nombre}? La unidad quedará disponible.`,onConfirm:`doDeleteResident('${id}')`}});
 window.doDeleteResident=async id=>{
   await sb.from('usuarios').update({activo:false}).eq('id',id);
-  setState({comunidadData:{...state.comunidadData,residentes:state.comunidadData.residentes.filter(r=>r.id!==id)},modal:null});
-  showAlert('Residente eliminado');
+  setState({comunidadData:{...state.comunidadData,residentes:state.comunidadData.residentes.filter(r=>r.id!==id)},modal:null});showAlert('Residente eliminado');
 };
 
-// GESTIÓN DE CLAVE POR ADMIN
-window.toggleClaveVisible=clave=>{
-  const el=document.getElementById('claveVisible');
-  if(el)el.textContent=el.textContent==='••••••••'?clave:'••••••••';
+// VOTACIONES ACTIONS
+window.emitirVoto=async(votacionId,opcion)=>{
+  const userId=state.currentUser?.id;
+  if(!userId){showAlert('Debes iniciar sesión para votar','error');return;}
+  const yaVoto=state.comunidadData.votos.find(v=>v.votacion_id===votacionId&&v.usuario_id===userId);
+  if(yaVoto){showAlert('Ya has emitido tu voto en esta votación','error');return;}
+  const r=state.comunidadData.residentes.find(x=>x.id===userId);
+  const{data,error}=await sb.from('votos').insert({
+    votacion_id:votacionId,usuario_id:userId,unidad_id:r?.unidad_id||null,opcion_elegida:opcion
+  }).select();
+  if(error){showAlert('Error al registrar voto','error');return;}
+  const votos=[...state.comunidadData.votos,...data];
+  setState({comunidadData:{...state.comunidadData,votos}});
+  showAlert('✓ Voto registrado exitosamente. ¡Gracias por participar!');
 };
+window.cerrarVotacion=async id=>{
+  await sb.from('votaciones').update({estado:'cerrada'}).eq('id',id);
+  const votaciones=state.comunidadData.votaciones.map(v=>v.id===id?{...v,estado:'cerrada'}:v);
+  setState({comunidadData:{...state.comunidadData,votaciones}});showAlert('Votación cerrada');
+};
+window.deleteVotacion=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta votación y todos sus votos?',onConfirm:`doDeleteVotacion('${id}')`}});
+window.doDeleteVotacion=async id=>{
+  await sb.from('votos').delete().eq('votacion_id',id);
+  await sb.from('votaciones').delete().eq('id',id);
+  const votaciones=state.comunidadData.votaciones.filter(v=>v.id!==id);
+  const votos=state.comunidadData.votos.filter(v=>v.votacion_id!==id);
+  setState({comunidadData:{...state.comunidadData,votaciones,votos},modal:null});showAlert('Votación eliminada');
+};
+
+// GESTIÓN CLAVE POR ADMIN
+window.toggleClaveVisible=clave=>{const el=document.getElementById('claveVisible');if(el)el.textContent=el.textContent==='••••••••'?clave:'••••••••';};
 window.resetResidentClave=async id=>{
   const nueva=document.getElementById('mrNuevaClave')?.value?.trim();
   if(!nueva||nueva.length<4){showAlert('La clave debe tener al menos 4 caracteres','error');return;}
   const{error}=await sb.from('usuarios').update({clave:nueva}).eq('id',id);
   if(error){showAlert('Error al actualizar clave','error');return;}
   const residentes=state.comunidadData.residentes.map(r=>r.id===id?{...r,clave:nueva}:r);
-  setState({comunidadData:{...state.comunidadData,residentes},modal:null});
-  showAlert('Clave actualizada exitosamente ✓');
+  setState({comunidadData:{...state.comunidadData,residentes},modal:null});showAlert('Clave actualizada ✓');
 };
-
 window.saveEditUnit=async id=>{
   const numero=document.getElementById('eu_number')?.value.trim();
   const piso=parseInt(document.getElementById('eu_floor')?.value);
@@ -1873,16 +1972,11 @@ window.saveEditUnit=async id=>{
   const parking=document.getElementById('eu_parking')?.checked;
   const storage=document.getElementById('eu_storage')?.checked;
   if(!numero||!piso||!sqm){showAlert('Completa campos','error');return;}
-  const updates={numero,piso,sqm,monthly_fee,parking,
-    parking_num:parking?document.getElementById('eu_parkNum')?.value||'':'',
-    parking_sqm:parking?parseFloat(document.getElementById('eu_parkSqm')?.value||0):0,
-    storage,storage_num:storage?document.getElementById('eu_storNum')?.value||'':'',
-    storage_sqm:storage?parseFloat(document.getElementById('eu_storSqm')?.value||0):0};
+  const updates={numero,piso,sqm,monthly_fee,parking,parking_num:parking?document.getElementById('eu_parkNum')?.value||'':'',parking_sqm:parking?parseFloat(document.getElementById('eu_parkSqm')?.value||0):0,storage,storage_num:storage?document.getElementById('eu_storNum')?.value||'':'',storage_sqm:storage?parseFloat(document.getElementById('eu_storSqm')?.value||0):0};
   await sb.from('unidades').update(updates).eq('id',id);
   const unidades=state.comunidadData.unidades.map(u=>u.id===id?{...u,...updates}:u);
   setState({comunidadData:{...state.comunidadData,unidades},modal:null});showAlert('Unidad actualizada');
 };
-
 window.onResidentChange=function(sel){
   const r=state.comunidadData.residentes.find(x=>x.id===sel.value);
   const u=r?state.comunidadData.unidades.find(x=>x.id===r.unidad_id):null;
@@ -1890,54 +1984,28 @@ window.onResidentChange=function(sel){
   const pf=r?getPendingFines(r.unidad_id,curM):[];
   const fa=pf.reduce((s,f)=>s+f.amount,0);
   const base=u?.monthly_fee||85000;
-  const unitInp=document.getElementById('pUnit');
-  const baseInp=document.getElementById('pBase');
-  const finesInp=document.getElementById('pFinesAmt');
-  const amtInp=document.getElementById('pAmount');
-  const finesInfo=document.getElementById('pFinesInfo');
+  const unitInp=document.getElementById('pUnit');const baseInp=document.getElementById('pBase');const finesInp=document.getElementById('pFinesAmt');const amtInp=document.getElementById('pAmount');const finesInfo=document.getElementById('pFinesInfo');
   if(unitInp)unitInp.value=u?`Depto ${u.numero} · P${u.piso}`:'—';
-  if(baseInp)baseInp.value=base;
-  if(finesInp)finesInp.value=fa;
-  if(amtInp)amtInp.value=base+fa;
-  if(finesInfo){
-    if(pf.length>0){finesInfo.style.display='block';finesInfo.innerHTML=`⚠ Multas pendientes: ${fmt(fa)}`;}
-    else finesInfo.style.display='none';
-  }
+  if(baseInp)baseInp.value=base;if(finesInp)finesInp.value=fa;if(amtInp)amtInp.value=base+fa;
+  if(finesInfo){if(pf.length>0){finesInfo.style.display='block';finesInfo.innerHTML=`⚠ Multas pendientes: ${fmt(fa)}`;}else finesInfo.style.display='none';}
 };
-
 window.toggleField=id=>{const f=document.getElementById(id);if(f)f.style.display=f.style.display==='none'?'grid':'none';};
 window.switchWorkerType=type=>{
   document.getElementById('wType').value=type;
   document.getElementById('wTypeContrato').className='tab-btn'+(type==='contrato'?' active':'');
   document.getElementById('wTypeHonorarios').className='tab-btn'+(type==='honorarios'?' active':'');
-  const cf=document.getElementById('contratoFields');
-  if(cf)cf.style.display=type==='contrato'?'block':'none';
+  const cf=document.getElementById('contratoFields');if(cf)cf.style.display=type==='contrato'?'block':'none';
 };
-window.toggleIsapre=()=>{
-  const v=document.getElementById('wHealth')?.value;
-  const f=document.getElementById('isapreFields');
-  if(f)f.style.display=v==='Isapre'?'grid':'none';
-};
+window.toggleIsapre=()=>{const v=document.getElementById('wHealth')?.value;const f=document.getElementById('isapreFields');if(f)f.style.display=v==='Isapre'?'grid':'none';};
 window.updateProrate=()=>{
   const amt=parseInt(document.getElementById('eAmount')?.value||0);
-  const prev=document.getElementById('proratePreview');
-  const body=document.getElementById('prorateBody');
+  const prev=document.getElementById('proratePreview');const body=document.getElementById('prorateBody');
   if(!prev||!body)return;
-  if(amt>0){
-    prev.style.display='block';
-    body.innerHTML=calcProrate(amt,state.comunidadData.unidades).map(p=>{
-      const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);
-      return`<tr><td>Depto ${u?.numero||''}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;
-    }).join('');
-  }else prev.style.display='none';
+  if(amt>0){prev.style.display='block';body.innerHTML=calcProrate(amt,state.comunidadData.unidades).map(p=>{const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);return`<tr><td>Depto ${u?.numero||''}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;}).join('');}else prev.style.display='none';
 };
-
-window.installPWA=()=>{
-  if(state.installPrompt){state.installPrompt.prompt();state.installPrompt.userChoice.then(()=>setState({installPrompt:null}));}
-};
+window.installPWA=()=>{if(state.installPrompt){state.installPrompt.prompt();state.installPrompt.userChoice.then(()=>setState({installPrompt:null}));}};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();setState({installPrompt:e});});
 
-// INIT
 async function init(){
   setState({loading:true});
   const comunidades=await loadComunidades();
