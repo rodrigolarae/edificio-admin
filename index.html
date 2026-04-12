@@ -2,66 +2,73 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EdificioAdmin">
+<meta name="theme-color" content="#1a56db">
 <title>EdificioAdmin</title>
+<link rel="manifest" href="manifest.json">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a1a;min-height:100vh}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);padding:20px}
-.login-box{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.login-logo{text-align:center;margin-bottom:28px}
-.login-logo h1{font-size:28px;font-weight:800;color:#1a56db;margin-top:8px}
-.login-logo p{font-size:13px;color:#6b7280;margin-top:4px}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1a56db;padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo .icon{font-size:44px;margin-bottom:8px}
+.login-logo h1{font-size:24px;font-weight:800;color:#1a56db}
+.login-logo p{font-size:12px;color:#6b7280;margin-top:3px}
 .login-step{display:none}
 .login-step.active{display:block}
-.community-list{max-height:280px;overflow-y:auto;margin-bottom:16px}
-.community-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e5e5e5;border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all .2s}
-.community-item:hover{border-color:#1a56db;background:#eff6ff}
-.community-item.selected{border-color:#1a56db;background:#eff6ff}
-.community-icon{font-size:28px}
+.community-list{max-height:260px;overflow-y:auto;margin-bottom:14px}
+.community-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e5e5e5;border-radius:10px;cursor:pointer;margin-bottom:6px;transition:all .2s}
+.community-item:hover,.community-item.selected{border-color:#1a56db;background:#eff6ff}
 .community-info h3{font-size:13px;font-weight:700}
 .community-info p{font-size:11px;color:#6b7280}
 .app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:235px;background:#fff;border-right:1px solid #e5e5e5;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
-.logo{padding:16px;border-bottom:1px solid #e5e5e5;background:#1a56db}
-.logo h1{font-size:13px;font-weight:700;color:#fff}
+.sidebar{width:230px;background:#fff;border-right:1px solid #e5e5e5;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .3s}
+.logo{padding:14px 16px;border-bottom:1px solid #e5e5e5;background:#1a56db}
+.logo h1{font-size:13px;font-weight:700;color:#fff;line-height:1.3}
 .logo p{font-size:10px;color:#bfdbfe;margin-top:2px}
-.mode-switch{padding:8px;border-bottom:1px solid #e5e5e5}
-.mode-switch select{width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff}
 .nav{flex:1;padding:6px 0}
 .nav-section{padding:10px 16px 3px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af}
-.nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:12px;color:#374151;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all .15s}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 16px;font-size:12px;color:#374151;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all .15s;border-radius:0}
 .nav-item:hover{background:#f3f4f6}
 .nav-item.active{background:#eff6ff;color:#1a56db;font-weight:600;border-right:3px solid #1a56db}
 .user-info{padding:10px 16px;border-top:1px solid #e5e5e5;font-size:11px;color:#6b7280}
-.role-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;margin-top:3px}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;margin-top:3px}
+.role-superadmin{background:#1a1a1a;color:#fff}
 .role-admin{background:#dbeafe;color:#1e40af}
 .role-presidente{background:#ede9fe;color:#5b21b6}
 .role-tesorero{background:#fef3c7;color:#92400e}
 .role-resident{background:#d1fae5;color:#065f46}
-.main{flex:1;overflow-y:auto;padding:20px;background:#f0f2f5}
-.page-header{margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
-.page-header h2{font-size:19px;font-weight:700}
+.main{flex:1;overflow-y:auto;padding:18px;background:#f0f2f5}
+.topbar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e5e5e5;position:sticky;top:0;z-index:100}
+.hamburger{background:none;border:none;font-size:20px;cursor:pointer;color:#374151}
+.page-header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.page-header h2{font-size:18px;font-weight:700}
 .page-header p{font-size:12px;color:#6b7280;margin-top:2px}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.metric{background:#fff;border-radius:10px;padding:14px;border:1px solid #e5e5e5}
-.metric-label{font-size:10px;color:#6b7280;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric{background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e5e5e5}
+.metric-label{font-size:10px;color:#6b7280;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
 .metric-value{font-size:20px;font-weight:700}
 .green{color:#059669}.red{color:#dc2626}.blue{color:#1a56db}.amber{color:#d97706}.purple{color:#7c3aed}
-.card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:16px 18px;margin-bottom:14px}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .card-title{font-size:13px;font-weight:700;color:#111}
-.btn{padding:7px 14px;border-radius:8px;border:1px solid #d1d5db;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;color:#374151;font-weight:500}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid #d1d5db;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;color:#374151;font-weight:500;-webkit-appearance:none}
 .btn:hover{background:#f9fafb}
+.btn:active{transform:scale(.98)}
 .btn-primary{background:#1a56db;color:#fff;border-color:#1a56db}
 .btn-primary:hover{background:#1e40af}
 .btn-success{background:#059669;color:#fff;border-color:#059669}
 .btn-danger{background:#dc2626;color:#fff;border-color:#dc2626}
 .btn-warning{background:#d97706;color:#fff;border-color:#d97706}
+.btn-dark{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .btn-sm{padding:4px 9px;font-size:11px}
 .btn-block{width:100%;margin-top:8px}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;border-bottom:1px solid #e5e5e5;background:#f9fafb}
+th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e5e5;background:#f9fafb}
 td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
@@ -71,37 +78,38 @@ tr:last-child td{border-bottom:none}
 .badge-blue{background:#dbeafe;color:#1e40af}
 .badge-gray{background:#f3f4f6;color:#374151}
 .badge-purple{background:#ede9fe;color:#5b21b6}
+.badge-dark{background:#1a1a1a;color:#fff}
 .form-group{margin-bottom:12px}
 .form-label{display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px}
-.form-control{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:#111}
+.form-control{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:#111;-webkit-appearance:none}
 .form-control:focus{outline:none;border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,.1)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
-.modal{background:#fff;border-radius:12px;padding:22px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
 .modal-lg{max-width:700px}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.modal-title{font-size:15px;font-weight:700}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:14px;font-weight:700}
 .close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .avatar{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1e40af;flex-shrink:0}
 .empty{text-align:center;padding:32px;color:#9ca3af;font-size:13px}
-.alert-bar{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;font-weight:500}
+.alert-bar{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;font-weight:500}
 .alert-success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
 .alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
 .receipt{font-size:12px}
-.receipt-header{text-align:center;padding-bottom:16px;margin-bottom:16px;border-bottom:2px dashed #e5e5e5}
-.receipt-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6}
+.receipt-header{text-align:center;padding-bottom:14px;margin-bottom:14px;border-bottom:2px dashed #e5e5e5}
+.receipt-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
 .receipt-total{font-size:15px;font-weight:700;margin-top:10px;padding-top:10px;border-top:2px solid #111;display:flex;justify-content:space-between}
-.progress-bar{height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden;margin-top:5px}
+.progress-bar{height:6px;background:#f3f4f6;border-radius:4px;overflow:hidden;margin-top:4px}
 .progress-fill{height:100%;border-radius:4px}
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
 .stat-row:last-child{border-bottom:none}
-.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.cat-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 6px;border:2px solid #e5e5e5;border-radius:10px;background:#fff;cursor:pointer;transition:all .2s;font-size:10px;font-weight:600;color:#374151;gap:5px;text-align:center}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.cat-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;border:2px solid #e5e5e5;border-radius:10px;background:#fff;cursor:pointer;transition:all .2s;font-size:10px;font-weight:600;color:#374151;gap:4px;text-align:center}
 .cat-btn:hover{border-color:#1a56db;background:#eff6ff;color:#1a56db}
 .cat-btn.selected{border-color:#1a56db;background:#1a56db;color:#fff}
-.cat-icon{font-size:20px}
+.cat-icon{font-size:18px}
 .toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .toggle{position:relative;width:38px;height:20px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
@@ -109,31 +117,52 @@ tr:last-child td{border-bottom:none}
 .toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
 .toggle input:checked+.toggle-slider{background:#1a56db}
 .toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
-.section-div{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid #e5e5e5}
-.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.doc-card{border:1px solid #e5e5e5;border-radius:10px;padding:18px 14px;text-align:center;background:#fff}
-.doc-icon{font-size:32px;margin-bottom:8px}
-.doc-title{font-size:12px;font-weight:700;margin-bottom:6px}
-.doc-desc{font-size:11px;color:#6b7280;margin-bottom:10px}
+.section-div{font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid #e5e5e5}
+.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.doc-card{border:1px solid #e5e5e5;border-radius:10px;padding:16px 12px;text-align:center;background:#fff}
+.doc-icon{font-size:28px;margin-bottom:8px}
+.doc-title{font-size:11px;font-weight:700;margin-bottom:4px}
+.doc-desc{font-size:10px;color:#6b7280;margin-bottom:10px}
 .alert-card{padding:10px 14px;background:#fff;border-radius:8px;margin-bottom:8px;border:1px solid #e5e5e5;border-left:4px solid #dc2626}
 .alert-card.info{border-left-color:#1a56db}
 .alert-card.warning{border-left-color:#d97706}
 .liq-table{font-size:12px;width:100%}
-.liq-table td{padding:6px 8px;border-bottom:1px solid #f3f4f6}
+.liq-table td{padding:5px 8px;border-bottom:1px solid #f3f4f6}
 .liq-table .total{font-weight:700;font-size:13px;border-top:2px solid #111}
-.tab-bar{display:flex;gap:4px;background:#f3f4f6;padding:4px;border-radius:8px;margin-bottom:14px}
+.tab-bar{display:flex;gap:4px;background:#f3f4f6;padding:4px;border-radius:8px;margin-bottom:12px}
 .tab-btn{flex:1;padding:6px;border:none;background:none;font-size:11px;cursor:pointer;border-radius:6px;font-family:inherit;color:#6b7280;font-weight:500}
 .tab-btn.active{background:#fff;color:#1a56db;font-weight:700}
-.loading{text-align:center;padding:40px;color:#6b7280;font-size:13px}
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid #e5e5e5;border-top-color:#1a56db;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
+.loading{text-align:center;padding:32px;color:#6b7280;font-size:13px}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid #e5e5e5;border-top-color:#1a56db;border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.superadmin-bar{background:#1a1a1a;color:#fff;padding:8px 16px;font-size:11px;display:flex;justify-content:space-between;align-items:center}
-@media(max-width:768px){.metrics{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}.sidebar{width:200px}.cat-grid{grid-template-columns:repeat(3,1fr)}.doc-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.sidebar{display:none}.main{padding:12px}}
+.superadmin-bar{background:#1a1a1a;color:#fff;padding:7px 14px;font-size:11px;display:flex;justify-content:space-between;align-items:center}
+.comunidad-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+.plan-badge{padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700}
+.plan-basico{background:#f3f4f6;color:#374151}
+.plan-profesional{background:#dbeafe;color:#1e40af}
+.plan-enterprise{background:#ede9fe;color:#5b21b6}
+.install-banner{background:#1a56db;color:#fff;padding:10px 16px;font-size:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+@media(max-width:768px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .doc-grid{grid-template-columns:1fr 1fr}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:200;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .topbar{display:flex}
+  .main{padding:12px}
+  .form-row-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:420px){
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .doc-grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 <div id="root"></div>
+<div id="sidebar-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199" onclick="closeSidebar()"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://ymeydrtkhqhdwjwgfpfx.supabase.co';
@@ -186,8 +215,7 @@ function calcImpuesto(base){
 function calcFiniquito(w,type,lastDay){
   const liq=calcLiquidacion(w);
   const years=(new Date(lastDay)-new Date(w.start_date))/(1000*60*60*24*365);
-  const yf=Math.floor(years);
-  const mf=Math.round((years-yf)*12);
+  const yf=Math.floor(years);const mf=Math.round((years-yf)*12);
   const ind=type==='despido'?Math.round(liq.bruto*Math.min(yf+(mf>=6?1:0),11)):0;
   const dias=Math.round((new Date(lastDay).getDate()/30)*liq.liquido);
   const vac=Math.round(years*15/12*(liq.bruto/30));
@@ -199,28 +227,23 @@ function calcProrate(amount,units){
   return units.map(u=>({unitId:u.id,sqm:getTotalSqm(u),pct:total>0?getTotalSqm(u)/total:0,amount:total>0?Math.round(amount*getTotalSqm(u)/total):0}));
 }
 
-// STATE
 let state={
-  screen:'login', // login, app
-  loginStep:1, // 1=comunidad, 2=clave
+  screen:'login',
+  loginStep:1,
   comunidades:[],
   selectedComunidad:null,
-  claveInput:'',
   currentUser:null,
-  comunidadData:{
-    unidades:[],residentes:[],pagos:[],gastos:[],
-    multas:[],trabajadores:[],alertas:[],documentos:[]
-  },
+  isSuperAdmin:false,
+  comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[]},
   view:'dashboard',
   modal:null,
-  alert:null,
-  alertTimer:null,
+  alert:null,alertTimer:null,
   loading:false,
   selectedCat:null,
   workerTab:'contrato',
   reportMonth:thisMonth(),
   reportTab:'general',
-  editingUnit:null,
+  installPrompt:null,
 };
 
 function setState(p){state={...state,...p};render();}
@@ -230,94 +253,261 @@ function showAlert(msg,type='success'){
   setState({alert:{msg,type},alertTimer:t});
 }
 
-// SUPABASE HELPERS
 async function loadComunidades(){
   const{data}=await sb.from('comunidades').select('*').eq('activa',true).order('nombre');
   return data||[];
 }
-async function loadComunidadData(comunidadId){
+async function loadComunidadData(id){
   const[u,r,p,g,m,t,a,d]=await Promise.all([
-    sb.from('unidades').select('*').eq('comunidad_id',comunidadId).order('numero'),
-    sb.from('usuarios').select('*').eq('comunidad_id',comunidadId).eq('activo',true),
-    sb.from('pagos').select('*').eq('comunidad_id',comunidadId).order('created_at',{ascending:false}),
-    sb.from('gastos').select('*').eq('comunidad_id',comunidadId).order('created_at',{ascending:false}),
-    sb.from('multas').select('*').eq('comunidad_id',comunidadId).order('created_at',{ascending:false}),
-    sb.from('trabajadores').select('*').eq('comunidad_id',comunidadId),
-    sb.from('alertas').select('*').eq('comunidad_id',comunidadId).order('created_at',{ascending:false}),
-    sb.from('documentos').select('*').eq('comunidad_id',comunidadId),
+    sb.from('unidades').select('*').eq('comunidad_id',id).order('numero'),
+    sb.from('usuarios').select('*').eq('comunidad_id',id).eq('activo',true),
+    sb.from('pagos').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('gastos').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('multas').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('trabajadores').select('*').eq('comunidad_id',id),
+    sb.from('alertas').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('documentos').select('*').eq('comunidad_id',id),
   ]);
-  return{
-    unidades:u.data||[],residentes:r.data||[],pagos:p.data||[],
-    gastos:g.data||[],multas:m.data||[],trabajadores:t.data||[],
-    alertas:a.data||[],documentos:d.data||[]
-  };
+  return{unidades:u.data||[],residentes:r.data||[],pagos:p.data||[],gastos:g.data||[],multas:m.data||[],trabajadores:t.data||[],alertas:a.data||[],documentos:d.data||[]};
 }
 
 function isFullAccess(){
+  if(state.isSuperAdmin)return true;
   const u=state.currentUser;
   return u&&(u.rol==='admin'||u.rol==='presidente'||u.rol==='tesorero');
 }
-function getPendingFines(unitId,month){
-  return state.comunidadData.multas.filter(f=>f.unidad_id===unitId&&f.status==='pendiente'&&f.month===month);
-}
+function getPendingFines(unitId,month){return state.comunidadData.multas.filter(f=>f.unidad_id===unitId&&f.status==='pendiente'&&f.month===month);}
 function getTotalDue(unitId,month){
   const u=state.comunidadData.unidades.find(x=>x.id===unitId);
   return(u?.monthly_fee||85000)+getPendingFines(unitId,month).reduce((s,f)=>s+f.amount,0);
 }
 
-// RENDER
 function render(){
-  document.getElementById('root').innerHTML=state.screen==='login'?buildLogin():buildApp();
+  document.getElementById('root').innerHTML=
+    state.screen==='login'?buildLogin():
+    state.screen==='superadmin'?buildSuperAdminApp():
+    buildApp();
   attachEvents();
 }
 
-// LOGIN
+// ===== LOGIN =====
 function buildLogin(){
   const{loginStep,comunidades,selectedComunidad,loading}=state;
-  return`<div class="login-wrap">
+  return`
+  ${state.installPrompt?`<div class="install-banner" onclick="installPWA()">📱 Instalar EdificioAdmin en tu dispositivo →</div>`:''}
+  <div class="login-wrap">
     <div class="login-box">
       <div class="login-logo">
-        <div style="font-size:48px">🏢</div>
+        <div class="icon">🏢</div>
         <h1>EdificioAdmin</h1>
-        <p>Sistema de gestión de comunidades</p>
+        <p>Gestión profesional de comunidades</p>
       </div>
       <div class="login-step ${loginStep===1?'active':''}">
-        <p style="font-size:12px;color:#6b7280;margin-bottom:12px;font-weight:600">SELECCIONA TU COMUNIDAD</p>
-        ${loading?`<div class="loading"><span class="spinner"></span>Cargando comunidades...</div>`:
-        comunidades.length===0?`<div class="empty">Sin comunidades registradas</div>`:
+        <p style="font-size:11px;color:#6b7280;margin-bottom:10px;font-weight:600">SELECCIONA TU COMUNIDAD</p>
+        ${loading?`<div class="loading"><span class="spinner"></span>Cargando...</div>`:
+        comunidades.length===0?`<div class="empty">Sin comunidades disponibles</div>`:
         `<div class="community-list">
           ${comunidades.map(c=>`<div class="community-item${selectedComunidad?.id===c.id?' selected':''}" onclick="selectComunidad('${c.id}')">
-            <div class="community-icon">🏢</div>
-            <div class="community-info">
-              <h3>${c.nombre}</h3>
-              <p>${c.direccion||''} ${c.ciudad?'· '+c.ciudad:''}</p>
-            </div>
+            <div style="font-size:24px">🏢</div>
+            <div class="community-info"><h3>${c.nombre}</h3><p>${c.direccion||''} ${c.ciudad?'· '+c.ciudad:''}</p></div>
           </div>`).join('')}
         </div>`}
-        <button class="btn btn-primary btn-block" onclick="goToStep2()" ${!selectedComunidad?'disabled':''} style="${!selectedComunidad?'opacity:.5':''}">Continuar →</button>
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e5e5;text-align:center">
-          <button class="btn btn-sm" onclick="setState({modal:{type:'nueva_comunidad'}})">+ Registrar nueva comunidad</button>
+        <button class="btn btn-primary btn-block" onclick="goToStep2()" ${!selectedComunidad?'disabled style="opacity:.5"':''}>Continuar →</button>
+        <div style="text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid #e5e5e5">
+          <button class="btn btn-sm btn-dark" onclick="goToSuperAdminLogin()">🔐 Acceso administrador de plataforma</button>
         </div>
       </div>
       <div class="login-step ${loginStep===2?'active':''}">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:12px;background:#eff6ff;border-radius:8px">
-          <div style="font-size:24px">🏢</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 12px;background:#eff6ff;border-radius:8px">
+          <div style="font-size:20px">🏢</div>
           <div><div style="font-weight:700;font-size:13px">${selectedComunidad?.nombre||''}</div><div style="font-size:11px;color:#6b7280">${selectedComunidad?.direccion||''}</div></div>
         </div>
-        <div class="form-group"><label class="form-label">CLAVE DE ACCESO</label>
-          <input class="form-control" id="claveInput" type="password" placeholder="Ingresa tu clave" style="font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')doLogin()">
-          <p style="font-size:11px;color:#6b7280;margin-top:4px">Ingresa la clave de tu unidad o clave de administrador</p>
+        <div class="form-group">
+          <label class="form-label">CLAVE DE ACCESO</label>
+          <input class="form-control" id="claveInput" type="password" placeholder="Tu clave personal" style="font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')doLogin()">
+          <p style="font-size:10px;color:#6b7280;margin-top:3px">Ingresa la clave de tu unidad</p>
         </div>
         ${loading?`<div class="loading"><span class="spinner"></span>Verificando...</div>`:`<button class="btn btn-primary btn-block" onclick="doLogin()">Ingresar →</button>`}
-        <button class="btn btn-block" onclick="setState({loginStep:1})" style="margin-top:8px">← Volver</button>
+        <button class="btn btn-block" onclick="setState({loginStep:1})" style="margin-top:6px">← Volver</button>
+      </div>
+      <div class="login-step ${loginStep===3?'active':''}">
+        <div style="text-align:center;margin-bottom:16px"><div style="font-size:32px">🔐</div><div style="font-weight:700;font-size:14px">Acceso de plataforma</div><div style="font-size:11px;color:#6b7280;margin-top:3px">Solo personal autorizado</div></div>
+        <div class="form-group">
+          <label class="form-label">CLAVE MAESTRA</label>
+          <input class="form-control" id="superClave" type="password" placeholder="••••••••••••" style="font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')doSuperLogin()">
+        </div>
+        ${loading?`<div class="loading"><span class="spinner"></span>Verificando...</div>`:`<button class="btn btn-dark btn-block" onclick="doSuperLogin()">Acceder →</button>`}
+        <button class="btn btn-block" onclick="setState({loginStep:1})" style="margin-top:6px">← Volver</button>
       </div>
     </div>
     ${state.modal?buildModal():''}
   </div>`;
 }
 
+// ===== SUPERADMIN APP =====
+function buildSuperAdminApp(){
+  const{comunidades,view,alert}=state;
+  const totalRes=comunidades.reduce((s,c)=>s+(c._resCount||0),0);
+  const navItems=[
+    {id:'sa_dashboard',icon:'⊞',label:'Panel maestro'},
+    {id:'sa_comunidades',icon:'🏢',label:'Comunidades'},
+    {id:'sa_nueva',icon:'➕',label:'Nueva comunidad'},
+    {id:'sa_facturacion',icon:'💳',label:'Facturación'},
+  ];
+  return`<div>
+    <div class="superadmin-bar">
+      <span>🔐 Panel Maestro · EdificioAdmin</span>
+      <button class="btn btn-sm" style="background:#333;color:#fff;border-color:#555;font-size:10px" onclick="logout()">Salir</button>
+    </div>
+    <div class="app">
+      <aside class="sidebar" id="mainSidebar">
+        <div class="logo" style="background:#1a1a1a"><h1>🔐 EdificioAdmin</h1><p>Panel de superadministrador</p></div>
+        <nav class="nav">
+          <div class="nav-section">Gestión de plataforma</div>
+          ${navItems.map(n=>`<button class="nav-item${view===n.id?' active':''}" data-view="${n.id}">${n.icon} ${n.label}</button>`).join('')}
+        </nav>
+        <div class="user-info">
+          <div style="font-weight:600">Rodrigo</div>
+          <span class="role-badge role-superadmin">Superadmin</span>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar"><button class="hamburger" onclick="openSidebar()">☰</button><span style="font-weight:600;font-size:13px">EdificioAdmin</span><span></span></div>
+        ${alert?`<div class="alert-bar alert-${alert.type}">${alert.msg}</div>`:''}
+        ${view==='sa_dashboard'?buildSADashboard():view==='sa_comunidades'?buildSAComunidades():view==='sa_nueva'?buildSANueva():view==='sa_facturacion'?buildSAFacturacion():''}
+        ${state.modal?buildModal():''}
+      </main>
+    </div>
+  </div>`;
+}
+
+function buildSADashboard(){
+  const{comunidades}=state;
+  const total=comunidades.length;
+  const activas=comunidades.filter(c=>c.activa).length;
+  const totalMant=comunidades.reduce((s,c)=>s+(c.monto_mantencion||0),0);
+  const totalImpl=comunidades.reduce((s,c)=>s+(c.monto_implementacion||0),0);
+  return`
+  <div class="page-header"><div><h2>Panel Maestro</h2><p>Vista global de toda la plataforma</p></div></div>
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Comunidades</div><div class="metric-value blue">${total}</div></div>
+    <div class="metric"><div class="metric-label">Activas</div><div class="metric-value green">${activas}</div></div>
+    <div class="metric"><div class="metric-label">Mantención/mes</div><div class="metric-value purple">${fmt(totalMant)}</div></div>
+    <div class="metric"><div class="metric-label">Total implementación</div><div class="metric-value amber">${fmt(totalImpl)}</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Comunidades activas</span><button class="btn btn-sm btn-primary" onclick="setState({view:'sa_nueva'})">+ Nueva</button></div>
+    <table><thead><tr><th>Comunidad</th><th>Ciudad</th><th>Plan</th><th>Implementación</th><th>Mantención/mes</th><th>Desde</th><th></th></tr></thead>
+    <tbody>${comunidades.map(c=>`<tr>
+      <td><div style="font-weight:600">${c.nombre}</div><div style="font-size:10px;color:#6b7280">${c.codigo_acceso}</div></td>
+      <td>${c.ciudad||'—'}</td>
+      <td><span class="plan-badge plan-${c.plan||'basico'}">${c.plan||'básico'}</span></td>
+      <td>${fmt(c.monto_implementacion||0)}</td>
+      <td>${fmt(c.monto_mantencion||0)}</td>
+      <td>${fmtD(c.fecha_inicio)}</td>
+      <td><button class="btn btn-sm btn-primary" onclick="enterComunidad('${c.id}')">Entrar</button></td>
+    </tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+function buildSAComunidades(){
+  const{comunidades}=state;
+  return`
+  <div class="page-header"><div><h2>Comunidades</h2><p>${comunidades.length} comunidades registradas</p></div><button class="btn btn-primary" onclick="setState({view:'sa_nueva'})">+ Nueva comunidad</button></div>
+  ${comunidades.map(c=>`<div class="comunidad-card">
+    <div>
+      <div style="font-weight:700;font-size:14px">🏢 ${c.nombre}</div>
+      <div style="font-size:11px;color:#6b7280;margin-top:2px">${c.direccion||''} ${c.ciudad?'· '+c.ciudad:''} ${c.region?'· '+c.region:''}</div>
+      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge badge-gray">Código: ${c.codigo_acceso}</span>
+        <span class="plan-badge plan-${c.plan||'basico'}">${c.plan||'básico'}</span>
+        <span class="badge ${c.activa?'badge-green':'badge-red'}">${c.activa?'Activa':'Inactiva'}</span>
+      </div>
+      ${c.notas?`<div style="margin-top:6px;font-size:11px;color:#6b7280;font-style:italic">${c.notas}</div>`:''}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <div style="font-size:11px;text-align:right"><div style="color:#6b7280">Implementación</div><div style="font-weight:700">${fmt(c.monto_implementacion||0)}</div></div>
+      <div style="font-size:11px;text-align:right"><div style="color:#6b7280">Mantención/mes</div><div style="font-weight:700">${fmt(c.monto_mantencion||0)}</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-primary" onclick="enterComunidad('${c.id}')">Entrar</button>
+        <button class="btn btn-sm" onclick="editComunidad('${c.id}')">✏️ Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="toggleComunidad('${c.id}',${c.activa})">${c.activa?'Desactivar':'Activar'}</button>
+      </div>
+    </div>
+  </div>`).join('')}`;
+}
+
+function buildSANueva(){
+  return`
+  <div class="page-header"><h2>Nueva comunidad</h2></div>
+  <div class="card">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre del edificio *</label><input class="form-control" id="ncNombre" placeholder="Edificio Los Almendros"></div>
+      <div class="form-group"><label class="form-label">Código de acceso *</label><input class="form-control" id="ncCodigo" placeholder="ALMENDROS2024" style="text-transform:uppercase"><p style="font-size:10px;color:#6b7280;margin-top:2px">Código único que identifica el edificio</p></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir" placeholder="Av. Principal 123"></div>
+      <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ncCiudad" placeholder="Santiago"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Región</label><input class="form-control" id="ncRegion" placeholder="Metropolitana"></div>
+      <div class="form-group"><label class="form-label">Plan</label>
+        <select class="form-control" id="ncPlan">
+          <option value="basico">Básico</option>
+          <option value="profesional">Profesional</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Monto implementación ($)</label><input class="form-control" id="ncImpl" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Mantención mensual ($)</label><input class="form-control" id="ncMant" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ncNotas" rows="2" placeholder="Notas privadas sobre esta comunidad"></textarea></div>
+    <div class="section-div">Usuario administrador inicial</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre admin *</label><input class="form-control" id="ncAdminNombre" placeholder="Nombre del administrador"></div>
+      <div class="form-group"><label class="form-label">Email admin</label><input class="form-control" id="ncAdminEmail" type="email" placeholder="admin@edificio.cl"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Clave admin *</label><input class="form-control" id="ncAdminClave" placeholder="Clave de acceso"><p style="font-size:10px;color:#6b7280;margin-top:2px">El administrador podrá cambiarla después</p></div>
+      <div class="form-group"><label class="form-label">Teléfono admin</label><input class="form-control" id="ncAdminPhone" placeholder="9XXXXXXXX"></div>
+    </div>
+    ${state.loading?`<div class="loading"><span class="spinner"></span>Creando comunidad...</div>`:`<div style="display:flex;gap:8px"><button class="btn btn-primary" id="btnCrearComunidad">Crear comunidad</button><button class="btn" onclick="setState({view:'sa_comunidades'})">Cancelar</button></div>`}
+  </div>`;
+}
+
+function buildSAFacturacion(){
+  const{comunidades}=state;
+  const totalMes=comunidades.reduce((s,c)=>s+(c.monto_mantencion||0),0);
+  return`
+  <div class="page-header"><h2>Facturación</h2></div>
+  <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric"><div class="metric-label">Ingresos mensuales</div><div class="metric-value green">${fmt(totalMes)}</div></div>
+    <div class="metric"><div class="metric-label">Comunidades activas</div><div class="metric-value blue">${comunidades.filter(c=>c.activa).length}</div></div>
+    <div class="metric"><div class="metric-label">Promedio por comunidad</div><div class="metric-value purple">${comunidades.length>0?fmt(Math.round(totalMes/comunidades.length)):fmt(0)}</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Detalle de facturación</span></div>
+    <table><thead><tr><th>Comunidad</th><th>Plan</th><th>Implementación</th><th>Mantención/mes</th><th>Estado</th></tr></thead>
+    <tbody>${comunidades.map(c=>`<tr>
+      <td><div style="font-weight:600">${c.nombre}</div><div style="font-size:10px;color:#6b7280">${c.ciudad||''}</div></td>
+      <td><span class="plan-badge plan-${c.plan||'basico'}">${c.plan||'básico'}</span></td>
+      <td>${fmt(c.monto_implementacion||0)}</td>
+      <td style="font-weight:700">${fmt(c.monto_mantencion||0)}</td>
+      <td><span class="badge ${c.activa?'badge-green':'badge-red'}">${c.activa?'Activa':'Inactiva'}</span></td>
+    </tr>`).join('')}
+    <tr style="font-weight:700;background:#f9fafb">
+      <td colspan="3">Total mensual</td>
+      <td class="green" style="font-size:14px">${fmt(totalMes)}</td>
+      <td></td>
+    </tr></tbody></table>
+  </div>`;
+}
+
+// ===== COMMUNITY APP =====
 function buildApp(){
-  const{currentUser,comunidadData,view,alert}=state;
+  const{currentUser,comunidadData,view,alert,isSuperAdmin}=state;
   const com=state.selectedComunidad;
   const full=isFullAccess();
   const activeAlerts=comunidadData.alertas.filter(a=>a.status==='activa').length;
@@ -333,6 +523,7 @@ function buildApp(){
     {id:'reports',icon:'📄',label:'Informes'},
     {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
     {id:'documents',icon:'📁',label:'Documentos'},
+    {id:'change_password',icon:'🔑',label:'Cambiar clave'},
     {id:'settings',icon:'⚙️',label:'Configuración'},
   ];
   const navResident=[
@@ -341,6 +532,7 @@ function buildApp(){
     {id:'expenses_view',icon:'📉',label:'Gastos comunes'},
     {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
     {id:'documents',icon:'📁',label:'Documentos'},
+    {id:'change_password',icon:'🔑',label:'Cambiar clave'},
   ];
   const nav=full?navFull:navResident;
   const roleLabel={admin:'Administrador',presidente:'Presidente',tesorero:'Tesorero',residente:'Residente'}[currentUser?.rol]||'Residente';
@@ -348,14 +540,17 @@ function buildApp(){
   return`<div>
     <div class="superadmin-bar">
       <span>🏢 ${com?.nombre||''} · ${com?.ciudad||''}</span>
-      <button class="btn btn-sm" style="background:#333;color:#fff;border-color:#555;font-size:10px" onclick="logout()">Cambiar comunidad</button>
+      <div style="display:flex;gap:8px">
+        ${isSuperAdmin?`<button class="btn btn-sm" style="background:#333;color:#fff;border-color:#555;font-size:10px" onclick="backToSuperAdmin()">← Panel maestro</button>`:''}
+        <button class="btn btn-sm" style="background:#333;color:#fff;border-color:#555;font-size:10px" onclick="logout()">Salir</button>
+      </div>
     </div>
     <div class="app">
-      <aside class="sidebar">
-        <div class="logo"><h1>🏢 ${com?.nombre||''}</h1><p>${comunidadData.unidades.length} unidades</p></div>
+      <aside class="sidebar" id="mainSidebar">
+        <div class="logo"><h1>🏢 ${com?.nombre||''}</h1><p>${comunidadData.unidades.length} unidades registradas</p></div>
         <nav class="nav">
           <div class="nav-section">${full?'Administración':'Mi Portal'}</div>
-          ${nav.map(n=>`<button class="nav-item${view===n.id?' active':''}" data-view="${n.id}">${n.icon} ${n.label}</button>`).join('')}
+          ${nav.map(n=>`<button class="nav-item${view===n.id?' active':''}" data-view="${n.id}" onclick="closeSidebar()">${n.icon} ${n.label}</button>`).join('')}
         </nav>
         <div class="user-info">
           <div style="font-weight:600">${currentUser?.nombre||''}</div>
@@ -364,6 +559,7 @@ function buildApp(){
         </div>
       </aside>
       <main class="main">
+        <div class="topbar"><button class="hamburger" onclick="openSidebar()">☰</button><span style="font-weight:600;font-size:13px">${com?.nombre||''}</span><span></span></div>
         ${alert?`<div class="alert-bar alert-${alert.type}">${alert.msg}</div>`:''}
         ${buildView()}
         ${state.modal?buildModal():''}
@@ -385,6 +581,7 @@ function buildView(){
   if(v==='reports')return buildReports();
   if(v==='community')return buildCommunity();
   if(v==='documents')return buildDocuments();
+  if(v==='change_password')return buildChangePassword();
   if(v==='settings')return buildSettings();
   if(v==='my_account')return buildMyAccount();
   if(v==='my_payments')return buildMyPayments();
@@ -415,21 +612,21 @@ function buildDashboard(){
   <div class="metrics">
     <div class="metric"><div class="metric-label">Ingresos mes</div><div class="metric-value green">${fmt(totalIn)}</div></div>
     <div class="metric"><div class="metric-label">Gastos mes</div><div class="metric-value red">${fmt(totalOut)}</div></div>
-    <div class="metric"><div class="metric-label">Saldo neto</div><div class="metric-value ${balance>=0?'green':'red'}">${fmt(balance)}</div></div>
+    <div class="metric"><div class="metric-label">Saldo</div><div class="metric-value ${balance>=0?'green':'red'}">${fmt(balance)}</div></div>
     <div class="metric"><div class="metric-label">Morosos</div><div class="metric-value amber">${morose.length}/${occupied.length}</div></div>
   </div>
   <div class="metrics">
-    <div class="metric"><div class="metric-label">Multas pendientes</div><div class="metric-value red">${pendFines}</div></div>
-    <div class="metric"><div class="metric-label">Alertas activas</div><div class="metric-value amber">${activeAlerts}</div></div>
+    <div class="metric"><div class="metric-label">Multas pend.</div><div class="metric-value red">${pendFines}</div></div>
+    <div class="metric"><div class="metric-label">Alertas</div><div class="metric-value amber">${activeAlerts}</div></div>
     <div class="metric"><div class="metric-label">Trabajadores</div><div class="metric-value blue">${state.comunidadData.trabajadores.filter(w=>w.activo).length}</div></div>
     <div class="metric"><div class="metric-label">Cobro mes</div><div class="metric-value purple">${pct}%</div></div>
   </div>
   <div class="grid-2">
     <div class="card">
       <div class="card-header"><span class="card-title">Estado cobros — ${m}</span></div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:6px">${paidUnits.size} pagados · ${morose.length} pendientes</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:5px">${paidUnits.size} pagados · ${morose.length} pendientes</div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:#059669"></div></div>
-      ${morose.length>0?`<div style="margin-top:8px;font-size:11px;color:#dc2626;font-weight:600">⚠ ${morose.map(u=>`Depto ${u.numero}`).join(', ')}</div>`:'<div style="margin-top:8px;font-size:11px;color:#059669;font-weight:600">✓ Todos al día</div>'}
+      ${morose.length>0?`<div style="margin-top:6px;font-size:11px;color:#dc2626;font-weight:600">⚠ ${morose.map(u=>`Depto ${u.numero}`).join(', ')}</div>`:'<div style="margin-top:6px;font-size:11px;color:#059669;font-weight:600">✓ Todos al día</div>'}
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Balance mes</span></div>
@@ -443,10 +640,26 @@ function buildDashboard(){
     <table><thead><tr><th>Tipo</th><th>Descripción</th><th>Fecha</th><th>Monto</th></tr></thead>
     <tbody>${recents.map(r=>`<tr>
       <td><span class="badge ${r._t==='ingreso'?'badge-green':'badge-red'}">${r._t==='ingreso'?'💰':'📉'} ${r._t}</span></td>
-      <td>${r._t==='ingreso'?`Depto ${state.comunidadData.unidades.find(u=>u.id===r.unidad_id)?.numero||''} · ${state.comunidadData.residentes.find(x=>x.id===r.usuario_id)?.nombre||''}`:r.icon+' '+r.label}</td>
+      <td style="max-width:200px;overflow:hidden">${r._t==='ingreso'?`Depto ${state.comunidadData.unidades.find(u=>u.id===r.unidad_id)?.numero||''} · ${state.comunidadData.residentes.find(x=>x.id===r.usuario_id)?.nombre||''}`:r.icon+' '+r.label}</td>
       <td>${fmtD(r.date)}</td>
       <td style="font-weight:700;color:${r._t==='ingreso'?'#059669':'#dc2626'}">${r._t==='ingreso'?'+':'-'}${fmt(r.amount)}</td>
     </tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+function buildChangePassword(){
+  const u=state.currentUser;
+  return`
+  <div class="page-header"><h2>Cambiar clave de acceso</h2></div>
+  <div class="card" style="max-width:440px">
+    <div style="margin-bottom:16px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px">
+      <div style="font-weight:700;margin-bottom:2px">${u?.nombre||''}</div>
+      <div style="color:#6b7280">${u?.email||''} · Depto ${state.comunidadData.unidades.find(x=>x.id===u?.unidad_id)?.numero||'—'}</div>
+    </div>
+    <div class="form-group"><label class="form-label">Clave actual *</label><input class="form-control" id="pwActual" type="password" placeholder="Tu clave actual"></div>
+    <div class="form-group"><label class="form-label">Nueva clave *</label><input class="form-control" id="pwNueva" type="password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="form-group"><label class="form-label">Confirmar nueva clave *</label><input class="form-control" id="pwConfirm" type="password" placeholder="Repite la nueva clave"></div>
+    <button class="btn btn-primary" id="btnCambiarClave">Cambiar clave</button>
   </div>`;
 }
 
@@ -455,16 +668,16 @@ function buildUnits(){
   return`
   <div class="page-header">
     <div><h2>Unidades</h2><p>${unidades.length} unidades</p></div>
-    <button class="btn btn-primary" id="btnAddUnit">+ Agregar unidad</button>
+    <button class="btn btn-primary" id="btnAddUnit">+ Agregar</button>
   </div>
   <div id="unitForm" style="display:none" class="card">
-    <div class="card-title" style="margin-bottom:14px">Nueva unidad</div>
+    <div class="card-title" style="margin-bottom:12px">Nueva unidad</div>
     <div class="form-row-3">
       <div class="form-group"><label class="form-label">N° Depto *</label><input class="form-control" id="uNumber" placeholder="101"></div>
       <div class="form-group"><label class="form-label">Piso *</label><input class="form-control" id="uFloor" type="number" placeholder="1"></div>
       <div class="form-group"><label class="form-label">Metraje (m²) *</label><input class="form-control" id="uSqm" type="number" placeholder="65"></div>
     </div>
-    <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="uFee" type="number" value="85000" style="max-width:200px"></div>
+    <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="uFee" type="number" value="85000" style="max-width:180px"></div>
     <div class="section-div">Estacionamiento</div>
     <div class="toggle-row"><label class="toggle"><input type="checkbox" id="uParking" onchange="toggleField('parkingFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
     <div id="parkingFields" style="display:none" class="form-row">
@@ -483,25 +696,27 @@ function buildUnits(){
     </div>
   </div>
   <div class="card">
-    <table><thead><tr><th>Depto</th><th>Piso</th><th>m²</th><th>Estac.</th><th>Bodega</th><th>Total m²</th><th>GC Base</th><th>Residente</th><th></th></tr></thead>
+    <table><thead><tr><th>Depto</th><th>Piso</th><th>m²</th><th>Estac.</th><th>Bodega</th><th>Total m²</th><th>GC</th><th>Residente</th><th></th></tr></thead>
     <tbody>${unidades.map(u=>{
       const r=residentes.find(x=>x.unidad_id===u.id);
       return`<tr>
-        <td><b>Depto ${u.numero}</b></td><td>Piso ${u.piso}</td><td>${u.sqm}m²</td>
+        <td><b>Depto ${u.numero}</b></td><td>P${u.piso}</td><td>${u.sqm}m²</td>
         <td>${u.parking?`<span class="badge badge-blue">${u.parking_num} ${u.parking_sqm}m²</span>`:'—'}</td>
         <td>${u.storage?`<span class="badge badge-amber">${u.storage_num} ${u.storage_sqm}m²</span>`:'—'}</td>
         <td><b>${getTotalSqm(u)}m²</b></td>
         <td>${fmt(u.monthly_fee||85000)}</td>
-        <td>${r?`<span class="badge badge-green">${r.nombre}</span>`:'<span class="badge badge-gray">Disponible</span>'}</td>
-        <td>${!r?`<button class="btn btn-sm btn-danger" onclick="deleteUnit('${u.id}')">🗑</button>`:''}
-        <button class="btn btn-sm" onclick="setState({modal:{type:'edit_unit',unit:${JSON.stringify(u).replace(/"/g,'&quot;')}}})" >✏️</button></td>
+        <td>${r?`<span class="badge badge-green">${r.nombre}</span>`:'<span class="badge badge-gray">Libre</span>'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-sm" onclick="setState({modal:{type:'edit_unit',unit:${JSON.stringify(u).replace(/"/g,'&quot;')}}})" style="margin-right:4px">✏️</button>
+          ${!r?`<button class="btn btn-sm btn-danger" onclick="deleteUnit('${u.id}')">🗑</button>`:''}
+        </td>
       </tr>`;
     }).join('')}</tbody></table>
   </div>`;
 }
 
 function buildResidents(){
-  const{residentes,unidades,multas}=state.comunidadData;
+  const{residentes,unidades}=state.comunidadData;
   const availUnits=unidades.filter(u=>!residentes.some(r=>r.unidad_id===u.id));
   const curM=thisMonth();
   const roleLabel={residente:'Residente',presidente:'Presidente',tesorero:'Tesorero',admin:'Admin'};
@@ -524,7 +739,7 @@ function buildResidents(){
       <div class="form-group"><label class="form-label">Unidad *</label>
         <select class="form-control" id="rUnit">
           <option value="">Seleccionar...</option>
-          ${availUnits.map(u=>`<option value="${u.id}">Depto ${u.numero} · Piso ${u.piso} · ${u.sqm}m²</option>`).join('')}
+          ${availUnits.map(u=>`<option value="${u.id}">Depto ${u.numero} · P${u.piso} · ${u.sqm}m²</option>`).join('')}
         </select>
       </div>
       <div class="form-group"><label class="form-label">Rol</label>
@@ -532,13 +747,13 @@ function buildResidents(){
           <option value="residente">Residente</option>
           <option value="presidente">Presidente</option>
           <option value="tesorero">Tesorero</option>
-          <option value="admin">Admin</option>
+          <option value="admin">Administrador</option>
         </select>
       </div>
     </div>
     <div class="form-group"><label class="form-label">Clave de acceso *</label>
-      <input class="form-control" id="rClave" placeholder="Clave para ingresar a la app" type="text">
-      <p style="font-size:10px;color:#6b7280;margin-top:3px">Esta clave la usará el residente para ingresar. Ej: juan101</p>
+      <input class="form-control" id="rClave" placeholder="Clave inicial del residente">
+      <p style="font-size:10px;color:#6b7280;margin-top:2px">El residente puede cambiarla después desde su perfil</p>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-primary" id="btnSaveResident">Registrar</button>
@@ -546,13 +761,13 @@ function buildResidents(){
     </div>
   </div>
   <div class="card">
-    <table><thead><tr><th>Residente</th><th>Rol</th><th>Unidad</th><th>GC Base</th><th>Multas</th><th>Total mes</th><th>Estado</th><th></th></tr></thead>
+    <table><thead><tr><th>Residente</th><th>Rol</th><th>Unidad</th><th>GC</th><th>Multas</th><th>Total</th><th>Estado</th><th></th></tr></thead>
     <tbody>${residentes.map(r=>{
       const u=unidades.find(x=>x.id===r.unidad_id);
       const paid=state.comunidadData.pagos.some(p=>p.usuario_id===r.id&&p.month===curM);
       const pf=getPendingFines(r.unidad_id,curM);
       return`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.nombre.charAt(0)}</div><div><div style="font-weight:600">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.rut||''}</div></div></div></td>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.nombre.charAt(0)}</div><div><div style="font-weight:600;font-size:12px">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.rut||''}</div></div></div></td>
         <td><span class="badge ${roleBadge[r.rol]||'badge-gray'}">${roleLabel[r.rol]||r.rol}</span></td>
         <td>${u?`Depto ${u.numero} P${u.piso}`:'—'}</td>
         <td>${fmt(u?.monthly_fee||85000)}</td>
@@ -600,7 +815,7 @@ function buildPayments(){
     </div>
   </div>
   <div class="card">
-    <table><thead><tr><th>Residente</th><th>Depto</th><th>Mes</th><th>GC Base</th><th>Multas</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+    <table><thead><tr><th>Residente</th><th>Depto</th><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${pagos.map(p=>{
       const r=residentes.find(x=>x.id===p.usuario_id);
       const u=unidades.find(x=>x.id===p.unidad_id);
@@ -608,8 +823,6 @@ function buildPayments(){
         <td>${r?.nombre||'—'}</td>
         <td><span class="badge badge-blue">${u?.numero||'—'}</span></td>
         <td>${p.month}</td>
-        <td>${fmt(p.base_amount||p.amount)}</td>
-        <td>—</td>
         <td style="font-weight:700;color:#059669">${fmt(p.amount)}</td>
         <td>${p.method}</td>
         <td>${fmtD(p.date)}</td>
@@ -620,40 +833,33 @@ function buildPayments(){
 }
 
 function buildExpenses(viewOnly=false){
-  const{gastos,selectedCat}=state;
+  const{selectedCat}=state;
   const cat=selectedCat?EXPENSE_CATS.find(c=>c.id===selectedCat):null;
   const byCat=EXPENSE_CATS.map(c=>({...c,total:state.comunidadData.gastos.filter(e=>e.cat_id===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.total>0);
   const maxVal=Math.max(...byCat.map(x=>x.total),1);
   return`
   <div class="page-header"><div><h2>${viewOnly?'Gastos Comunes':'Gastos del Edificio'}</h2></div></div>
   ${!viewOnly?`<div class="card">
-    <div class="card-title" style="margin-bottom:12px">Selecciona categoría</div>
+    <div class="card-title" style="margin-bottom:10px">Selecciona categoría</div>
     <div class="cat-grid">${EXPENSE_CATS.map(c=>`<button class="cat-btn${selectedCat===c.id?' selected':''}" onclick="setState({selectedCat:'${c.id}'})">
       <span class="cat-icon">${c.icon}</span><span>${c.label}</span>${c.prorate?'<span style="font-size:9px;opacity:.7">prorrateo</span>':''}
     </button>`).join('')}</div>
-    ${cat?`<div style="background:#f9fafb;border-radius:8px;padding:14px;border:1px solid #e5e5e5">
-      <div style="font-size:13px;font-weight:700;margin-bottom:12px">${cat.icon} ${cat.label}</div>
+    ${cat?`<div style="background:#f9fafb;border-radius:8px;padding:12px;border:1px solid #e5e5e5">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">${cat.icon} ${cat.label} ${cat.prorate?'<span class="badge badge-blue">Prorrateo m²</span>':''}</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Monto ($) *</label><input class="form-control" id="eAmount" type="number" oninput="updateProrate()"></div>
         <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="eDate" type="date" value="${today()}"></div>
       </div>
       <div class="form-group"><label class="form-label">Descripción</label><input class="form-control" id="eDesc"></div>
-      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px">
-        <div style="font-size:11px;font-weight:700;color:#1a56db;margin-bottom:6px">📊 Prorrateo por m²:</div>
-        <table><thead><tr><th>Depto</th><th>Total m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table>
-      </div>`:''}
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-primary" id="btnSaveExpense">Registrar gasto</button>
+      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px"><div style="font-size:11px;font-weight:700;color:#1a56db;margin-bottom:5px">📊 Prorrateo:</div><table><thead><tr><th>Depto</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table></div>`:''}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary" id="btnSaveExpense">Registrar</button>
         <button class="btn" onclick="setState({selectedCat:null})">Cancelar</button>
       </div>
     </div>`:''}
   </div>`:''}
   ${byCat.length>0?`<div class="card"><div class="card-header"><span class="card-title">Por categoría</span></div>
-    ${byCat.sort((a,b)=>b.total-a.total).map(c=>`<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.icon} ${c.label}</span><span style="font-weight:700">${fmt(c.total)}</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.total/maxVal*100)}%;background:#1a56db"></div></div>
-    </div>`).join('')}
-  </div>`:''}
+    ${byCat.sort((a,b)=>b.total-a.total).map(c=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.icon} ${c.label}</span><span style="font-weight:700">${fmt(c.total)}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.total/maxVal*100)}%;background:#1a56db"></div></div></div>`).join('')}</div>`:''}
   <div class="card"><table><thead><tr><th>Categoría</th><th>Descripción</th><th>Mes</th><th>Fecha</th><th>Monto</th><th>Tipo</th></tr></thead>
   <tbody>${state.comunidadData.gastos.map(e=>`<tr>
     <td>${e.icon} <b>${e.label}</b></td><td>${e.description||'—'}</td><td>${e.month}</td>
@@ -666,10 +872,7 @@ function buildFines(){
   const{multas,residentes,unidades}=state.comunidadData;
   const curM=thisMonth();
   return`
-  <div class="page-header">
-    <div><h2>Multas</h2><p>${multas.filter(f=>f.status==='pendiente').length} pendientes</p></div>
-    <button class="btn btn-danger" id="btnAddFine">+ Nueva multa</button>
-  </div>
+  <div class="page-header"><div><h2>Multas</h2><p>${multas.filter(f=>f.status==='pendiente').length} pendientes</p></div><button class="btn btn-danger" id="btnAddFine">+ Nueva multa</button></div>
   <div id="fineForm" style="display:none" class="card">
     <div class="form-row">
       <div class="form-group"><label class="form-label">Residente *</label>
@@ -685,24 +888,14 @@ function buildFines(){
       <div class="form-group"><label class="form-label">Mes</label><input class="form-control" id="fMonth" type="month" value="${curM}"></div>
     </div>
     <div class="form-group"><label class="form-label">Motivo *</label><input class="form-control" id="fReason" placeholder="Ej: Ruidos molestos"></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-danger" id="btnSaveFine">Aplicar multa</button>
-      <button class="btn" id="btnCancelFine">Cancelar</button>
-    </div>
+    <div style="display:flex;gap:8px"><button class="btn btn-danger" id="btnSaveFine">Aplicar multa</button><button class="btn" id="btnCancelFine">Cancelar</button></div>
   </div>
-  <div class="card">
-    <table><thead><tr><th>Depto</th><th>Residente</th><th>Motivo</th><th>Mes</th><th>Monto</th><th>Estado</th></tr></thead>
-    <tbody>${multas.length===0?`<tr><td colspan="6" class="empty">Sin multas</td></tr>`:multas.map(f=>{
-      const r=residentes.find(x=>x.id===f.usuario_id);
-      const u=unidades.find(x=>x.id===f.unidad_id);
-      return`<tr>
-        <td><b>Depto ${u?.numero||'—'}</b></td><td>${r?.nombre||'—'}</td>
-        <td>${f.reason}</td><td>${f.month}</td>
-        <td style="font-weight:700;color:#dc2626">${fmt(f.amount)}</td>
-        <td><span class="badge ${f.status==='pagada'?'badge-green':'badge-red'}">${f.status==='pagada'?'✓ Pagada':'⚠ Pendiente'}</span></td>
-      </tr>`;
-    }).join('')}</tbody></table>
-  </div>`;
+  <div class="card"><table><thead><tr><th>Depto</th><th>Residente</th><th>Motivo</th><th>Mes</th><th>Monto</th><th>Estado</th></tr></thead>
+  <tbody>${multas.length===0?`<tr><td colspan="6" class="empty">Sin multas</td></tr>`:multas.map(f=>{
+    const r=residentes.find(x=>x.id===f.usuario_id);
+    const u=unidades.find(x=>x.id===f.unidad_id);
+    return`<tr><td><b>Depto ${u?.numero||'—'}</b></td><td>${r?.nombre||'—'}</td><td>${f.reason}</td><td>${f.month}</td><td style="font-weight:700;color:#dc2626">${fmt(f.amount)}</td><td><span class="badge ${f.status==='pagada'?'badge-green':'badge-red'}">${f.status==='pagada'?'✓ Pagada':'⚠ Pendiente'}</span></td></tr>`;
+  }).join('')}</tbody></table></div>`;
 }
 
 function buildWorkers(){
@@ -713,20 +906,14 @@ function buildWorkers(){
   const honor=active.filter(w=>w.tipo==='honorarios');
   const desv=trabajadores.filter(w=>!w.activo);
   return`
-  <div class="page-header">
-    <div><h2>Trabajadores</h2><p>${active.length} activos</p></div>
-    <button class="btn btn-primary" id="btnAddWorker">+ Agregar</button>
-  </div>
+  <div class="page-header"><div><h2>Trabajadores</h2><p>${active.length} activos</p></div><button class="btn btn-primary" id="btnAddWorker">+ Agregar</button></div>
   <div class="tab-bar">
     <button class="tab-btn${workerTab==='contrato'?' active':''}" onclick="setState({workerTab:'contrato'})">📋 Contrato (${contrato.length})</button>
     <button class="tab-btn${workerTab==='honorarios'?' active':''}" onclick="setState({workerTab:'honorarios'})">📄 Honorarios (${honor.length})</button>
     <button class="tab-btn${workerTab==='desvinculados'?' active':''}" onclick="setState({workerTab:'desvinculados'})">🚪 Desvinculados (${desv.length})</button>
   </div>
   <div id="workerForm" style="display:none" class="card">
-    <div class="tab-bar">
-      <button class="tab-btn active" id="wTypeContrato" onclick="switchWorkerType('contrato')">📋 Contrato</button>
-      <button class="tab-btn" id="wTypeHonorarios" onclick="switchWorkerType('honorarios')">📄 Honorarios</button>
-    </div>
+    <div class="tab-bar"><button class="tab-btn active" id="wTypeContrato" onclick="switchWorkerType('contrato')">📋 Contrato</button><button class="tab-btn" id="wTypeHonorarios" onclick="switchWorkerType('honorarios')">📄 Honorarios</button></div>
     <input type="hidden" id="wType" value="contrato">
     <div class="form-row">
       <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="wName"></div>
@@ -747,10 +934,7 @@ function buildWorkers(){
         <div class="form-group"><label class="form-label">Monto plan ($)</label><input class="form-control" id="wIsapreAmt" type="number"></div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-primary" id="btnSaveWorker">Guardar</button>
-      <button class="btn" id="btnCancelWorker">Cancelar</button>
-    </div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-primary" id="btnSaveWorker">Guardar</button><button class="btn" id="btnCancelWorker">Cancelar</button></div>
   </div>
   ${workerTab==='contrato'?buildContratoList(contrato):workerTab==='honorarios'?buildHonorariosList(honor):buildDesvinculadosList(desv)}`;
 }
@@ -805,7 +989,7 @@ function buildHonorariosList(workers){
           <button class="btn btn-sm btn-danger" onclick="desvincularWorker('${w.id}')">Desvincular</button>
         </div>
       </div>
-      <table class="liq-table" style="max-width:320px">
+      <table class="liq-table" style="max-width:300px">
         <tr><td>Honorario bruto</td><td style="text-align:right;font-weight:700">${fmt(bruto)}</td></tr>
         <tr><td>Retención 15.25%</td><td style="text-align:right;color:#dc2626">-${fmt(ret)}</td></tr>
         <tr class="total"><td>Líquido</td><td style="text-align:right;color:#059669">${fmt(bruto-ret)}</td></tr>
@@ -824,7 +1008,7 @@ function buildBank(){
   const{pagos,gastos,unidades,residentes}=state.comunidadData;
   const totalIn=pagos.reduce((s,p)=>s+p.amount,0);
   const totalOut=gastos.reduce((s,g)=>s+g.amount,0);
-  const allMovs=[...pagos.map(p=>({...p,_t:'crédito',_desc:`GC Depto ${unidades.find(u=>u.id===p.unidad_id)?.numero||''} · ${residentes.find(r=>r.id===p.usuario_id)?.nombre||''}`})),...gastos.map(g=>({...g,_t:'débito',_desc:`${g.icon} ${g.label}`}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const allMovs=[...pagos.map(p=>({...p,_t:'crédito',_desc:`GC Depto ${unidades.find(u=>u.id===p.unidad_id)?.numero||''}`})),...gastos.map(g=>({...g,_t:'débito',_desc:`${g.icon} ${g.label}`}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   let saldo=totalIn-totalOut;
   const movs=allMovs.map(m=>{const s=saldo;saldo+=m._t==='débito'?m.amount:-m.amount;return{...m,saldo:s}});
   return`
@@ -834,15 +1018,13 @@ function buildBank(){
     <div class="metric"><div class="metric-label">Débitos</div><div class="metric-value red">${fmt(totalOut)}</div></div>
     <div class="metric"><div class="metric-label">Saldo</div><div class="metric-value ${totalIn-totalOut>=0?'green':'red'}">${fmt(totalIn-totalOut)}</div></div>
   </div>
-  <div class="card">
-    <table><thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th><th>Saldo</th></tr></thead>
-    <tbody>${movs.map(m=>`<tr>
-      <td>${fmtD(m.date)}</td><td>${m._desc}</td>
-      <td><span class="badge ${m._t==='crédito'?'badge-green':'badge-red'}">${m._t}</span></td>
-      <td style="font-weight:700;color:${m._t==='crédito'?'#059669':'#dc2626'}">${m._t==='crédito'?'+':'-'}${fmt(m.amount)}</td>
-      <td>${fmt(m.saldo)}</td>
-    </tr>`).join('')}</tbody></table>
-  </div>`;
+  <div class="card"><table><thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th><th>Saldo</th></tr></thead>
+  <tbody>${movs.map(m=>`<tr>
+    <td>${fmtD(m.date)}</td><td>${m._desc}</td>
+    <td><span class="badge ${m._t==='crédito'?'badge-green':'badge-red'}">${m._t}</span></td>
+    <td style="font-weight:700;color:${m._t==='crédito'?'#059669':'#dc2626'}">${m._t==='crédito'?'+':'-'}${fmt(m.amount)}</td>
+    <td>${fmt(m.saldo)}</td>
+  </tr>`).join('')}</tbody></table></div>`;
 }
 
 function buildReports(){
@@ -852,11 +1034,8 @@ function buildReports(){
   const tab=state.reportTab;
   const{totalIn,totalOut,balance,morose,mp,me,paidUnits}=getMetrics(sel);
   return`
-  <div class="page-header">
-    <div><h2>Informes</h2></div>
-    <select class="form-control" style="width:auto" id="reportMonth">
-      ${months.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}</option>`).join('')}
-    </select>
+  <div class="page-header"><div><h2>Informes</h2></div>
+    <select class="form-control" style="width:auto" id="reportMonth">${months.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}</option>`).join('')}</select>
   </div>
   <div class="tab-bar">
     <button class="tab-btn${tab==='general'?' active':''}" onclick="setState({reportTab:'general'})">📊 Balance</button>
@@ -868,18 +1047,14 @@ function buildReports(){
     <div class="card">
       <div class="card-header"><span class="card-title">Ingresos — ${sel}</span></div>
       <table><thead><tr><th>Depto</th><th>Residente</th><th>Monto</th><th>Método</th></tr></thead>
-      <tbody>${mp.map(p=>`<tr>
-        <td><b>${state.comunidadData.unidades.find(u=>u.id===p.unidad_id)?.numero||'—'}</b></td>
-        <td>${state.comunidadData.residentes.find(r=>r.id===p.usuario_id)?.nombre||'—'}</td>
-        <td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td>
-      </tr>`).join('')}</tbody></table>
-      <div style="margin-top:10px"><button class="btn btn-sm btn-primary" onclick="window.print()">⬇ Imprimir</button></div>
+      <tbody>${mp.map(p=>`<tr><td><b>${state.comunidadData.unidades.find(u=>u.id===p.unidad_id)?.numero||'—'}</b></td><td>${state.comunidadData.residentes.find(r=>r.id===p.usuario_id)?.nombre||'—'}</td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td></tr>`).join('')}</tbody></table>
+      <div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="window.print()">⬇ Imprimir</button></div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Gastos — ${sel}</span></div>
       <table><thead><tr><th>Categoría</th><th>Descripción</th><th>Monto</th></tr></thead>
       <tbody>${me.map(e=>`<tr><td>${e.icon} ${e.label}</td><td>${e.description||'—'}</td><td class="red" style="font-weight:700">${fmt(e.amount)}</td></tr>`).join('')}</tbody></table>
-      <div style="margin-top:10px"><button class="btn btn-sm btn-primary" onclick="window.print()">⬇ Imprimir</button></div>
+      <div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="window.print()">⬇ Imprimir</button></div>
     </div>
   </div>
   <div class="card">
@@ -887,52 +1062,40 @@ function buildReports(){
     <div class="stat-row"><span>Total gastos</span><span class="red" style="font-weight:700">${fmt(totalOut)}</span></div>
     <div class="stat-row"><span>Morosos</span><span class="badge badge-red">${morose.length}</span></div>
     <div class="stat-row" style="font-weight:700;font-size:14px"><span>Saldo neto</span><span class="${balance>=0?'green':'red'}">${fmt(balance)}</span></div>
-    <div style="margin-top:12px"><button class="btn btn-primary" onclick="window.print()">⬇ Imprimir balance</button></div>
+    <div style="margin-top:10px"><button class="btn btn-primary" onclick="window.print()">⬇ Imprimir balance</button></div>
   </div>`:''}
-  ${tab==='unidades'?`<div class="card">
-    ${state.comunidadData.unidades.map(u=>{
-      const r=state.comunidadData.residentes.find(x=>x.unidad_id===u.id);
-      if(!r)return'';
-      const paid=paidUnits.has(u.id);
-      const pago=state.comunidadData.pagos.find(p=>p.unidad_id===u.id&&p.month===sel);
-      const pf=getPendingFines(u.id,sel);
-      const finesAmt=pf.reduce((s,f)=>s+f.amount,0);
-      const prorateRows=me.filter(e=>e.prorate).map(e=>{
-        const rows=calcProrate(e.amount,state.comunidadData.unidades);
-        const row=rows.find(x=>x.unitId===u.id);
-        return row?{label:e.icon+' '+e.label,amount:row.amount}:null;
-      }).filter(Boolean);
-      const totalPro=prorateRows.reduce((s,x)=>s+x.amount,0);
-      return`<div style="border:1px solid #e5e5e5;border-radius:8px;padding:14px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div><div style="font-weight:700">🏠 Depto ${u.numero} · Piso ${u.piso}</div>
-          <div style="font-size:11px;color:#6b7280">${r.nombre} · ${r.email}</div></div>
-          <span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Pagado':'⚠ Pendiente'}</span>
-        </div>
-        <table style="font-size:12px;margin-bottom:8px">
-          <tr><td style="padding:3px 8px;color:#6b7280">GC base</td><td style="padding:3px 8px;font-weight:600">${fmt(u.monthly_fee||85000)}</td></tr>
-          ${prorateRows.map(x=>`<tr><td style="padding:3px 8px;color:#6b7280">${x.label}</td><td style="padding:3px 8px">${fmt(x.amount)}</td></tr>`).join('')}
-          ${finesAmt>0?`<tr><td style="padding:3px 8px;color:#dc2626">Multas</td><td style="padding:3px 8px;color:#dc2626">${fmt(finesAmt)}</td></tr>`:''}
-          <tr style="border-top:1px solid #e5e5e5"><td style="padding:6px 8px;font-weight:700">Total</td><td style="padding:6px 8px;font-weight:700;color:#1a56db">${fmt((u.monthly_fee||85000)+finesAmt+totalPro)}</td></tr>
-        </table>
-        <div style="display:flex;gap:8px;align-items:center">
-          ${paid&&pago?`<button class="btn btn-sm btn-primary" onclick="viewReceipt('${pago.id}')">⬇ Comprobante</button>`:''}
-          <button class="btn btn-sm" onclick="window.print()">🖨 Imprimir ficha</button>
-          <span style="font-size:11px;color:#6b7280">📧 ${r.email}</span>
-        </div>
-      </div>`;
-    }).join('')}
-  </div>`:''}
+  ${tab==='unidades'?`<div class="card">${state.comunidadData.unidades.map(u=>{
+    const r=state.comunidadData.residentes.find(x=>x.unidad_id===u.id);
+    if(!r)return'';
+    const paid=paidUnits.has(u.id);
+    const pago=state.comunidadData.pagos.find(p=>p.unidad_id===u.id&&p.month===sel);
+    const pf=getPendingFines(u.id,sel);
+    const finesAmt=pf.reduce((s,f)=>s+f.amount,0);
+    const prorateRows=me.filter(e=>e.prorate).map(e=>{const rows=calcProrate(e.amount,state.comunidadData.unidades);const row=rows.find(x=>x.unitId===u.id);return row?{label:e.icon+' '+e.label,amount:row.amount}:null;}).filter(Boolean);
+    const totalPro=prorateRows.reduce((s,x)=>s+x.amount,0);
+    return`<div style="border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><div style="font-weight:700">🏠 Depto ${u.numero} · P${u.piso}</div><div style="font-size:11px;color:#6b7280">${r.nombre} · ${r.email}</div></div>
+        <span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Pagado':'⚠ Pendiente'}</span>
+      </div>
+      <table style="font-size:12px;margin-bottom:8px">
+        <tr><td style="padding:3px 8px;color:#6b7280">GC base</td><td style="padding:3px 8px;font-weight:600">${fmt(u.monthly_fee||85000)}</td></tr>
+        ${prorateRows.map(x=>`<tr><td style="padding:3px 8px;color:#6b7280">${x.label}</td><td style="padding:3px 8px">${fmt(x.amount)}</td></tr>`).join('')}
+        ${finesAmt>0?`<tr><td style="padding:3px 8px;color:#dc2626">Multas</td><td style="padding:3px 8px;color:#dc2626">${fmt(finesAmt)}</td></tr>`:''}
+        <tr style="border-top:1px solid #e5e5e5"><td style="padding:5px 8px;font-weight:700">Total</td><td style="padding:5px 8px;font-weight:700;color:#1a56db">${fmt((u.monthly_fee||85000)+finesAmt+totalPro)}</td></tr>
+      </table>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${paid&&pago?`<button class="btn btn-sm btn-primary" onclick="viewReceipt('${pago.id}')">⬇ Comprobante</button>`:''}
+        <button class="btn btn-sm" onclick="window.print()">🖨 Imprimir ficha</button>
+        <span style="font-size:11px;color:#6b7280">📧 ${r.email}</span>
+      </div>
+    </div>`;
+  }).join('')}</div>`:''}
   ${tab==='prorate'?`<div class="card">
     ${me.filter(e=>e.prorate).length===0?'<div class="empty">Sin gastos con prorrateo</div>':
-    me.filter(e=>e.prorate).map(e=>`<div style="margin-bottom:18px">
-      <div style="font-weight:700;margin-bottom:8px">${e.icon} ${e.label} · ${fmt(e.amount)}</div>
+    me.filter(e=>e.prorate).map(e=>`<div style="margin-bottom:16px"><div style="font-weight:700;margin-bottom:6px">${e.icon} ${e.label} · ${fmt(e.amount)}</div>
       <table><thead><tr><th>Depto</th><th>Residente</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead>
-      <tbody>${calcProrate(e.amount,state.comunidadData.unidades).map(p=>{
-        const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);
-        const r=state.comunidadData.residentes.find(x=>x.unidad_id===p.unitId);
-        return`<tr><td>Depto ${u?.numero||''}</td><td>${r?.nombre||'—'}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;
-      }).join('')}</tbody></table>
+      <tbody>${calcProrate(e.amount,state.comunidadData.unidades).map(p=>{const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);const r=state.comunidadData.residentes.find(x=>x.unidad_id===p.unitId);return`<tr><td>Depto ${u?.numero||''}</td><td>${r?.nombre||'—'}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;}).join('')}</tbody></table>
     </div>`).join('')}
     <button class="btn btn-primary" onclick="window.print()">⬇ Imprimir</button>
   </div>`:''}`;
@@ -944,7 +1107,7 @@ function buildCommunity(){
   const ALERT_TYPES=[{id:'ruido',icon:'🔊',label:'Ruido molesto'},{id:'seguridad',icon:'🚨',label:'Seguridad'},{id:'daño',icon:'🔨',label:'Daño'},{id:'aviso',icon:'📢',label:'Aviso'},{id:'emergencia',icon:'🚒',label:'Emergencia'}];
   const typeMap={ruido:'🔊',seguridad:'🚨',daño:'🔨',aviso:'📢',emergencia:'🚒'};
   return`
-  <div class="page-header"><div><h2>Alertas Comunitarias</h2></div><button class="btn btn-danger" id="btnAddAlert">+ Nueva alerta</button></div>
+  <div class="page-header"><div><h2>Alertas Comunitarias</h2><p>${alertas.filter(a=>a.status==='activa').length} activas</p></div><button class="btn btn-danger" id="btnAddAlert">+ Nueva alerta</button></div>
   <div id="alertForm" style="display:none" class="card">
     <div class="form-row">
       <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="aType">${ALERT_TYPES.map(t=>`<option value="${t.id}">${t.icon} ${t.label}</option>`).join('')}</select></div>
@@ -952,10 +1115,7 @@ function buildCommunity(){
     </div>
     <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="aTitle"></div>
     <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="aDesc" rows="2"></textarea></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-danger" id="btnSaveAlert">Enviar</button>
-      <button class="btn" id="btnCancelAlert">Cancelar</button>
-    </div>
+    <div style="display:flex;gap:8px"><button class="btn btn-danger" id="btnSaveAlert">Enviar</button><button class="btn" id="btnCancelAlert">Cancelar</button></div>
   </div>
   ${alertas.length===0?'<div class="card"><div class="empty">Sin alertas</div></div>':
   alertas.map(a=>{
@@ -963,10 +1123,9 @@ function buildCommunity(){
     const u=unidades.find(x=>x.id===a.unidad_id);
     return`<div class="alert-card ${a.tipo==='aviso'?'info':a.tipo==='ruido'?'warning':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div style="font-weight:700;font-size:13px">${typeMap[a.tipo]||'📢'} ${a.titulo}</div>
+        <div><div style="font-weight:700;font-size:13px">${typeMap[a.tipo]||'📢'} ${a.titulo}</div>
           <div style="font-size:11px;color:#6b7280">${a.descripcion||''}</div>
-          <div style="font-size:10px;color:#9ca3af;margin-top:4px">${r?`${r.nombre} · Depto ${u?.numero||''}`:'Administración'} · ${fmtD(a.date)}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px">${r?`${r.nombre} · Depto ${u?.numero||''}`:'Administración'} · ${fmtD(a.date)}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <span class="badge ${a.status==='activa'?'badge-red':'badge-green'}">${a.status}</span>
@@ -985,21 +1144,19 @@ function buildDocuments(){
     {icon:'📝',title:'Ficha Ingreso Residente',desc:'Formulario para nuevos residentes'},
     {icon:'📋',title:'Reglamento de Convivencia',desc:'Normas de convivencia'},
     {icon:'🏊',title:'Reglamento Piscina',desc:'Normas piscina y áreas húmedas'},
-    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas estacionamientos y bodegas'},
+    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas estacionamientos'},
     {icon:'📞',title:'Contactos de Emergencia',desc:'Bomberos, Carabineros, SAMU'},
     {icon:'🔑',title:'Contrato de Arrendamiento',desc:'Modelo de contrato'},
   ];
   const docs=documentos.length>0?documentos:defaults;
   return`
   <div class="page-header"><h2>Documentos</h2></div>
-  <div class="doc-grid">
-    ${docs.map(d=>`<div class="doc-card">
-      <div class="doc-icon">${d.icon}</div>
-      <div class="doc-title">${d.title||d.titulo}</div>
-      <div class="doc-desc">${d.desc||d.descripcion||''}</div>
-      ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-primary btn-sm">⬇ Descargar</a>`:`<button class="btn btn-sm" onclick="alert('Documento pendiente de carga')">⬇ Descargar PDF</button>`}
-    </div>`).join('')}
-  </div>`;
+  <div class="doc-grid">${docs.map(d=>`<div class="doc-card">
+    <div class="doc-icon">${d.icon}</div>
+    <div class="doc-title">${d.title||d.titulo}</div>
+    <div class="doc-desc">${d.desc||d.descripcion||''}</div>
+    ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-primary btn-sm">⬇ Descargar</a>`:`<button class="btn btn-sm" onclick="alert('Documento pendiente de carga por el administrador')">⬇ Descargar PDF</button>`}
+  </div>`).join('')}</div>`;
 }
 
 function buildSettings(){
@@ -1007,14 +1164,14 @@ function buildSettings(){
   return`
   <div class="page-header"><h2>Configuración</h2></div>
   <div class="card">
-    <div class="card-title" style="margin-bottom:14px">Datos de la comunidad</div>
+    <div class="card-title" style="margin-bottom:12px">Datos de la comunidad</div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Nombre</label><input class="form-control" id="bName" value="${com?.nombre||''}"></div>
       <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="bCity" value="${com?.ciudad||''}"></div>
     </div>
     <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="bAddr" value="${com?.direccion||''}"></div>
     <div class="form-group"><label class="form-label">Código de acceso</label><input class="form-control" value="${com?.codigo_acceso||''}" readonly style="background:#f9fafb;color:#6b7280"></div>
-    <button class="btn btn-primary" id="btnSaveSettings">Guardar cambios</button>
+    <button class="btn btn-primary" id="btnSaveSettings">Guardar</button>
   </div>`;
 }
 
@@ -1029,15 +1186,15 @@ function buildMyAccount(){
   return`
   <div class="page-header"><h2>Mi Cuenta</h2></div>
   <div class="card">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-      <div class="avatar" style="width:50px;height:50px;font-size:18px">${u?.nombre?.charAt(0)||'?'}</div>
-      <div><h3 style="font-size:16px;font-weight:700">${u?.nombre||''}</h3>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div class="avatar" style="width:46px;height:46px;font-size:17px">${u?.nombre?.charAt(0)||'?'}</div>
+      <div><h3 style="font-size:15px;font-weight:700">${u?.nombre||''}</h3>
         <p style="color:#6b7280;font-size:12px">Depto ${unit?.numero||'—'} · Piso ${unit?.piso||'—'}</p>
         <p style="color:#6b7280;font-size:11px">${u?.rut||''} · ${u?.email||''}</p>
       </div>
     </div>
-    ${unit?`<div style="background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
-      <div style="font-weight:700;margin-bottom:6px">📐 Mis superficies</div>
+    ${unit?`<div style="background:#f9fafb;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px">
+      <div style="font-weight:700;margin-bottom:5px">📐 Mis superficies</div>
       <div class="stat-row"><span>Departamento</span><span>${unit.sqm}m²</span></div>
       ${unit.parking?`<div class="stat-row"><span>Estacionamiento ${unit.parking_num}</span><span>${unit.parking_sqm}m²</span></div>`:''}
       ${unit.storage?`<div class="stat-row"><span>Bodega ${unit.storage_num}</span><span>${unit.storage_sqm}m²</span></div>`:''}
@@ -1048,16 +1205,13 @@ function buildMyAccount(){
       <div class="metric"><div class="metric-label">GC Base</div><div class="metric-value blue">${fmt(unit?.monthly_fee||85000)}</div></div>
       <div class="metric"><div class="metric-label">Total a pagar</div><div class="metric-value ${paid?'green':'amber'}">${fmt(paid?0:totalDue)}</div></div>
     </div>
+    ${pf.length>0?`<div style="margin-top:10px;background:#fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#991b1b"><b>⚠ Multas pendientes:</b><br>${pf.map(f=>`• ${f.reason} — ${fmt(f.amount)}`).join('<br>')}</div>`:''}
   </div>
   <div class="card">
     <div class="card-header"><span class="card-title">Historial de pagos</span></div>
     ${myP.length===0?'<div class="empty">Sin pagos</div>':
     `<table><thead><tr><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
-    <tbody>${myP.map(p=>`<tr>
-      <td>${p.month}</td><td class="green" style="font-weight:700">${fmt(p.amount)}</td>
-      <td>${p.method}</td><td>${fmtD(p.date)}</td>
-      <td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td>
-    </tr>`).join('')}</tbody></table>`}
+    <tbody>${myP.map(p=>`<tr><td>${p.month}</td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td><td>${fmtD(p.date)}</td><td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td></tr>`).join('')}</tbody></table>`}
   </div>`;
 }
 
@@ -1069,211 +1223,140 @@ function buildMyPayments(){
   <div class="card">
     ${myP.length===0?'<div class="empty">Sin comprobantes</div>':
     `<table><thead><tr><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
-    <tbody>${myP.map(p=>`<tr>
-      <td><b>${p.month}</b></td><td class="green" style="font-weight:700">${fmt(p.amount)}</td>
-      <td><span class="badge badge-blue">${p.method}</span></td><td>${fmtD(p.date)}</td>
-      <td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td>
-    </tr>`).join('')}</tbody></table>`}
+    <tbody>${myP.map(p=>`<tr><td><b>${p.month}</b></td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td><span class="badge badge-blue">${p.method}</span></td><td>${fmtD(p.date)}</td><td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td></tr>`).join('')}</tbody></table>`}
   </div>`;
 }
 
 function buildModal(){
   const m=state.modal;
   if(!m)return'';
-  if(m.type==='nueva_comunidad'){
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal">
-        <div class="modal-header"><span class="modal-title">Registrar nueva comunidad</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <div class="form-group"><label class="form-label">Nombre del edificio *</label><input class="form-control" id="ncNombre" placeholder="Ej: Edificio Los Almendros"></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir" placeholder="Av. Principal 123"></div>
-          <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ncCiudad" placeholder="Santiago"></div>
-        </div>
-        <div class="form-group"><label class="form-label">Código de acceso *</label>
-          <input class="form-control" id="ncCodigo" placeholder="Ej: LOSALMENDROS2024" style="text-transform:uppercase">
-          <p style="font-size:10px;color:#6b7280;margin-top:3px">Código único que usarán los residentes para identificar su edificio</p>
-        </div>
-        ${state.loading?`<div class="loading"><span class="spinner"></span>Creando comunidad...</div>`:`<button class="btn btn-primary btn-block" id="btnSaveComunidad">Crear comunidad</button>`}
-      </div>
-    </div>`;
-  }
   if(m.type==='confirm'){
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal" style="max-width:400px">
-        <div class="modal-header"><span class="modal-title">⚠️ Confirmar</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <p style="font-size:13px;margin-bottom:20px">${m.message}</p>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn" onclick="setState({modal:null})">Cancelar</button>
-          <button class="btn btn-danger" onclick="${m.onConfirm}">Confirmar</button>
-        </div>
-      </div>
-    </div>`;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal" style="max-width:380px">
+      <div class="modal-header"><span class="modal-title">⚠️ Confirmar</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <p style="font-size:13px;margin-bottom:18px">${m.message}</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="setState({modal:null})">Cancelar</button><button class="btn btn-danger" onclick="${m.onConfirm}">Confirmar</button></div>
+    </div></div>`;
+  }
+  if(m.type==='edit_comunidad'){
+    const c=m.comunidad;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Editar comunidad</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Nombre</label><input class="form-control" id="ec_nombre" value="${c.nombre}"></div><div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ec_ciudad" value="${c.ciudad||''}"></div></div>
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ec_dir" value="${c.direccion||''}"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Plan</label><select class="form-control" id="ec_plan"><option value="basico" ${c.plan==='basico'?'selected':''}>Básico</option><option value="profesional" ${c.plan==='profesional'?'selected':''}>Profesional</option><option value="enterprise" ${c.plan==='enterprise'?'selected':''}>Enterprise</option></select></div><div class="form-group"><label class="form-label">Mantención/mes ($)</label><input class="form-control" id="ec_mant" type="number" value="${c.monto_mantencion||0}"></div></div>
+      <div class="form-group"><label class="form-label">Implementación ($)</label><input class="form-control" id="ec_impl" type="number" value="${c.monto_implementacion||0}" style="max-width:200px"></div>
+      <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ec_notas" rows="2">${c.notas||''}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-primary" onclick="saveEditComunidad('${c.id}')">Guardar</button><button class="btn" onclick="setState({modal:null})">Cancelar</button></div>
+    </div></div>`;
+  }
+  if(m.type==='edit_unit'){
+    const u=m.unit;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Editar Depto ${u.numero}</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="form-row-3"><div class="form-group"><label class="form-label">N° Depto</label><input class="form-control" id="eu_number" value="${u.numero}"></div><div class="form-group"><label class="form-label">Piso</label><input class="form-control" id="eu_floor" type="number" value="${u.piso}"></div><div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_sqm" type="number" value="${u.sqm}"></div></div>
+      <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="eu_fee" type="number" value="${u.monthly_fee||85000}" style="max-width:180px"></div>
+      <div class="section-div">Estacionamiento</div>
+      <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_parking" ${u.parking?'checked':''} onchange="toggleField('eu_parkFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
+      <div id="eu_parkFields" style="display:${u.parking?'grid':'none'}" class="form-row"><div class="form-group"><label class="form-label">N°</label><input class="form-control" id="eu_parkNum" value="${u.parking_num||''}"></div><div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_parkSqm" type="number" value="${u.parking_sqm||0}"></div></div>
+      <div class="section-div">Bodega</div>
+      <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_storage" ${u.storage?'checked':''} onchange="toggleField('eu_storFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene bodega?</span></div>
+      <div id="eu_storFields" style="display:${u.storage?'grid':'none'}" class="form-row"><div class="form-group"><label class="form-label">N°</label><input class="form-control" id="eu_storNum" value="${u.storage_num||''}"></div><div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_storSqm" type="number" value="${u.storage_sqm||0}"></div></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" onclick="saveEditUnit('${u.id}')">Guardar</button><button class="btn" onclick="setState({modal:null})">Cancelar</button></div>
+    </div></div>`;
   }
   if(m.type==='receipt'){
     const p=m.payment;
     const r=state.comunidadData.residentes.find(x=>x.id===p.usuario_id);
     const u=state.comunidadData.unidades.find(x=>x.id===p.unidad_id);
     const com=state.selectedComunidad;
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal">
-        <div class="modal-header"><span class="modal-title">Comprobante de Pago</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <div class="receipt">
-          <div class="receipt-header">
-            <div style="font-size:28px">🏢</div>
-            <h2 style="font-size:17px;font-weight:800;margin:4px 0">${com?.nombre||''}</h2>
-            <p style="color:#6b7280;font-size:12px">Comprobante de Gasto Común</p>
-            <p style="font-size:10px;color:#9ca3af">N° ${p.receipt_id}</p>
-          </div>
-          <div class="receipt-row"><span style="color:#6b7280">Residente</span><span style="font-weight:700">${r?.nombre||'—'}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${r?.rut||'—'}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Departamento</span><span>Depto ${u?.numero||'—'} · Piso ${u?.piso||'—'}</span></div>
-          ${u?.parking?`<div class="receipt-row"><span style="color:#6b7280">Estacionamiento</span><span>${u.parking_num} · ${u.parking_sqm}m²</span></div>`:''}
-          ${u?.storage?`<div class="receipt-row"><span style="color:#6b7280">Bodega</span><span>${u.storage_num} · ${u.storage_sqm}m²</span></div>`:''}
-          <div class="receipt-row"><span style="color:#6b7280">Período</span><span>${p.month}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Fecha</span><span>${fmtD(p.date)}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Método</span><span>${p.method}</span></div>
-          <div class="receipt-row"><span>GC Base</span><span>${fmt(p.base_amount||p.amount)}</span></div>
-          <div class="receipt-total"><span>TOTAL PAGADO</span><span style="color:#059669">${fmt(p.amount)}</span></div>
-          <div style="margin-top:14px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px dashed #e5e5e5;padding-top:10px">Comprobante válido · ${com?.nombre||''} · ${new Date().getFullYear()}</div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
-          <button class="btn" onclick="setState({modal:null})">Cerrar</button>
-        </div>
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Comprobante de Pago</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="receipt">
+        <div class="receipt-header"><div style="font-size:26px">🏢</div><h2 style="font-size:16px;font-weight:800;margin:4px 0">${com?.nombre||''}</h2><p style="color:#6b7280;font-size:12px">Comprobante de Gasto Común</p><p style="font-size:10px;color:#9ca3af">N° ${p.receipt_id}</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Residente</span><span style="font-weight:700">${r?.nombre||'—'}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${r?.rut||'—'}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Departamento</span><span>Depto ${u?.numero||'—'} · Piso ${u?.piso||'—'}</span></div>
+        ${u?.parking?`<div class="receipt-row"><span style="color:#6b7280">Estacionamiento</span><span>${u.parking_num} · ${u.parking_sqm}m²</span></div>`:''}
+        ${u?.storage?`<div class="receipt-row"><span style="color:#6b7280">Bodega</span><span>${u.storage_num} · ${u.storage_sqm}m²</span></div>`:''}
+        <div class="receipt-row"><span style="color:#6b7280">Período</span><span>${p.month}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Fecha</span><span>${fmtD(p.date)}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Método</span><span>${p.method}</span></div>
+        <div class="receipt-row"><span>GC Base</span><span>${fmt(p.base_amount||p.amount)}</span></div>
+        <div class="receipt-total"><span>TOTAL PAGADO</span><span style="color:#059669">${fmt(p.amount)}</span></div>
+        <div style="margin-top:12px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px dashed #e5e5e5;padding-top:10px">Comprobante válido · ${com?.nombre||''} · ${new Date().getFullYear()}</div>
       </div>
-    </div>`;
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
   }
   if(m.type==='liquidacion'){
     const w=m.worker;const liq=calcLiquidacion(w);
     const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal modal-lg">
-        <div class="modal-header"><span class="modal-title">Liquidación de Sueldo</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <div class="receipt">
-          <div class="receipt-header"><h2 style="font-size:16px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Liquidación — ${mes}</p></div>
-          <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.rol}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">AFP</span><span>${w.afp_type}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Salud</span><span>${w.health_type}</span></div>
-          <div style="height:8px"></div>
-          <div class="receipt-row" style="font-weight:700"><span>Sueldo bruto</span><span>${fmt(liq.bruto)}</span></div>
-          <div class="receipt-row"><span style="color:#dc2626">AFP (${(liq.afpPct*100).toFixed(2)}%)</span><span style="color:#dc2626">-${fmt(liq.afp)}</span></div>
-          <div class="receipt-row"><span style="color:#dc2626">Salud</span><span style="color:#dc2626">-${fmt(liq.salud)}</span></div>
-          <div class="receipt-row"><span style="color:#dc2626">Seg. cesantía (0.6%)</span><span style="color:#dc2626">-${fmt(liq.segCes)}</span></div>
-          <div class="receipt-row"><span style="color:#dc2626">Imp. 2° categoría</span><span style="color:#dc2626">-${fmt(liq.imp)}</span></div>
-          <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:#059669">${fmt(liq.liquido)}</span></div>
-          <div style="margin-top:10px;background:#f9fafb;padding:10px;border-radius:6px">
-            <div class="receipt-row"><span>SIS empleador (1.54%)</span><span>${fmt(liq.sis)}</span></div>
-            <div class="receipt-row" style="font-weight:700"><span>Costo total empleador</span><span>${fmt(liq.bruto+liq.sis)}</span></div>
-          </div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
-          <button class="btn" onclick="setState({modal:null})">Cerrar</button>
-        </div>
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal modal-lg">
+      <div class="modal-header"><span class="modal-title">Liquidación de Sueldo</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="receipt">
+        <div class="receipt-header"><h2 style="font-size:15px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Liquidación — ${mes}</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.rol}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">AFP / Salud</span><span>${w.afp_type} / ${w.health_type}</span></div>
+        <div style="height:6px"></div>
+        <div class="receipt-row" style="font-weight:700"><span>Sueldo bruto</span><span>${fmt(liq.bruto)}</span></div>
+        <div class="receipt-row"><span style="color:#dc2626">AFP (${(liq.afpPct*100).toFixed(2)}%)</span><span style="color:#dc2626">-${fmt(liq.afp)}</span></div>
+        <div class="receipt-row"><span style="color:#dc2626">Salud</span><span style="color:#dc2626">-${fmt(liq.salud)}</span></div>
+        <div class="receipt-row"><span style="color:#dc2626">Seg. cesantía (0.6%)</span><span style="color:#dc2626">-${fmt(liq.segCes)}</span></div>
+        <div class="receipt-row"><span style="color:#dc2626">Imp. 2° categoría</span><span style="color:#dc2626">-${fmt(liq.imp)}</span></div>
+        <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:#059669">${fmt(liq.liquido)}</span></div>
+        <div style="margin-top:10px;background:#f9fafb;padding:10px;border-radius:6px"><div class="receipt-row"><span>SIS empleador (1.54%)</span><span>${fmt(liq.sis)}</span></div><div class="receipt-row" style="font-weight:700"><span>Costo total empleador</span><span>${fmt(liq.bruto+liq.sis)}</span></div></div>
       </div>
-    </div>`;
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
   }
   if(m.type==='boleta'){
-    const w=m.worker;const bruto=w.gross_salary||0;
-    const ret=Math.round(bruto*0.1525);
+    const w=m.worker;const bruto=w.gross_salary||0;const ret=Math.round(bruto*0.1525);
     const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal">
-        <div class="modal-header"><span class="modal-title">Boleta de Honorarios</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <div class="receipt">
-          <div class="receipt-header"><h2 style="font-size:16px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Boleta de Honorarios — ${mes}</p></div>
-          <div class="receipt-row"><span style="color:#6b7280">Prestador</span><span style="font-weight:700">${w.nombre}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Servicio</span><span>${w.rol}</span></div>
-          <div style="height:8px"></div>
-          <div class="receipt-row" style="font-weight:700"><span>Honorario bruto</span><span>${fmt(bruto)}</span></div>
-          <div class="receipt-row"><span style="color:#dc2626">Retención 15.25%</span><span style="color:#dc2626">-${fmt(ret)}</span></div>
-          <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:#059669">${fmt(bruto-ret)}</span></div>
-          <div style="margin-top:10px;font-size:10px;color:#9ca3af;text-align:center">Retención vigente desde 01/01/2026 — Art. 74 LIR</div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
-          <button class="btn" onclick="setState({modal:null})">Cerrar</button>
-        </div>
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Boleta de Honorarios</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="receipt">
+        <div class="receipt-header"><h2 style="font-size:15px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Boleta de Honorarios — ${mes}</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Prestador</span><span style="font-weight:700">${w.nombre}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Servicio</span><span>${w.rol}</span></div>
+        <div style="height:6px"></div>
+        <div class="receipt-row" style="font-weight:700"><span>Honorario bruto</span><span>${fmt(bruto)}</span></div>
+        <div class="receipt-row"><span style="color:#dc2626">Retención 15.25%</span><span style="color:#dc2626">-${fmt(ret)}</span></div>
+        <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:#059669">${fmt(bruto-ret)}</span></div>
+        <div style="margin-top:10px;font-size:10px;color:#9ca3af;text-align:center">Retención vigente desde 01/01/2026 — Art. 74 LIR</div>
       </div>
-    </div>`;
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
   }
   if(m.type==='finiquito'){
     const w=m.worker;const type=m.finType||'renuncia';const lastDay=m.lastDay||today();
     const fin=calcFiniquito(w,type,lastDay);
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal modal-lg">
-        <div class="modal-header"><span class="modal-title">Finiquito</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <div class="form-row" style="margin-bottom:14px">
-          <div class="form-group"><label class="form-label">Tipo</label>
-            <select class="form-control" id="finType" onchange="updateFiniquito('${w.id}')">
-              <option value="renuncia" ${type==='renuncia'?'selected':''}>Renuncia voluntaria</option>
-              <option value="despido" ${type==='despido'?'selected':''}>Despido Art. 161</option>
-              <option value="mutuo" ${type==='mutuo'?'selected':''}>Mutuo acuerdo</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Último día</label>
-            <input class="form-control" id="finLastDay" type="date" value="${lastDay}" onchange="updateFiniquito('${w.id}')">
-          </div>
-        </div>
-        <div class="receipt">
-          <div class="receipt-header"><h2 style="font-size:16px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Finiquito de Trabajo</p></div>
-          <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Antigüedad</span><span>${fin.years} años ${fin.months} meses</span></div>
-          <div class="receipt-row"><span style="color:#6b7280">Tipo término</span><span>${type}</span></div>
-          <div style="height:8px"></div>
-          <div class="receipt-row"><span>Días proporcionales</span><span>${fmt(fin.dias)}</span></div>
-          <div class="receipt-row"><span>Vacaciones proporcionales</span><span>${fmt(fin.vac)}</span></div>
-          ${type==='despido'?`<div class="receipt-row"><span>Indemnización</span><span>${fmt(fin.ind)}</span></div>`:''}
-          <div class="receipt-total"><span>TOTAL FINIQUITO</span><span style="color:#1a56db">${fmt(fin.total)}</span></div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
-          <button class="btn btn-danger" onclick="confirmarFiniquito('${w.id}')">Confirmar desvinculación</button>
-          <button class="btn" onclick="setState({modal:null})">Cerrar</button>
-        </div>
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal modal-lg">
+      <div class="modal-header"><span class="modal-title">Finiquito</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="finType" onchange="updateFiniquito('${w.id}')"><option value="renuncia" ${type==='renuncia'?'selected':''}>Renuncia voluntaria</option><option value="despido" ${type==='despido'?'selected':''}>Despido Art. 161</option><option value="mutuo" ${type==='mutuo'?'selected':''}>Mutuo acuerdo</option></select></div>
+        <div class="form-group"><label class="form-label">Último día</label><input class="form-control" id="finLastDay" type="date" value="${lastDay}" onchange="updateFiniquito('${w.id}')"></div>
       </div>
-    </div>`;
-  }
-  if(m.type==='edit_unit'){
-    const u=m.unit;
-    return`<div class="modal-overlay" id="modalOverlay">
-      <div class="modal">
-        <div class="modal-header"><span class="modal-title">Editar Depto ${u.numero}</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
-        <div class="form-row-3">
-          <div class="form-group"><label class="form-label">N° Depto</label><input class="form-control" id="eu_number" value="${u.numero}"></div>
-          <div class="form-group"><label class="form-label">Piso</label><input class="form-control" id="eu_floor" type="number" value="${u.piso}"></div>
-          <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_sqm" type="number" value="${u.sqm}"></div>
-        </div>
-        <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="eu_fee" type="number" value="${u.monthly_fee||85000}" style="max-width:200px"></div>
-        <div class="section-div">Estacionamiento</div>
-        <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_parking" ${u.parking?'checked':''} onchange="toggleField('eu_parkFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
-        <div id="eu_parkFields" style="display:${u.parking?'grid':'none'}" class="form-row">
-          <div class="form-group"><label class="form-label">N° Estacionamiento</label><input class="form-control" id="eu_parkNum" value="${u.parking_num||''}"></div>
-          <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_parkSqm" type="number" value="${u.parking_sqm||0}"></div>
-        </div>
-        <div class="section-div">Bodega</div>
-        <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_storage" ${u.storage?'checked':''} onchange="toggleField('eu_storFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene bodega?</span></div>
-        <div id="eu_storFields" style="display:${u.storage?'grid':'none'}" class="form-row">
-          <div class="form-group"><label class="form-label">N° Bodega</label><input class="form-control" id="eu_storNum" value="${u.storage_num||''}"></div>
-          <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_storSqm" type="number" value="${u.storage_sqm||0}"></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:14px">
-          <button class="btn btn-primary" onclick="saveEditUnit('${u.id}')">Guardar cambios</button>
-          <button class="btn" onclick="setState({modal:null})">Cancelar</button>
-        </div>
+      <div class="receipt">
+        <div class="receipt-header"><h2 style="font-size:15px;font-weight:800">${state.selectedComunidad?.nombre||''}</h2><p style="color:#6b7280">Finiquito de Trabajo</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Antigüedad</span><span>${fin.years} años ${fin.months} meses</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Tipo término</span><span>${type}</span></div>
+        <div style="height:6px"></div>
+        <div class="receipt-row"><span>Días proporcionales</span><span>${fmt(fin.dias)}</span></div>
+        <div class="receipt-row"><span>Vacaciones proporcionales</span><span>${fmt(fin.vac)}</span></div>
+        ${type==='despido'?`<div class="receipt-row"><span>Indemnización</span><span>${fmt(fin.ind)}</span></div>`:''}
+        <div class="receipt-total"><span>TOTAL FINIQUITO</span><span style="color:#1a56db">${fmt(fin.total)}</span></div>
       </div>
-    </div>`;
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn btn-danger" onclick="confirmarFiniquito('${w.id}')">Confirmar desvinculación</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
   }
   return'';
 }
 
 function attachEvents(){
-  document.getElementById('modeSelect')?.addEventListener('change',async function(){
-    // No aplica en versión con login real
-  });
   document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>setState({view:btn.dataset.view})));
   document.getElementById('btnAddUnit')?.addEventListener('click',()=>toggleForm('unitForm'));
   document.getElementById('btnCancelUnit')?.addEventListener('click',()=>toggleForm('unitForm',false));
@@ -1284,35 +1367,21 @@ function attachEvents(){
     if(!number||!floor||!sqm){showAlert('Completa campos obligatorios','error');return;}
     const parking=document.getElementById('uParking').checked;
     const storage=document.getElementById('uStorage').checked;
-    const{data,error}=await sb.from('unidades').insert({
-      comunidad_id:state.selectedComunidad.id,numero:number,piso:parseInt(floor),sqm:parseFloat(sqm),
-      monthly_fee:parseInt(document.getElementById('uFee').value)||85000,
-      parking,parking_num:parking?document.getElementById('uParkingNum').value:'',
-      parking_sqm:parking?parseFloat(document.getElementById('uParkingSqm').value||0):0,
-      storage,storage_num:storage?document.getElementById('uStorageNum').value:'',
-      storage_sqm:storage?parseFloat(document.getElementById('uStorageSqm').value||0):0
-    }).select();
+    const{data,error}=await sb.from('unidades').insert({comunidad_id:state.selectedComunidad.id,numero:number,piso:parseInt(floor),sqm:parseFloat(sqm),monthly_fee:parseInt(document.getElementById('uFee').value)||85000,parking,parking_num:parking?document.getElementById('uParkingNum').value:'',parking_sqm:parking?parseFloat(document.getElementById('uParkingSqm').value||0):0,storage,storage_num:storage?document.getElementById('uStorageNum').value:'',storage_sqm:storage?parseFloat(document.getElementById('uStorageSqm').value||0):0}).select();
     if(error){showAlert('Error al guardar','error');return;}
-    const unidades=[...state.comunidadData.unidades,...data];
-    setState({comunidadData:{...state.comunidadData,unidades}});showAlert('Unidad agregada');
+    setState({comunidadData:{...state.comunidadData,unidades:[...state.comunidadData.unidades,...data]}});showAlert('Unidad agregada');
   });
   document.getElementById('btnAddResident')?.addEventListener('click',()=>toggleForm('residentForm'));
   document.getElementById('btnCancelResident')?.addEventListener('click',()=>toggleForm('residentForm',false));
   document.getElementById('btnSaveResident')?.addEventListener('click',async()=>{
     const nombre=document.getElementById('rName').value.trim();
-    const email=document.getElementById('rEmail').value.trim();
     const unitId=document.getElementById('rUnit').value;
     const clave=document.getElementById('rClave').value.trim();
     const rol=document.getElementById('rRole').value;
     if(!nombre||!unitId||!clave){showAlert('Completa campos obligatorios','error');return;}
-    const{data,error}=await sb.from('usuarios').insert({
-      comunidad_id:state.selectedComunidad.id,unidad_id:unitId,nombre,email,
-      rut:document.getElementById('rRut').value,phone:document.getElementById('rPhone').value,
-      rol,clave,activo:true
-    }).select();
+    const{data,error}=await sb.from('usuarios').insert({comunidad_id:state.selectedComunidad.id,unidad_id:unitId,nombre,email:document.getElementById('rEmail').value,rut:document.getElementById('rRut').value,phone:document.getElementById('rPhone').value,rol,clave,activo:true}).select();
     if(error){showAlert('Error: '+error.message,'error');return;}
-    const residentes=[...state.comunidadData.residentes,...data];
-    setState({comunidadData:{...state.comunidadData,residentes}});showAlert('Residente registrado');
+    setState({comunidadData:{...state.comunidadData,residentes:[...state.comunidadData.residentes,...data]}});showAlert('Residente registrado');
   });
   document.getElementById('btnAddPayment')?.addEventListener('click',()=>toggleForm('paymentForm'));
   document.getElementById('btnCancelPayment')?.addEventListener('click',()=>toggleForm('paymentForm',false));
@@ -1326,19 +1395,11 @@ function attachEvents(){
     const curM=date.substr(0,7);
     const pf=getPendingFines(r?.unidad_id,curM);
     const finesAmt=pf.reduce((s,f)=>s+f.amount,0);
-    const{data,error}=await sb.from('pagos').insert({
-      comunidad_id:state.selectedComunidad.id,unidad_id:r?.unidad_id,usuario_id:userId,
-      amount:parseInt(amount),base_amount:parseInt(amount)-finesAmt,date,method,month:curM
-    }).select();
+    const{data,error}=await sb.from('pagos').insert({comunidad_id:state.selectedComunidad.id,unidad_id:r?.unidad_id,usuario_id:userId,amount:parseInt(amount),base_amount:parseInt(amount)-finesAmt,date,method,month:curM}).select();
     if(error){showAlert('Error','error');return;}
-    if(pf.length>0){
-      await sb.from('multas').update({status:'pagada'}).in('id',pf.map(f=>f.id));
-      const multas=state.comunidadData.multas.map(f=>pf.find(x=>x.id===f.id)?{...f,status:'pagada'}:f);
-      setState({comunidadData:{...state.comunidadData,multas}});
-    }
+    if(pf.length>0){await sb.from('multas').update({status:'pagada'}).in('id',pf.map(f=>f.id));const multas=state.comunidadData.multas.map(f=>pf.find(x=>x.id===f.id)?{...f,status:'pagada'}:f);setState({comunidadData:{...state.comunidadData,multas}});}
     const pagos=[...data,...state.comunidadData.pagos];
     setState({comunidadData:{...state.comunidadData,pagos},modal:{type:'receipt',payment:data[0]}});
-    showAlert('Pago registrado');
   });
   document.getElementById('btnAddFine')?.addEventListener('click',()=>toggleForm('fineForm'));
   document.getElementById('btnCancelFine')?.addEventListener('click',()=>toggleForm('fineForm',false));
@@ -1350,13 +1411,9 @@ function attachEvents(){
     const month=document.getElementById('fMonth').value;
     if(!sel||!amount||!reason){showAlert('Completa campos','error');return;}
     const[userId,unitId]=sel.split('|');
-    const{data,error}=await sb.from('multas').insert({
-      comunidad_id:state.selectedComunidad.id,unidad_id:unitId,usuario_id:userId,
-      amount:parseInt(amount),reason,date,month,status:'pendiente'
-    }).select();
+    const{data,error}=await sb.from('multas').insert({comunidad_id:state.selectedComunidad.id,unidad_id:unitId,usuario_id:userId,amount:parseInt(amount),reason,date,month,status:'pendiente'}).select();
     if(error){showAlert('Error','error');return;}
-    const multas=[...data,...state.comunidadData.multas];
-    setState({comunidadData:{...state.comunidadData,multas}});showAlert('Multa aplicada');
+    setState({comunidadData:{...state.comunidadData,multas:[...data,...state.comunidadData.multas]}});showAlert('Multa aplicada');
   });
   document.getElementById('btnAddWorker')?.addEventListener('click',()=>toggleForm('workerForm'));
   document.getElementById('btnCancelWorker')?.addEventListener('click',()=>toggleForm('workerForm',false));
@@ -1370,15 +1427,9 @@ function attachEvents(){
     if(!nombre||!rut||!rol){showAlert('Completa campos','error');return;}
     const afp_type=tipo==='contrato'?document.getElementById('wAfp').value:'';
     const health_type=tipo==='contrato'?document.getElementById('wHealth').value:'';
-    const{data,error}=await sb.from('trabajadores').insert({
-      comunidad_id:state.selectedComunidad.id,nombre,rut,rol,tipo,gross_salary,start_date,
-      afp_type,health_type,
-      health_amount:health_type==='Isapre'?parseInt(document.getElementById('wIsapreAmt').value||0):0,
-      activo:true
-    }).select();
+    const{data,error}=await sb.from('trabajadores').insert({comunidad_id:state.selectedComunidad.id,nombre,rut,rol,tipo,gross_salary,start_date,afp_type,health_type,health_amount:health_type==='Isapre'?parseInt(document.getElementById('wIsapreAmt').value||0):0,activo:true}).select();
     if(error){showAlert('Error','error');return;}
-    const trabajadores=[...state.comunidadData.trabajadores,...data];
-    setState({comunidadData:{...state.comunidadData,trabajadores}});showAlert('Trabajador agregado');
+    setState({comunidadData:{...state.comunidadData,trabajadores:[...state.comunidadData.trabajadores,...data]}});showAlert('Trabajador agregado');
   });
   document.getElementById('btnAddAlert')?.addEventListener('click',()=>toggleForm('alertForm'));
   document.getElementById('btnCancelAlert')?.addEventListener('click',()=>toggleForm('alertForm',false));
@@ -1391,14 +1442,9 @@ function attachEvents(){
     const residentSel=full?document.getElementById('aResident')?.value:'';
     const usuario_id=residentSel||state.currentUser?.id||null;
     const unidad_id=usuario_id?state.comunidadData.residentes.find(r=>r.id===usuario_id)?.unidad_id:null;
-    const{data,error}=await sb.from('alertas').insert({
-      comunidad_id:state.selectedComunidad.id,tipo,titulo,descripcion,
-      usuario_id,unidad_id,date:today(),
-      time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),status:'activa'
-    }).select();
+    const{data,error}=await sb.from('alertas').insert({comunidad_id:state.selectedComunidad.id,tipo,titulo,descripcion,usuario_id,unidad_id,date:today(),time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),status:'activa'}).select();
     if(error){showAlert('Error','error');return;}
-    const alertas=[...data,...state.comunidadData.alertas];
-    setState({comunidadData:{...state.comunidadData,alertas}});showAlert('Alerta enviada');
+    setState({comunidadData:{...state.comunidadData,alertas:[...data,...state.comunidadData.alertas]}});showAlert('Alerta enviada');
   });
   document.getElementById('reportMonth')?.addEventListener('change',function(){setState({reportMonth:this.value});});
   document.getElementById('btnSaveSettings')?.addEventListener('click',async()=>{
@@ -1406,35 +1452,46 @@ function attachEvents(){
     const ciudad=document.getElementById('bCity').value.trim();
     const direccion=document.getElementById('bAddr').value.trim();
     await sb.from('comunidades').update({nombre,ciudad,direccion}).eq('id',state.selectedComunidad.id);
-    setState({selectedComunidad:{...state.selectedComunidad,nombre,ciudad,direccion}});
-    showAlert('Configuración guardada');
-  });
-  document.getElementById('btnSaveComunidad')?.addEventListener('click',async()=>{
-    const nombre=document.getElementById('ncNombre').value.trim();
-    const direccion=document.getElementById('ncDir').value.trim();
-    const ciudad=document.getElementById('ncCiudad').value.trim();
-    const codigo_acceso=document.getElementById('ncCodigo').value.trim().toUpperCase();
-    if(!nombre||!codigo_acceso){showAlert('Completa campos obligatorios','error');return;}
-    setState({loading:true});
-    const{data,error}=await sb.from('comunidades').insert({nombre,direccion,ciudad,codigo_acceso,activa:true}).select();
-    setState({loading:false});
-    if(error){showAlert('Error: código ya existe o problema de conexión','error');return;}
-    const comunidades=[...state.comunidades,...data];
-    setState({comunidades,modal:null});showAlert('Comunidad creada exitosamente');
+    setState({selectedComunidad:{...state.selectedComunidad,nombre,ciudad,direccion}});showAlert('Guardado');
   });
   document.getElementById('btnSaveExpense')?.addEventListener('click',async()=>{
     const amount=document.getElementById('eAmount')?.value;
     const date=document.getElementById('eDate')?.value;
     if(!amount||!date){showAlert('Completa campos','error');return;}
     const cat=EXPENSE_CATS.find(c=>c.id===state.selectedCat);
-    const{data,error}=await sb.from('gastos').insert({
-      comunidad_id:state.selectedComunidad.id,cat_id:cat.id,label:cat.label,icon:cat.icon,
-      prorate:cat.prorate,amount:parseInt(amount),date,
-      description:document.getElementById('eDesc')?.value||'',month:date.substr(0,7)
-    }).select();
+    const{data,error}=await sb.from('gastos').insert({comunidad_id:state.selectedComunidad.id,cat_id:cat.id,label:cat.label,icon:cat.icon,prorate:cat.prorate,amount:parseInt(amount),date,description:document.getElementById('eDesc')?.value||'',month:date.substr(0,7)}).select();
     if(error){showAlert('Error','error');return;}
-    const gastos=[...data,...state.comunidadData.gastos];
-    setState({comunidadData:{...state.comunidadData,gastos},selectedCat:null});showAlert('Gasto registrado');
+    setState({comunidadData:{...state.comunidadData,gastos:[...data,...state.comunidadData.gastos]},selectedCat:null});showAlert('Gasto registrado');
+  });
+  document.getElementById('btnCambiarClave')?.addEventListener('click',async()=>{
+    const actual=document.getElementById('pwActual').value;
+    const nueva=document.getElementById('pwNueva').value;
+    const confirm=document.getElementById('pwConfirm').value;
+    if(!actual||!nueva||!confirm){showAlert('Completa todos los campos','error');return;}
+    if(actual!==state.currentUser.clave){showAlert('La clave actual es incorrecta','error');return;}
+    if(nueva.length<6){showAlert('La nueva clave debe tener al menos 6 caracteres','error');return;}
+    if(nueva!==confirm){showAlert('Las claves no coinciden','error');return;}
+    const{error}=await sb.from('usuarios').update({clave:nueva}).eq('id',state.currentUser.id);
+    if(error){showAlert('Error al cambiar clave','error');return;}
+    setState({currentUser:{...state.currentUser,clave:nueva}});
+    showAlert('Clave cambiada exitosamente');
+    document.getElementById('pwActual').value='';
+    document.getElementById('pwNueva').value='';
+    document.getElementById('pwConfirm').value='';
+  });
+  document.getElementById('btnCrearComunidad')?.addEventListener('click',async()=>{
+    const nombre=document.getElementById('ncNombre').value.trim();
+    const codigo_acceso=document.getElementById('ncCodigo').value.trim().toUpperCase();
+    const adminNombre=document.getElementById('ncAdminNombre').value.trim();
+    const adminClave=document.getElementById('ncAdminClave').value.trim();
+    if(!nombre||!codigo_acceso||!adminNombre||!adminClave){showAlert('Completa campos obligatorios','error');return;}
+    setState({loading:true});
+    const{data:comData,error:comError}=await sb.from('comunidades').insert({nombre,direccion:document.getElementById('ncDir').value,ciudad:document.getElementById('ncCiudad').value,region:document.getElementById('ncRegion').value,codigo_acceso,plan:document.getElementById('ncPlan').value,monto_implementacion:parseInt(document.getElementById('ncImpl').value||0),monto_mantencion:parseInt(document.getElementById('ncMant').value||0),notas:document.getElementById('ncNotas').value,activa:true,fecha_inicio:today()}).select();
+    if(comError){setState({loading:false});showAlert('Error: código ya existe','error');return;}
+    const comId=comData[0].id;
+    await sb.from('usuarios').insert({comunidad_id:comId,nombre:adminNombre,email:document.getElementById('ncAdminEmail').value,phone:document.getElementById('ncAdminPhone').value,rol:'admin',clave:adminClave,activo:true});
+    const comunidades=[...state.comunidades,...comData];
+    setState({loading:false,comunidades,view:'sa_comunidades'});showAlert('Comunidad creada exitosamente');
   });
   document.getElementById('modalOverlay')?.addEventListener('click',function(e){if(e.target===this)setState({modal:null});});
 }
@@ -1445,55 +1502,77 @@ function toggleForm(id,show=null){
   f.style.display=show===null?(f.style.display==='none'?'block':'none'):show?'block':'none';
 }
 
-// LOGIN ACTIONS
-window.selectComunidad=function(id){
-  const c=state.comunidades.find(x=>x.id===id);
-  setState({selectedComunidad:c});
+// SIDEBAR MOBILE
+window.openSidebar=()=>{
+  const s=document.getElementById('mainSidebar');
+  const o=document.getElementById('sidebar-overlay');
+  if(s)s.classList.add('open');
+  if(o)o.style.display='block';
 };
-window.goToStep2=function(){
-  if(!state.selectedComunidad)return;
-  setState({loginStep:2});
-  setTimeout(()=>document.getElementById('claveInput')?.focus(),100);
+window.closeSidebar=()=>{
+  const s=document.getElementById('mainSidebar');
+  const o=document.getElementById('sidebar-overlay');
+  if(s)s.classList.remove('open');
+  if(o)o.style.display='none';
 };
-window.doLogin=async function(){
+
+// LOGIN
+window.selectComunidad=id=>setState({selectedComunidad:state.comunidades.find(x=>x.id===id)});
+window.goToStep2=()=>{if(state.selectedComunidad){setState({loginStep:2});setTimeout(()=>document.getElementById('claveInput')?.focus(),100);}};
+window.goToSuperAdminLogin=()=>{setState({loginStep:3});setTimeout(()=>document.getElementById('superClave')?.focus(),100);};
+window.doSuperLogin=async()=>{
+  const clave=document.getElementById('superClave')?.value?.trim();
+  if(!clave){showAlert('Ingresa la clave','error');return;}
+  setState({loading:true});
+  const{data,error}=await sb.from('superadmin').select('*').eq('clave',clave).single();
+  setState({loading:false});
+  if(error||!data){showAlert('Clave incorrecta','error');return;}
+  setState({screen:'superadmin',isSuperAdmin:true,view:'sa_dashboard'});
+};
+window.doLogin=async()=>{
   const clave=document.getElementById('claveInput')?.value?.trim();
   if(!clave){showAlert('Ingresa tu clave','error');return;}
   setState({loading:true});
-  const{data,error}=await sb.from('usuarios')
-    .select('*')
-    .eq('comunidad_id',state.selectedComunidad.id)
-    .eq('clave',clave)
-    .eq('activo',true)
-    .single();
-  if(error||!data){
-    setState({loading:false});showAlert('Clave incorrecta. Intenta nuevamente.','error');return;
-  }
+  const{data,error}=await sb.from('usuarios').select('*').eq('comunidad_id',state.selectedComunidad.id).eq('clave',clave).eq('activo',true).single();
+  if(error||!data){setState({loading:false});showAlert('Clave incorrecta','error');return;}
   const comunidadData=await loadComunidadData(state.selectedComunidad.id);
   const full=data.rol==='admin'||data.rol==='presidente'||data.rol==='tesorero';
   setState({loading:false,screen:'app',currentUser:data,comunidadData,view:full?'dashboard':'my_account'});
 };
-window.logout=function(){
-  setState({screen:'login',loginStep:1,currentUser:null,selectedComunidad:null,comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[]}});
+window.logout=()=>setState({screen:'login',loginStep:1,currentUser:null,selectedComunidad:null,isSuperAdmin:false,comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[]}});
+window.backToSuperAdmin=()=>setState({screen:'superadmin',view:'sa_dashboard'});
+window.enterComunidad=async id=>{
+  setState({loading:true});
+  const com=state.comunidades.find(x=>x.id===id);
+  const comunidadData=await loadComunidadData(id);
+  setState({loading:false,screen:'app',selectedComunidad:com,comunidadData,view:'dashboard',currentUser:{nombre:'Rodrigo (Superadmin)',rol:'admin',id:'superadmin'}});
+};
+
+// SUPERADMIN ACTIONS
+window.editComunidad=id=>{const c=state.comunidades.find(x=>x.id===id);if(c)setState({modal:{type:'edit_comunidad',comunidad:c}});};
+window.saveEditComunidad=async id=>{
+  const updates={nombre:document.getElementById('ec_nombre').value.trim(),ciudad:document.getElementById('ec_ciudad').value.trim(),direccion:document.getElementById('ec_dir').value.trim(),plan:document.getElementById('ec_plan').value,monto_mantencion:parseInt(document.getElementById('ec_mant').value||0),monto_implementacion:parseInt(document.getElementById('ec_impl').value||0),notas:document.getElementById('ec_notas').value};
+  await sb.from('comunidades').update(updates).eq('id',id);
+  const comunidades=state.comunidades.map(c=>c.id===id?{...c,...updates}:c);
+  setState({comunidades,modal:null});showAlert('Comunidad actualizada');
+};
+window.toggleComunidad=async(id,activa)=>{
+  await sb.from('comunidades').update({activa:!activa}).eq('id',id);
+  const comunidades=state.comunidades.map(c=>c.id===id?{...c,activa:!activa}:c);
+  setState({comunidades});showAlert(activa?'Comunidad desactivada':'Comunidad activada');
 };
 
 // APP ACTIONS
-window.viewReceipt=id=>{
-  const p=state.comunidadData.pagos.find(x=>x.id===id);
-  if(p)setState({modal:{type:'receipt',payment:p}});
-};
+window.viewReceipt=id=>{const p=state.comunidadData.pagos.find(x=>x.id===id);if(p)setState({modal:{type:'receipt',payment:p}});};
 window.viewLiquidacion=id=>setState({modal:{type:'liquidacion',worker:state.comunidadData.trabajadores.find(w=>w.id===id)}});
 window.viewBoleta=id=>setState({modal:{type:'boleta',worker:state.comunidadData.trabajadores.find(w=>w.id===id)}});
 window.openFiniquito=id=>setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:'renuncia',lastDay:today()}});
-window.updateFiniquito=id=>{
-  const type=document.getElementById('finType')?.value;
-  const lastDay=document.getElementById('finLastDay')?.value;
-  setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:type,lastDay}});
-};
+window.updateFiniquito=id=>{const type=document.getElementById('finType')?.value;const lastDay=document.getElementById('finLastDay')?.value;setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:type,lastDay}});};
 window.confirmarFiniquito=async id=>{
   const type=document.getElementById('finType')?.value||'renuncia';
   const lastDay=document.getElementById('finLastDay')?.value||today();
   await sb.from('trabajadores').update({activo:false,end_date:lastDay,end_reason:type}).eq('id',id);
-  const trabajadores=state.comunidadData.trabajadores.map(w=>w.id===id?{...w,activo:false,end_date:lastDay,end_reason:type}:w);
+  const trabajadores=state.comunidadData.trabajadores.map(w=>w.id===id?{...w,activo:false,end_date:lastDay}:w);
   setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador desvinculado');
 };
 window.desvincularWorker=id=>setState({modal:{type:'confirm',message:'¿Confirmar desvinculación?',onConfirm:`doDesvincular('${id}')`}});
@@ -1507,17 +1586,15 @@ window.resolveAlert=async id=>{
   const alertas=state.comunidadData.alertas.map(a=>a.id===id?{...a,status:'resuelta'}:a);
   setState({comunidadData:{...state.comunidadData,alertas}});showAlert('Alerta resuelta');
 };
-window.deleteUnit=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta unidad? Asegúrate que no tenga residente asignado.',onConfirm:`doDeleteUnit('${id}')`}});
+window.deleteUnit=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta unidad?',onConfirm:`doDeleteUnit('${id}')`}});
 window.doDeleteUnit=async id=>{
   await sb.from('unidades').delete().eq('id',id);
-  const unidades=state.comunidadData.unidades.filter(u=>u.id!==id);
-  setState({comunidadData:{...state.comunidadData,unidades},modal:null});showAlert('Unidad eliminada');
+  setState({comunidadData:{...state.comunidadData,unidades:state.comunidadData.unidades.filter(u=>u.id!==id)},modal:null});showAlert('Unidad eliminada');
 };
-window.deleteResident=(id,nombre)=>setState({modal:{type:'confirm',message:`¿Eliminar a ${nombre}? La unidad quedará disponible.`,onConfirm:`doDeleteResident('${id}')`}});
+window.deleteResident=(id,nombre)=>setState({modal:{type:'confirm',message:`¿Eliminar a ${nombre}?`,onConfirm:`doDeleteResident('${id}')`}});
 window.doDeleteResident=async id=>{
   await sb.from('usuarios').update({activo:false}).eq('id',id);
-  const residentes=state.comunidadData.residentes.filter(r=>r.id!==id);
-  setState({comunidadData:{...state.comunidadData,residentes},modal:null});showAlert('Residente eliminado');
+  setState({comunidadData:{...state.comunidadData,residentes:state.comunidadData.residentes.filter(r=>r.id!==id)},modal:null});showAlert('Residente eliminado');
 };
 window.saveEditUnit=async id=>{
   const numero=document.getElementById('eu_number')?.value.trim();
@@ -1527,14 +1604,9 @@ window.saveEditUnit=async id=>{
   const parking=document.getElementById('eu_parking')?.checked;
   const storage=document.getElementById('eu_storage')?.checked;
   if(!numero||!piso||!sqm){showAlert('Completa campos','error');return;}
-  const updates={numero,piso,sqm,monthly_fee,parking,
-    parking_num:parking?document.getElementById('eu_parkNum')?.value||'':'',
-    parking_sqm:parking?parseFloat(document.getElementById('eu_parkSqm')?.value||0):0,
-    storage,storage_num:storage?document.getElementById('eu_storNum')?.value||'':'',
-    storage_sqm:storage?parseFloat(document.getElementById('eu_storSqm')?.value||0):0};
+  const updates={numero,piso,sqm,monthly_fee,parking,parking_num:parking?document.getElementById('eu_parkNum')?.value||'':'',parking_sqm:parking?parseFloat(document.getElementById('eu_parkSqm')?.value||0):0,storage,storage_num:storage?document.getElementById('eu_storNum')?.value||'':'',storage_sqm:storage?parseFloat(document.getElementById('eu_storSqm')?.value||0):0};
   await sb.from('unidades').update(updates).eq('id',id);
-  const unidades=state.comunidadData.unidades.map(u=>u.id===id?{...u,...updates}:u);
-  setState({comunidadData:{...state.comunidadData,unidades},modal:null});showAlert('Unidad actualizada');
+  setState({comunidadData:{...state.comunidadData,unidades:state.comunidadData.unidades.map(u=>u.id===id?{...u,...updates}:u)},modal:null});showAlert('Unidad actualizada');
 };
 window.onResidentChange=function(sel){
   const r=state.comunidadData.residentes.find(x=>x.id===sel.value);
@@ -1543,15 +1615,9 @@ window.onResidentChange=function(sel){
   const pf=r?getPendingFines(r.unidad_id,curM):[];
   const fa=pf.reduce((s,f)=>s+f.amount,0);
   const base=u?.monthly_fee||85000;
-  const unitInp=document.getElementById('pUnit');
-  const baseInp=document.getElementById('pBase');
-  const finesInp=document.getElementById('pFinesAmt');
-  const amtInp=document.getElementById('pAmount');
-  const finesInfo=document.getElementById('pFinesInfo');
-  if(unitInp)unitInp.value=u?`Depto ${u.numero} · Piso ${u.piso}`:'—';
-  if(baseInp)baseInp.value=base;
-  if(finesInp)finesInp.value=fa;
-  if(amtInp)amtInp.value=base+fa;
+  const unitInp=document.getElementById('pUnit');const baseInp=document.getElementById('pBase');const finesInp=document.getElementById('pFinesAmt');const amtInp=document.getElementById('pAmount');const finesInfo=document.getElementById('pFinesInfo');
+  if(unitInp)unitInp.value=u?`Depto ${u.numero} · P${u.piso}`:'—';
+  if(baseInp)baseInp.value=base;if(finesInp)finesInp.value=fa;if(amtInp)amtInp.value=base+fa;
   if(finesInfo){if(pf.length>0){finesInfo.style.display='block';finesInfo.innerHTML=`⚠ Multas: ${fmt(fa)}`;}else finesInfo.style.display='none';}
 };
 window.toggleField=id=>{const f=document.getElementById(id);if(f)f.style.display=f.style.display==='none'?'grid':'none';};
@@ -1559,18 +1625,20 @@ window.switchWorkerType=type=>{
   document.getElementById('wType').value=type;
   document.getElementById('wTypeContrato').className='tab-btn'+(type==='contrato'?' active':'');
   document.getElementById('wTypeHonorarios').className='tab-btn'+(type==='honorarios'?' active':'');
-  const cf=document.getElementById('contratoFields');
-  if(cf)cf.style.display=type==='contrato'?'block':'none';
+  const cf=document.getElementById('contratoFields');if(cf)cf.style.display=type==='contrato'?'block':'none';
 };
 window.toggleIsapre=()=>{const v=document.getElementById('wHealth')?.value;const f=document.getElementById('isapreFields');if(f)f.style.display=v==='Isapre'?'grid':'none';};
 window.updateProrate=()=>{
   const amt=parseInt(document.getElementById('eAmount')?.value||0);
-  const prev=document.getElementById('proratePreview');
-  const body=document.getElementById('prorateBody');
+  const prev=document.getElementById('proratePreview');const body=document.getElementById('prorateBody');
   if(!prev||!body)return;
   if(amt>0){prev.style.display='block';body.innerHTML=calcProrate(amt,state.comunidadData.unidades).map(p=>{const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);return`<tr><td>Depto ${u?.numero||''}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:#1a56db">${fmt(p.amount)}</td></tr>`;}).join('');}else prev.style.display='none';
 };
-window.downloadDoc=title=>alert(`Documento "${title}" pendiente de carga.`);
+
+// PWA
+window.installPWA=()=>{if(state.installPrompt){state.installPrompt.prompt();state.installPrompt.userChoice.then(()=>setState({installPrompt:null}));}};
+
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();setState({installPrompt:e});});
 
 // INIT
 async function init(){
@@ -1578,7 +1646,6 @@ async function init(){
   const comunidades=await loadComunidades();
   setState({loading:false,comunidades});
 }
-
 init();
 </script>
 </body>
