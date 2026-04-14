@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vecinoo">
+<meta name="theme-color" content="#0F172A">
+<title>Vecinoo — Todo tu edificio, en orden</title>
+<!-- Vecinoo v2.1 - build 20260414_1608 -->
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a1a;min-height:100vh}
+:root{--navy:#0F172A;--navy2:#1E293B;--green:#2E766B;--green2:#1d5249;--gold:#E6B800;--gold2:#b89200;--white:#F8FAFC;--gray:#94A3B8;--gray2:#64748B;--red:#DC2626;--light:#E8F0FE;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy);padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:24px}
+.logo-mark{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.logo-icon{width:52px;height:52px}
+.logo-wordmark{font-size:28px;font-weight:800;color:var(--navy);letter-spacing:-0.5px}
+.logo-tagline{font-size:12px;color:var(--gold2);margin-top:2px;font-weight:500}
+.login-step{display:none}
+.login-step.active{display:block}
+.community-list{max-height:260px;overflow-y:auto;margin-bottom:14px}
+.community-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e5e5e5;border-radius:10px;cursor:pointer;margin-bottom:6px;transition:all .2s}
+.community-item:hover,.community-item.selected{border-color:var(--navy);background:#f0f4ff}
+.community-info h3{font-size:13px;font-weight:700}
+.community-info p{font-size:11px;color:#6b7280}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:230px;background:#fff;border-right:1px solid #e5e5e5;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .3s}
+.sidebar-logo{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.1);background:var(--navy)}
+.sidebar-logo-row{display:flex;align-items:center;gap:8px}
+.sidebar-logo-icon{width:32px;height:32px;flex-shrink:0}
+.sidebar-logo-text h1{font-size:16px;font-weight:800;color:var(--white);line-height:1.2;letter-spacing:-0.3px}
+.sidebar-logo-text p{font-size:10px;color:var(--gold);margin-top:1px}
+.nav{flex:1;padding:6px 0}
+.nav-section{padding:10px 16px 3px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 16px;font-size:12px;color:#374151;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all .15s}
+.nav-item:hover{background:#f3f4f6}
+.nav-item.active{background:#f0f4ff;color:var(--navy);font-weight:600;border-right:3px solid var(--gold)}
+.user-info{padding:10px 16px;border-top:1px solid #e5e5e5;font-size:11px;color:#6b7280}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;margin-top:3px}
+.role-superadmin{background:var(--navy);color:#fff}
+.role-admin{background:#dbeafe;color:#1e40af}
+.role-presidente{background:#ede9fe;color:#5b21b6}
+.role-tesorero{background:#fef3c7;color:#92400e}
+.role-resident{background:#d1fae5;color:#065f46}
+.main{flex:1;overflow-y:auto;padding:18px;background:#f0f2f5}
+.topbar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--navy);border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;z-index:100}
+.topbar-logo{display:flex;align-items:center;gap:6px}
+.topbar-logo svg{width:24px;height:24px}
+.topbar-logo span{font-size:14px;font-weight:800;color:var(--white);letter-spacing:-0.3px}
+.hamburger{background:none;border:none;font-size:20px;cursor:pointer;color:var(--white)}
+.page-header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.page-header h2{font-size:18px;font-weight:700}
+.page-header p{font-size:12px;color:#6b7280;margin-top:2px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric{background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e5e5e5}
+.metric-label{font-size:10px;color:#6b7280;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.metric-value{font-size:20px;font-weight:700}
+.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--navy)}.amber{color:#d97706}.purple{color:#7c3aed}.gold{color:var(--gold2)}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700;color:#111}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid #d1d5db;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;color:#374151;font-weight:500;-webkit-appearance:none}
+.btn:hover{background:#f9fafb}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-primary:hover{background:var(--navy2)}
+.btn-gold{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700}
+.btn-gold:hover{background:var(--gold2)}
+.btn-success{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-danger{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-warning{background:#d97706;color:#fff;border-color:#d97706}
+.btn-dark{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-purple{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.btn-sm{padding:4px 9px;font-size:11px}
+.btn-block{width:100%;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e5e5;background:#f9fafb}
+td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:#f3f4f6;color:#374151}
+.badge-purple{background:#ede9fe;color:#5b21b6}
+.badge-dark{background:var(--navy);color:#fff}
+.badge-gold{background:#fef9c3;color:#854d0e}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px}
+.form-control{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:#111;-webkit-appearance:none}
+.form-control:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(15,23,42,.08)}
+.form-control:disabled{background:#f9fafb;color:#6b7280;cursor:not-allowed}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal-lg{max-width:700px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:14px;font-weight:700}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1e40af;flex-shrink:0}
+.empty{text-align:center;padding:32px;color:#9ca3af;font-size:13px}
+.alert-bar{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;font-weight:500}
+.alert-success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.receipt{font-size:12px}
+.receipt-header{text-align:center;padding-bottom:14px;margin-bottom:14px;border-bottom:2px dashed #e5e5e5}
+.receipt-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
+.receipt-total{font-size:15px;font-weight:700;margin-top:10px;padding-top:10px;border-top:2px solid #111;display:flex;justify-content:space-between}
+.progress-bar{height:6px;background:#f3f4f6;border-radius:4px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:4px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
+.stat-row:last-child{border-bottom:none}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.cat-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;border:2px solid #e5e5e5;border-radius:10px;background:#fff;cursor:pointer;transition:all .2s;font-size:10px;font-weight:600;color:#374151;gap:4px;text-align:center}
+.cat-btn:hover{border-color:var(--navy);background:#f0f4ff;color:var(--navy)}
+.cat-btn.selected{border-color:var(--gold);background:var(--navy);color:#fff}
+.cat-icon{font-size:18px}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.toggle{position:relative;width:38px;height:20px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:20px;cursor:pointer;transition:.3s}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.toggle-slider{background:var(--green)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
+.section-div{font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid #e5e5e5}
+.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.doc-card{border:1px solid #e5e5e5;border-radius:10px;padding:16px 12px;text-align:center;background:#fff}
+.doc-icon{font-size:28px;margin-bottom:8px}
+.doc-title{font-size:11px;font-weight:700;margin-bottom:4px}
+.doc-desc{font-size:10px;color:#6b7280;margin-bottom:10px}
+.alert-card{padding:10px 14px;background:#fff;border-radius:8px;margin-bottom:8px;border:1px solid #e5e5e5;border-left:4px solid var(--red)}
+.alert-card.info{border-left-color:var(--navy)}
+.alert-card.warning{border-left-color:var(--gold)}
+.liq-table{font-size:12px;width:100%}
+.liq-table td{padding:5px 8px;border-bottom:1px solid #f3f4f6}
+.liq-table .total{font-weight:700;font-size:13px;border-top:2px solid #111}
+.tab-bar{display:flex;gap:4px;background:#f3f4f6;padding:4px;border-radius:8px;margin-bottom:12px}
+.tab-btn{flex:1;padding:6px;border:none;background:none;font-size:11px;cursor:pointer;border-radius:6px;font-family:inherit;color:#6b7280;font-weight:500}
+.tab-btn.active{background:#fff;color:var(--navy);font-weight:700;border-bottom:2px solid var(--gold)}
+.loading{text-align:center;padding:32px;color:#6b7280;font-size:13px}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid #e5e5e5;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.superadmin-bar{background:var(--navy);color:#fff;padding:7px 14px;font-size:11px;display:flex;justify-content:space-between;align-items:center}
+.superadmin-bar .bar-logo{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--white)}
+.superadmin-bar .bar-logo .dot{color:var(--gold)}
+.comunidad-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.plan-badge{padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700}
+.plan-basico{background:#f3f4f6;color:#374151}
+.plan-profesional{background:#dbeafe;color:#1e40af}
+.plan-enterprise{background:#fef9c3;color:#854d0e}
+.locked-badge{background:#fef9c3;color:#92400e;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600}
+.install-banner{background:var(--navy);color:#fff;padding:10px 16px;font-size:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border-bottom:3px solid var(--gold)}
+.votacion-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:16px;margin-bottom:12px;border-top:3px solid var(--gold)}
+.votacion-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.opcion-voto{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:2px solid #e5e5e5;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.opcion-voto:hover{border-color:var(--navy);background:#f0f4ff}
+.opcion-voto.selected{border-color:var(--gold);background:var(--navy);color:#fff}
+.opcion-voto.voted{cursor:default}
+.voto-bar{height:8px;background:#e5e5e5;border-radius:4px;overflow:hidden;margin-top:4px}
+.voto-fill{height:100%;background:var(--navy);border-radius:4px;transition:width .5s}
+.resultado-row{padding:10px 0;border-bottom:1px solid #f3f4f6}
+.resultado-row:last-child{border-bottom:none}
+.acta-box{background:#f9fafb;border:1px solid #e5e5e5;border-radius:8px;padding:14px;font-size:12px;margin-top:12px;border-left:3px solid var(--gold)}
+/* ── VOTACION PROGRAMADA ── */
+.vot-schedule-box{background:#f0f4ff;border:1px solid #c7d2fe;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px}
+.vot-countdown{font-weight:700;color:var(--navy);font-size:13px}
+.vot-estado-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
+.vot-activa{background:#d1fae5;color:#065f46}
+.vot-programada{background:#dbeafe;color:#1e40af}
+.vot-cerrada{background:#f3f4f6;color:#374151}
+@media(max-width:768px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .doc-grid{grid-template-columns:1fr 1fr}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:200;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .topbar{display:flex}
+  .main{padding:12px}
+  .form-row-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:420px){
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .doc-grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+@media print{
+  .sidebar,.topbar,.superadmin-bar,.btn,.tab-bar,.no-print{display:none!important}
+  .main{padding:0!important}
+  .card{border:1px solid #ccc;margin-bottom:10px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="sidebar-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199" onclick="closeSidebar()"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://ymeydrtkhqhdwjwgfpfx.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZXlkcnRraHFoZHdqd2dmcGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTczODUsImV4cCI6MjA5MTQ5MzM4NX0.OkfpKQWKFFsWXMAH1SRw0Zfu9WnK1dAvZPYzQzYHrMQ';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const LOGO_SVG=`<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="52" height="52" rx="10" fill="#0F172A"/>
+  <rect x="10" y="28" width="10" height="16" rx="1" fill="#2E766B"/>
+  <rect x="18" y="20" width="9" height="24" rx="1" fill="#2E766B"/>
+  <rect x="7" y="33" width="6" height="11" rx="1" fill="#1d5249"/>
+  <rect x="12" y="31" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="18" y="31" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="12" y="37" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="18" y="37" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="20" y="24" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="25" y="24" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="20" y="29" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <rect x="25" y="29" width="3" height="3" rx="0.5" fill="#0F172A" opacity="0.5"/>
+  <circle cx="38" cy="22" r="10" fill="#E6B800"/>
+  <path d="M32 22 L37 28 L44 15" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const LOGO_ICON_HTML=`<div style="display:inline-flex;align-items:center;gap:8px">
+  <div style="width:40px;height:40px;flex-shrink:0">${LOGO_SVG}</div>
+  <div>
+    <div style="font-size:22px;font-weight:800;color:#0F172A;letter-spacing:-0.5px;line-height:1">Vecinoo</div>
+    <div style="font-size:10px;color:#b89200;font-weight:500;line-height:1.2">Todo tu edificio, en orden.</div>
+  </div>
+</div>`;
+
+const LOGO_WHITE_HTML=`<div style="display:inline-flex;align-items:center;gap:8px">
+  <div style="width:32px;height:32px;flex-shrink:0">${LOGO_SVG}</div>
+  <div>
+    <div style="font-size:16px;font-weight:800;color:#F8FAFC;letter-spacing:-0.3px;line-height:1.2">Vecinoo</div>
+    <div style="font-size:10px;color:#E6B800;font-weight:500">Todo tu edificio, en orden.</div>
+  </div>
+</div>`;
+
+const fmt=n=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n);
+const fmtD=d=>d?new Date(d).toLocaleDateString('es-CL'):'—';
+const today=()=>new Date().toISOString().split('T')[0];
+const thisMonth=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
+const nowDateTime=()=>{const d=new Date();return d.toISOString().slice(0,16);};
+
+const EXPENSE_CATS=[
+  {id:'agua',icon:'💧',label:'Agua',prorate:true},
+  {id:'luz',icon:'💡',label:'Electricidad',prorate:true},
+  {id:'gas',icon:'🔥',label:'Gas',prorate:true},
+  {id:'internet',icon:'📡',label:'Internet',prorate:true},
+  {id:'ascensor',icon:'🛗',label:'Ascensor',prorate:false},
+  {id:'piscina',icon:'🏊',label:'Piscina',prorate:false},
+  {id:'jardineria',icon:'🌿',label:'Jardinería',prorate:false},
+  {id:'limpieza',icon:'🧹',label:'Limpieza',prorate:false},
+  {id:'seguridad',icon:'🔒',label:'Seguridad',prorate:false},
+  {id:'mantencion',icon:'🔧',label:'Mantención',prorate:false},
+  {id:'seguros',icon:'🛡️',label:'Seguros',prorate:false},
+  {id:'admin',icon:'📋',label:'Administración',prorate:false},
+  {id:'otros',icon:'➕',label:'Otros',prorate:false},
+];
+const AFP_LIST=['Capital','Cuprum','Habitat','PlanVital','ProVida','Uno'];
+const ISAPRE_LIST=['Banmédica','Colmena','Cruz Blanca','Más Vida','Nueva Masvida','Vida Tres'];
+
+function calcLiquidacion(w){
+  const bruto=parseInt(w.gross_salary)||0;
+  const afpPct=w.afp_type==='Uno'?0.0058:0.1027;
+  const afp=Math.round(bruto*afpPct);
+  const sis=Math.round(bruto*0.0154);
+  const segCes=Math.round(bruto*0.006);
+  const salud=w.health_type==='Fonasa'?Math.round(bruto*0.07):parseInt(w.health_amount)||0;
+  const imp=calcImpuesto(bruto-afp-salud);
+  const liquido=bruto-afp-salud-segCes-imp;
+  return{bruto,afp,sis,segCes,salud,imp,liquido,afpPct,gratif:Math.round(bruto*0.25)};
+}
+function calcImpuesto(base){
+  const utm=65443;const e=base/utm;
+  if(e<=13.5)return 0;if(e<=30)return Math.round(base*0.04-0.192*utm);
+  if(e<=50)return Math.round(base*0.08-1.392*utm);if(e<=70)return Math.round(base*0.135-4.142*utm);
+  return Math.round(base*0.23-10.792*utm);
+}
+function calcFiniquito(w,type,lastDay){
+  const liq=calcLiquidacion(w);
+  const years=(new Date(lastDay)-new Date(w.start_date))/(1000*60*60*24*365);
+  const yf=Math.floor(years);const mf=Math.round((years-yf)*12);
+  const ind=type==='despido'?Math.round(liq.bruto*Math.min(yf+(mf>=6?1:0),11)):0;
+  const dias=Math.round((new Date(lastDay).getDate()/30)*liq.liquido);
+  const vac=Math.round(years*15/12*(liq.bruto/30));
+  return{ind,dias,vac,total:ind+dias+vac,years:yf,months:mf};
+}
+function getTotalSqm(u){return(u.sqm||0)+(u.parking?u.parking_sqm||0:0)+(u.storage?u.storage_sqm||0:0);}
+function calcProrate(amount,units){
+  const total=units.reduce((s,u)=>s+getTotalSqm(u),0);
+  return units.map(u=>({unitId:u.id,sqm:getTotalSqm(u),pct:total>0?getTotalSqm(u)/total:0,amount:total>0?Math.round(amount*getTotalSqm(u)/total):0}));
+}
+
+// ── FIX 1: canManageUnits — admin/presidente/tesorero pueden gestionar unidades ──
+function canManageUnits(){
+  if(state.isSuperAdmin)return true;
+  const r=state.currentUser?.rol;
+  return r==='admin'||r==='presidente'||r==='tesorero';
+}
+
+let state={
+  screen:'login',loginStep:1,
+  comunidades:[],selectedComunidad:null,
+  currentUser:null,isSuperAdmin:false,
+  comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[],votaciones:[],votos:[]},
+  view:'dashboard',modal:null,
+  alert:null,alertTimer:null,loading:false,
+  selectedCat:null,workerTab:'contrato',
+  reportMonth:thisMonth(),reportTab:'general',
+  installPrompt:null,
+};
+
+function setState(p){state={...state,...p};render();}
+function showAlert(msg,type='success'){
+  if(state.alertTimer)clearTimeout(state.alertTimer);
+  const t=setTimeout(()=>setState({alert:null}),3500);
+  setState({alert:{msg,type},alertTimer:t});
+}
+
+async function loadComunidades(){
+  const{data}=await sb.from('comunidades').select('*').eq('activa',true).order('nombre');
+  return data||[];
+}
+async function loadAllComunidades(){
+  const{data}=await sb.from('comunidades').select('*').order('nombre');
+  return data||[];
+}
+async function loadComunidadData(id){
+  const[u,r,p,g,m,t,a,d,v,vo]=await Promise.all([
+    sb.from('unidades').select('*').eq('comunidad_id',id).order('numero'),
+    sb.from('usuarios').select('*').eq('comunidad_id',id).eq('activo',true),
+    sb.from('pagos').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('gastos').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('multas').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('trabajadores').select('*').eq('comunidad_id',id),
+    sb.from('alertas').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('documentos').select('*').eq('comunidad_id',id),
+    sb.from('votaciones').select('*').eq('comunidad_id',id).order('created_at',{ascending:false}),
+    sb.from('votos').select('*'),
+  ]);
+  return{unidades:u.data||[],residentes:r.data||[],pagos:p.data||[],gastos:g.data||[],multas:m.data||[],trabajadores:t.data||[],alertas:a.data||[],documentos:d.data||[],votaciones:v.data||[],votos:vo.data||[]};
+}
+
+function isFullAccess(){
+  if(state.isSuperAdmin)return true;
+  const u=state.currentUser;
+  return u&&(u.rol==='admin'||u.rol==='presidente'||u.rol==='tesorero');
+}
+function isSuperAdminMode(){return state.isSuperAdmin;}
+function getPendingFines(unitId,month){return state.comunidadData.multas.filter(f=>f.unidad_id===unitId&&f.status==='pendiente'&&f.month===month);}
+function getTotalDue(unitId,month){
+  const u=state.comunidadData.unidades.find(x=>x.id===unitId);
+  return(u?.monthly_fee||85000)+getPendingFines(unitId,month).reduce((s,f)=>s+f.amount,0);
+}
+
+// ── FIX 2: Verificar si votación debe activarse automáticamente ──
+function checkVotacionesScheduled(){
+  const now=new Date();
+  state.comunidadData.votaciones.forEach(async v=>{
+    if(v.estado==='programada'&&v.fecha_inicio_dt){
+      const inicio=new Date(v.fecha_inicio_dt);
+      if(now>=inicio){
+        await sb.from('votaciones').update({estado:'activa'}).eq('id',v.id);
+        const votaciones=state.comunidadData.votaciones.map(x=>x.id===v.id?{...x,estado:'activa'}:x);
+        state.comunidadData={...state.comunidadData,votaciones};
+      }
+    }
+  });
+}
+
+// Verificar cada minuto
+setInterval(()=>{
+  if(state.screen==='app')checkVotacionesScheduled();
+},30000);
+
+function render(){
+  document.getElementById('root').innerHTML=
+    state.screen==='login'?buildLogin():
+    state.screen==='superadmin'?buildSuperAdminApp():
+    buildApp();
+  attachEvents();
+}
+
+function buildLogin(){
+  const{loginStep,comunidades,selectedComunidad,loading}=state;
+  return`
+  ${state.installPrompt?`<div class="install-banner" onclick="installPWA()">📱 Instalar Vecinoo en tu dispositivo →</div>`:''}
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo"><div>${LOGO_ICON_HTML}</div></div>
+      <div class="login-step ${loginStep===1?'active':''}">
+        <p style="font-size:11px;color:#6b7280;margin-bottom:10px;font-weight:600;margin-top:20px">SELECCIONA TU COMUNIDAD</p>
+        ${loading?`<div class="loading"><span class="spinner"></span>Cargando...</div>`:
+        comunidades.length===0?`<div class="empty">Sin comunidades disponibles</div>`:
+        `<div class="community-list">
+          ${comunidades.map(c=>`<div class="community-item${selectedComunidad?.id===c.id?' selected':''}" onclick="selectComunidad('${c.id}')">
+            <div style="font-size:24px">🏢</div>
+            <div class="community-info"><h3>${c.nombre}</h3><p>${c.direccion||''} ${c.ciudad?'· '+c.ciudad:''}</p></div>
+          </div>`).join('')}
+        </div>`}
+        <button class="btn btn-primary btn-block" onclick="goToStep2()" ${!selectedComunidad?'disabled style="opacity:.5"':''}>Continuar →</button>
+        <div style="text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid #e5e5e5">
+          <button class="btn btn-sm btn-dark" onclick="goToSuperAdminLogin()">🔐 Acceso administrador de plataforma</button>
+        </div>
+      </div>
+      <div class="login-step ${loginStep===2?'active':''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 12px;background:#f0f4ff;border-radius:8px;border-left:3px solid var(--gold)">
+          <div style="font-size:20px">🏢</div>
+          <div><div style="font-weight:700;font-size:13px">${selectedComunidad?.nombre||''}</div><div style="font-size:11px;color:#6b7280">${selectedComunidad?.direccion||''}</div></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CLAVE DE ACCESO</label>
+          <input class="form-control" id="claveInput" type="password" placeholder="Tu clave personal" style="font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        ${loading?`<div class="loading"><span class="spinner"></span>Verificando...</div>`:`<button class="btn btn-primary btn-block" onclick="doLogin()">Ingresar →</button>`}
+        <button class="btn btn-block" onclick="setState({loginStep:1})" style="margin-top:6px">← Volver</button>
+      </div>
+      <div class="login-step ${loginStep===3?'active':''}">
+        <div style="text-align:center;margin-bottom:16px;margin-top:16px">
+          <div style="font-size:32px">🔐</div>
+          <div style="font-weight:700;font-size:14px">Acceso de plataforma</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:3px">Solo personal autorizado de Vecinoo</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CLAVE MAESTRA</label>
+          <input class="form-control" id="superClave" type="password" placeholder="••••••••••••" style="font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')doSuperLogin()">
+        </div>
+        ${loading?`<div class="loading"><span class="spinner"></span>Verificando...</div>`:`<button class="btn btn-dark btn-block" onclick="doSuperLogin()">Acceder →</button>`}
+        <button class="btn btn-block" onclick="setState({loginStep:1})" style="margin-top:6px">← Volver</button>
+      </div>
+    </div>
+    ${state.modal?buildModal():''}
+  </div>`;
+}
+
+function buildSuperAdminApp(){
+  const{comunidades,view,alert}=state;
+  const navItems=[
+    {id:'sa_dashboard',icon:'⊞',label:'Panel maestro'},
+    {id:'sa_comunidades',icon:'🏢',label:'Comunidades'},
+    {id:'sa_nueva',icon:'➕',label:'Nueva comunidad'},
+    {id:'sa_facturacion',icon:'💳',label:'Facturación'},
+  ];
+  return`<div>
+    <div class="superadmin-bar">
+      <div class="bar-logo">${LOGO_WHITE_HTML}</div>
+      <button class="btn btn-sm" style="background:#1E293B;color:#fff;border-color:#334155;font-size:10px" onclick="logout()">Salir</button>
+    </div>
+    <div class="app">
+      <aside class="sidebar" id="mainSidebar">
+        <div class="sidebar-logo" style="background:#1E293B">
+          <div class="sidebar-logo-row">
+            <div class="sidebar-logo-icon">${LOGO_SVG}</div>
+            <div class="sidebar-logo-text"><h1>Vecinoo</h1><p>Panel superadmin</p></div>
+          </div>
+        </div>
+        <nav class="nav">
+          <div class="nav-section">Gestión de plataforma</div>
+          ${navItems.map(n=>`<button class="nav-item${view===n.id?' active':''}" data-view="${n.id}">${n.icon} ${n.label}</button>`).join('')}
+        </nav>
+        <div class="user-info">
+          <div style="font-weight:600">Rodrigo</div>
+          <span class="role-badge role-superadmin">Superadmin · Propietario</span>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <button class="hamburger" onclick="openSidebar()">☰</button>
+          <div class="topbar-logo"><svg viewBox="0 0 52 52" fill="none">${LOGO_SVG}</svg><span>Vecinoo</span></div>
+          <span></span>
+        </div>
+        ${alert?`<div class="alert-bar alert-${alert.type}">${alert.msg}</div>`:''}
+        ${view==='sa_dashboard'||view==='sa_comunidades'?buildSADashboard():view==='sa_nueva'?buildSANueva():view==='sa_facturacion'?buildSAFacturacion():''}
+        ${state.modal?buildModal():''}
+      </main>
+    </div>
+  </div>`;
+}
+
+function buildSADashboard(){
+  const{comunidades}=state;
+  const totalMant=comunidades.reduce((s,c)=>s+(c.monto_mantencion||0),0);
+  const totalImpl=comunidades.reduce((s,c)=>s+(c.monto_implementacion||0),0);
+  return`
+  <div class="page-header"><div><h2>Panel Maestro</h2><p>Vista global de Vecinoo</p></div><button class="btn btn-primary" onclick="setState({view:'sa_nueva'})">+ Nueva comunidad</button></div>
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Comunidades</div><div class="metric-value blue">${comunidades.length}</div></div>
+    <div class="metric"><div class="metric-label">Activas</div><div class="metric-value green">${comunidades.filter(c=>c.activa).length}</div></div>
+    <div class="metric"><div class="metric-label">Ingreso mensual</div><div class="metric-value gold">${fmt(totalMant)}</div></div>
+    <div class="metric"><div class="metric-label">Total implementado</div><div class="metric-value">${fmt(totalImpl)}</div></div>
+  </div>
+  <div class="card">
+    <table><thead><tr><th>Comunidad</th><th>Ciudad</th><th>Plan</th><th>Mantención/mes</th><th>Estado</th><th></th></tr></thead>
+    <tbody>${comunidades.map(c=>`<tr>
+      <td><div style="font-weight:600">${c.nombre}</div><div style="font-size:10px;color:#6b7280">Código: ${c.codigo_acceso}</div></td>
+      <td>${c.ciudad||'—'}</td>
+      <td><span class="plan-badge plan-${c.plan||'basico'}">${c.plan||'básico'}</span></td>
+      <td style="font-weight:700">${fmt(c.monto_mantencion||0)}</td>
+      <td><span class="badge ${c.activa?'badge-green':'badge-red'}">${c.activa?'Activa':'Inactiva'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm btn-primary" onclick="enterComunidad('${c.id}')" style="margin-right:4px">Entrar</button>
+        <button class="btn btn-sm" onclick="editComunidad('${c.id}')" style="margin-right:4px">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteComunidad('${c.id}','${c.nombre}')">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+function buildSANueva(){
+  return`
+  <div class="page-header"><h2>Nueva comunidad</h2></div>
+  <div class="card">
+    <div class="section-div">Datos del edificio</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="ncNombre" placeholder="Edificio Los Almendros"></div>
+      <div class="form-group"><label class="form-label">Código de acceso *</label><input class="form-control" id="ncCodigo" placeholder="ALMENDROS2024" style="text-transform:uppercase"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir"></div>
+      <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ncCiudad" placeholder="Santiago"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Región</label><input class="form-control" id="ncRegion"></div>
+      <div class="form-group"><label class="form-label">Plan</label>
+        <select class="form-control" id="ncPlan"><option value="basico">Básico</option><option value="profesional">Profesional</option><option value="enterprise">Enterprise</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Implementación ($)</label><input class="form-control" id="ncImpl" type="number" placeholder="200000"></div>
+      <div class="form-group"><label class="form-label">Mantención mensual ($)</label><input class="form-control" id="ncMant" type="number" placeholder="20000"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ncNotas" rows="2"></textarea></div>
+    <div class="section-div">Administrador del edificio</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre admin *</label><input class="form-control" id="ncAdminNombre"></div>
+      <div class="form-group"><label class="form-label">Email admin</label><input class="form-control" id="ncAdminEmail" type="email"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Clave inicial *</label><input class="form-control" id="ncAdminClave"></div>
+      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="ncAdminPhone"></div>
+    </div>
+    <div class="section-div">Unidades del edificio</div>
+    <div id="unidadesContainer"></div>
+    <button class="btn btn-sm" id="btnAddUnidadForm" style="margin-bottom:12px">+ Agregar unidad</button>
+    ${state.loading?`<div class="loading"><span class="spinner"></span>Creando...</div>`:`<div style="display:flex;gap:8px"><button class="btn btn-primary" id="btnCrearComunidad">Crear comunidad</button><button class="btn" onclick="setState({view:'sa_dashboard'})">Cancelar</button></div>`}
+  </div>`;
+}
+
+function buildSAFacturacion(){
+  const{comunidades}=state;
+  const totalMes=comunidades.reduce((s,c)=>s+(c.monto_mantencion||0),0);
+  return`
+  <div class="page-header"><h2>Facturación Vecinoo</h2></div>
+  <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric"><div class="metric-label">Ingresos mensuales</div><div class="metric-value green">${fmt(totalMes)}</div></div>
+    <div class="metric"><div class="metric-label">Activas</div><div class="metric-value blue">${comunidades.filter(c=>c.activa).length}</div></div>
+    <div class="metric"><div class="metric-label">Promedio</div><div class="metric-value gold">${comunidades.length>0?fmt(Math.round(totalMes/comunidades.length)):fmt(0)}</div></div>
+  </div>
+  <div class="card">
+    <table><thead><tr><th>Comunidad</th><th>Plan</th><th>Implementación</th><th>Mantención/mes</th><th>Estado</th></tr></thead>
+    <tbody>${comunidades.map(c=>`<tr>
+      <td><div style="font-weight:600">${c.nombre}</div><div style="font-size:10px;color:#6b7280">${c.ciudad||''}</div></td>
+      <td><span class="plan-badge plan-${c.plan||'basico'}">${c.plan||'básico'}</span></td>
+      <td>${fmt(c.monto_implementacion||0)}</td>
+      <td style="font-weight:700">${fmt(c.monto_mantencion||0)}</td>
+      <td><span class="badge ${c.activa?'badge-green':'badge-red'}">${c.activa?'Activa':'Inactiva'}</span></td>
+    </tr>`).join('')}
+    <tr style="font-weight:700;background:#f9fafb"><td colspan="3">Total mensual</td><td style="color:var(--green)">${fmt(totalMes)}</td><td></td></tr>
+    </tbody></table>
+  </div>`;
+}
+
+function buildApp(){
+  const{currentUser,comunidadData,view,alert,isSuperAdmin}=state;
+  const com=state.selectedComunidad;
+  const full=isFullAccess();
+  const activeAlerts=comunidadData.alertas.filter(a=>a.status==='activa').length;
+  const activeVotaciones=comunidadData.votaciones.filter(v=>v.estado==='activa').length;
+  const navFull=[
+    {id:'dashboard',icon:'⊞',label:'Dashboard'},
+    {id:'units',icon:'🏠',label:'Unidades'},
+    {id:'residents',icon:'👤',label:'Residentes'},
+    {id:'payments',icon:'💰',label:'Ingresos / GC'},
+    {id:'expenses',icon:'📉',label:'Gastos'},
+    {id:'fines',icon:'⚠️',label:'Multas'},
+    {id:'workers',icon:'👷',label:'Trabajadores'},
+    {id:'bank',icon:'🏦',label:'Cuenta Corriente'},
+    {id:'reports',icon:'📄',label:'Informes'},
+    {id:'votaciones',icon:'🗳️',label:`Votaciones${activeVotaciones>0?` (${activeVotaciones})`:''}` },
+    {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
+    {id:'documents',icon:'📁',label:'Documentos'},
+    {id:'change_password',icon:'🔑',label:'Cambiar clave'},
+    {id:'settings',icon:'⚙️',label:'Configuración'},
+  ];
+  const navResident=[
+    {id:'my_account',icon:'👤',label:'Mi Cuenta'},
+    {id:'my_payments',icon:'📋',label:'Mis Pagos'},
+    {id:'expenses_view',icon:'📉',label:'Gastos comunes'},
+    {id:'votaciones',icon:'🗳️',label:`Votaciones${activeVotaciones>0?` (${activeVotaciones})`:''}` },
+    {id:'community',icon:'🔔',label:`Alertas${activeAlerts>0?` (${activeAlerts})`:''}` },
+    {id:'documents',icon:'📁',label:'Documentos'},
+    {id:'change_password',icon:'🔑',label:'Cambiar clave'},
+  ];
+  const nav=full?navFull:navResident;
+  const roleLabel={admin:'Administrador',presidente:'Presidente',tesorero:'Tesorero',residente:'Residente'}[currentUser?.rol]||'Residente';
+  const roleBadge={admin:'role-admin',presidente:'role-presidente',tesorero:'role-tesorero',residente:'role-resident'}[currentUser?.rol]||'role-resident';
+  return`<div>
+    <div class="superadmin-bar">
+      <span style="font-size:12px;color:#94A3B8">🏢 ${com?.nombre||''} ${com?.ciudad?'· '+com.ciudad:''}</span>
+      <div style="display:flex;gap:8px">
+        ${isSuperAdmin?`<button class="btn btn-sm" style="background:#1E293B;color:#fff;border-color:#334155;font-size:10px" onclick="backToSuperAdmin()">← Panel maestro</button>`:''}
+        <button class="btn btn-sm" style="background:#1E293B;color:#fff;border-color:#334155;font-size:10px" onclick="logout()">Salir</button>
+      </div>
+    </div>
+    <div class="app">
+      <aside class="sidebar" id="mainSidebar">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-row">
+            <div class="sidebar-logo-icon">${LOGO_SVG}</div>
+            <div class="sidebar-logo-text"><h1>${com?.nombre||'Vecinoo'}</h1><p>${comunidadData.unidades.length} unidades</p></div>
+          </div>
+        </div>
+        <nav class="nav">
+          <div class="nav-section">${full?'Administración':'Mi Portal'}</div>
+          ${nav.map(n=>`<button class="nav-item${view===n.id?' active':''}" data-view="${n.id}" onclick="closeSidebar()">${n.icon} ${n.label}</button>`).join('')}
+        </nav>
+        <div class="user-info">
+          <div style="font-weight:600">${currentUser?.nombre||''}</div>
+          <div style="font-size:10px;color:#9ca3af">${currentUser?.email||''}</div>
+          <span class="role-badge ${roleBadge}">${roleLabel}</span>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <button class="hamburger" onclick="openSidebar()">☰</button>
+          <div class="topbar-logo">
+            <svg viewBox="0 0 52 52" fill="none" width="24" height="24">${LOGO_SVG}</svg>
+            <span>Vecinoo</span>
+          </div>
+          <span></span>
+        </div>
+        ${alert?`<div class="alert-bar alert-${alert.type}">${alert.msg}</div>`:''}
+        ${buildView()}
+        ${state.modal?buildModal():''}
+      </main>
+    </div>
+  </div>`;
+}
+
+function buildView(){
+  const v=state.view;
+  if(v==='dashboard')return buildDashboard();
+  if(v==='units')return buildUnits();
+  if(v==='residents')return buildResidents();
+  if(v==='payments')return buildPayments();
+  if(v==='expenses'||v==='expenses_view')return buildExpenses(v==='expenses_view');
+  if(v==='fines')return buildFines();
+  if(v==='workers')return buildWorkers();
+  if(v==='bank')return buildBank();
+  if(v==='reports')return buildReports();
+  if(v==='votaciones')return buildVotaciones();
+  if(v==='community')return buildCommunity();
+  if(v==='documents')return buildDocuments();
+  if(v==='change_password')return buildChangePassword();
+  if(v==='settings')return buildSettings();
+  if(v==='my_account')return buildMyAccount();
+  if(v==='my_payments')return buildMyPayments();
+  return'';
+}
+
+function getMetrics(month){
+  const{pagos,gastos,unidades,residentes}=state.comunidadData;
+  const mp=pagos.filter(p=>p.month===month);
+  const me=gastos.filter(g=>g.month===month);
+  const totalIn=mp.reduce((s,p)=>s+p.amount,0);
+  const totalOut=me.reduce((s,e)=>s+e.amount,0);
+  const paidUnits=new Set(mp.map(p=>p.unidad_id));
+  const occupied=unidades.filter(u=>residentes.some(r=>r.unidad_id===u.id));
+  const morose=occupied.filter(u=>!paidUnits.has(u.id));
+  return{totalIn,totalOut,balance:totalIn-totalOut,paidUnits,occupied,morose,mp,me};
+}
+
+function buildDashboard(){
+  const m=thisMonth();
+  const{totalIn,totalOut,balance,paidUnits,occupied,morose}=getMetrics(m);
+  const pct=Math.round(paidUnits.size/Math.max(occupied.length,1)*100);
+  const pendFines=state.comunidadData.multas.filter(f=>f.status==='pendiente').length;
+  const activeAlerts=state.comunidadData.alertas.filter(a=>a.status==='activa').length;
+  const activeVot=state.comunidadData.votaciones.filter(v=>v.estado==='activa').length;
+  const recents=[...state.comunidadData.pagos.map(p=>({...p,_t:'ingreso'})),...state.comunidadData.gastos.map(g=>({...g,_t:'gasto'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,6);
+  return`
+  <div class="page-header"><div><h2>Dashboard</h2><p>${new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div></div>
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Ingresos mes</div><div class="metric-value green">${fmt(totalIn)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos mes</div><div class="metric-value red">${fmt(totalOut)}</div></div>
+    <div class="metric"><div class="metric-label">Saldo</div><div class="metric-value ${balance>=0?'green':'red'}">${fmt(balance)}</div></div>
+    <div class="metric"><div class="metric-label">Morosos</div><div class="metric-value amber">${morose.length}/${occupied.length}</div></div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Multas pend.</div><div class="metric-value red">${pendFines}</div></div>
+    <div class="metric"><div class="metric-label">Alertas activas</div><div class="metric-value amber">${activeAlerts}</div></div>
+    <div class="metric"><div class="metric-label">Votaciones</div><div class="metric-value gold">${activeVot}</div></div>
+    <div class="metric"><div class="metric-label">Cobro mes</div><div class="metric-value blue">${pct}%</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Estado cobros — ${m}</span></div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:5px">${paidUnits.size} pagados · ${morose.length} pendientes</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
+      ${morose.length>0?`<div style="margin-top:6px;font-size:11px;color:var(--red);font-weight:600">⚠ ${morose.map(u=>`Depto ${u.numero}`).join(', ')}</div>`:'<div style="margin-top:6px;font-size:11px;color:var(--green);font-weight:600">✓ Todos al día</div>'}
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Balance mes</span></div>
+      <div class="stat-row"><span>Ingresos GC</span><span class="green" style="font-weight:700">${fmt(totalIn)}</span></div>
+      <div class="stat-row"><span>Gastos</span><span class="red" style="font-weight:700">${fmt(totalOut)}</span></div>
+      <div class="stat-row" style="font-weight:700"><span>Saldo</span><span class="${balance>=0?'green':'red'}">${fmt(balance)}</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Últimos movimientos</span></div>
+    <table><thead><tr><th>Tipo</th><th>Descripción</th><th>Fecha</th><th>Monto</th></tr></thead>
+    <tbody>${recents.length===0?`<tr><td colspan="4" class="empty">Sin movimientos</td></tr>`:recents.map(r=>`<tr>
+      <td><span class="badge ${r._t==='ingreso'?'badge-green':'badge-red'}">${r._t==='ingreso'?'💰':'📉'} ${r._t}</span></td>
+      <td>${r._t==='ingreso'?`Depto ${state.comunidadData.unidades.find(u=>u.id===r.unidad_id)?.numero||''} · ${state.comunidadData.residentes.find(x=>x.id===r.usuario_id)?.nombre||''}`:r.icon+' '+r.label}</td>
+      <td>${fmtD(r.date)}</td>
+      <td style="font-weight:700;color:${r._t==='ingreso'?'var(--green)':'var(--red)'}">${r._t==='ingreso'?'+':'-'}${fmt(r.amount)}</td>
+    </tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+// ── FIX 1 APLICADO: canManageUnits() en lugar de isSuperAdminMode() ──
+function buildUnits(){
+  const{unidades,residentes}=state.comunidadData;
+  const canManage=canManageUnits(); // FIXED: admin también puede
+  return`
+  <div class="page-header">
+    <div><h2>Unidades</h2><p>${unidades.length} unidades registradas</p></div>
+    ${canManage?`<button class="btn btn-primary" id="btnAddUnit">+ Agregar unidad</button>`:''}
+  </div>
+  ${canManage?`<div id="unitForm" style="display:none" class="card">
+    <div class="card-title" style="margin-bottom:12px">Nueva unidad</div>
+    <div class="form-row-3">
+      <div class="form-group"><label class="form-label">N° Depto *</label><input class="form-control" id="uNumber" placeholder="101"></div>
+      <div class="form-group"><label class="form-label">Piso *</label><input class="form-control" id="uFloor" type="number" placeholder="1"></div>
+      <div class="form-group"><label class="form-label">Metraje (m²) *</label><input class="form-control" id="uSqm" type="number" placeholder="65"></div>
+    </div>
+    <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="uFee" type="number" value="85000" style="max-width:180px"></div>
+    <div class="section-div">Estacionamiento</div>
+    <div class="toggle-row"><label class="toggle"><input type="checkbox" id="uParking" onchange="toggleField('parkingFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
+    <div id="parkingFields" style="display:none" class="form-row">
+      <div class="form-group"><label class="form-label">N° Estacionamiento</label><input class="form-control" id="uParkingNum"></div>
+      <div class="form-group"><label class="form-label">Metraje (m²)</label><input class="form-control" id="uParkingSqm" type="number"></div>
+    </div>
+    <div class="section-div">Bodega</div>
+    <div class="toggle-row"><label class="toggle"><input type="checkbox" id="uStorage" onchange="toggleField('storageFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene bodega?</span></div>
+    <div id="storageFields" style="display:none" class="form-row">
+      <div class="form-group"><label class="form-label">N° Bodega</label><input class="form-control" id="uStorageNum"></div>
+      <div class="form-group"><label class="form-label">Metraje (m²)</label><input class="form-control" id="uStorageSqm" type="number"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" id="btnSaveUnit">Guardar</button>
+      <button class="btn" id="btnCancelUnit">Cancelar</button>
+    </div>
+  </div>`:''}
+  <div class="card">
+    <table><thead><tr><th>Depto</th><th>Piso</th><th>m²</th><th>Estac.</th><th>Bodega</th><th>Total m²</th><th>GC</th><th>Residente</th>${canManage?'<th></th>':''}</tr></thead>
+    <tbody>${unidades.length===0?`<tr><td colspan="${canManage?9:8}" class="empty">Sin unidades registradas. Agrega la primera unidad.</td></tr>`:unidades.map(u=>{
+      const r=residentes.find(x=>x.unidad_id===u.id);
+      return`<tr>
+        <td><b>Depto ${u.numero}</b></td><td>P${u.piso}</td><td>${u.sqm}m²</td>
+        <td>${u.parking?`<span class="badge badge-blue">${u.parking_num} ${u.parking_sqm}m²</span>`:'—'}</td>
+        <td>${u.storage?`<span class="badge badge-amber">${u.storage_num} ${u.storage_sqm}m²</span>`:'—'}</td>
+        <td><b>${getTotalSqm(u)}m²</b></td>
+        <td>${fmt(u.monthly_fee||85000)}</td>
+        <td>${r?`<span class="badge badge-green">${r.nombre}</span>`:'<span class="badge badge-gray">Disponible</span>'}</td>
+        ${canManage?`<td style="white-space:nowrap">
+          <button class="btn btn-sm" onclick="setState({modal:{type:'edit_unit',unit:${JSON.stringify(u).replace(/"/g,'&quot;')}}})" style="margin-right:4px">✏️</button>
+          ${!r?`<button class="btn btn-sm btn-danger" onclick="deleteUnit('${u.id}')">🗑</button>`:''}
+        </td>`:''}
+      </tr>`;
+    }).join('')}</tbody></table>
+  </div>`;
+}
+
+function buildResidents(){
+  const{residentes,unidades}=state.comunidadData;
+  const availUnits=unidades.filter(u=>!residentes.some(r=>r.unidad_id===u.id));
+  const curM=thisMonth();
+  const roleLabel={residente:'Residente',presidente:'Presidente',tesorero:'Tesorero',admin:'Admin'};
+  const roleBadge={residente:'badge-gray',presidente:'badge-purple',tesorero:'badge-amber',admin:'badge-blue'};
+  return`
+  <div class="page-header">
+    <div><h2>Residentes</h2><p>${residentes.length} registrados</p></div>
+    <button class="btn btn-primary" id="btnAddResident">+ Nuevo residente</button>
+  </div>
+  <div id="residentForm" style="display:none" class="card">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="rName"></div>
+      <div class="form-group"><label class="form-label">RUT</label><input class="form-control" id="rRut" placeholder="12.345.678-9"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="rEmail" type="email"></div>
+      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="rPhone"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Unidad *</label>
+        <select class="form-control" id="rUnit">
+          <option value="">Seleccionar...</option>
+          ${availUnits.map(u=>`<option value="${u.id}">Depto ${u.numero} · P${u.piso} · ${u.sqm}m²</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Rol</label>
+        <select class="form-control" id="rRole">
+          <option value="residente">Residente</option>
+          <option value="presidente">Presidente</option>
+          <option value="tesorero">Tesorero</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Clave de acceso *</label>
+      <input class="form-control" id="rClave" placeholder="Clave inicial">
+      <p style="font-size:10px;color:#6b7280;margin-top:2px">El residente puede cambiarla después</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" id="btnSaveResident">Registrar</button>
+      <button class="btn" id="btnCancelResident">Cancelar</button>
+    </div>
+  </div>
+  <div class="card">
+    <table><thead><tr><th>Residente</th><th>Rol</th><th>Unidad</th><th>Total mes</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>${residentes.map(r=>{
+      const u=unidades.find(x=>x.id===r.unidad_id);
+      const paid=state.comunidadData.pagos.some(p=>p.usuario_id===r.id&&p.month===curM);
+      return`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${r.nombre.charAt(0)}</div><div><div style="font-weight:600;font-size:12px">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.rut||''}</div></div></div></td>
+        <td><span class="badge ${roleBadge[r.rol]||'badge-gray'}">${roleLabel[r.rol]||r.rol}</span></td>
+        <td>${u?`Depto ${u.numero} P${u.piso}`:'—'}</td>
+        <td style="font-weight:700">${fmt(getTotalDue(r.unidad_id,curM))}</td>
+        <td><span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Al día':'⚠ Moroso'}</span></td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-sm btn-primary" onclick="setState({modal:{type:'manage_resident',resident:${JSON.stringify(r).replace(/"/g,'&quot;')}}})" style="margin-right:4px">🔑</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteResident('${r.id}','${r.nombre}')">🗑</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>
+  </div>`;
+}
+
+function buildPayments(){
+  const{pagos,residentes,unidades}=state.comunidadData;
+  return`
+  <div class="page-header">
+    <div><h2>Ingresos — GC</h2><p>${pagos.length} pagos</p></div>
+    <button class="btn btn-primary" id="btnAddPayment">+ Registrar pago</button>
+  </div>
+  <div id="paymentForm" style="display:none" class="card">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Residente *</label>
+        <select class="form-control" id="pResident" onchange="onResidentChange(this)">
+          <option value="">Seleccionar...</option>
+          ${residentes.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Unidad</label><input class="form-control" id="pUnit" readonly></div>
+    </div>
+    <div id="pFinesInfo" style="display:none" class="alert-bar alert-error"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">GC Base ($)</label><input class="form-control" id="pBase" readonly></div>
+      <div class="form-group"><label class="form-label">Multas ($)</label><input class="form-control" id="pFinesAmt" readonly></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Total ($) *</label><input class="form-control" id="pAmount" type="number"></div>
+      <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="pDate" type="date" value="${today()}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Método</label>
+      <select class="form-control" id="pMethod">${['Transferencia','Efectivo','Débito','Crédito','Cheque'].map(m=>`<option>${m}</option>`).join('')}</select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-success" id="btnSavePayment">✓ Registrar y emitir comprobante</button>
+      <button class="btn" id="btnCancelPayment">Cancelar</button>
+    </div>
+  </div>
+  <div class="card">
+    <table><thead><tr><th>Residente</th><th>Depto</th><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>${pagos.length===0?`<tr><td colspan="7" class="empty">Sin pagos</td></tr>`:pagos.map(p=>{
+      const r=residentes.find(x=>x.id===p.usuario_id);
+      const u=unidades.find(x=>x.id===p.unidad_id);
+      return`<tr>
+        <td>${r?.nombre||'—'}</td>
+        <td><span class="badge badge-blue">${u?.numero||'—'}</span></td>
+        <td>${p.month}</td>
+        <td style="font-weight:700;color:var(--green)">${fmt(p.amount)}</td>
+        <td>${p.method}</td>
+        <td>${fmtD(p.date)}</td>
+        <td><button class="btn btn-sm" onclick="viewReceipt('${p.id}')">Ver</button></td>
+      </tr>`;
+    }).join('')}</tbody></table>
+  </div>`;
+}
+
+function buildExpenses(viewOnly=false){
+  const{selectedCat}=state;
+  const cat=selectedCat?EXPENSE_CATS.find(c=>c.id===selectedCat):null;
+  const byCat=EXPENSE_CATS.map(c=>({...c,total:state.comunidadData.gastos.filter(e=>e.cat_id===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.total>0);
+  const maxVal=Math.max(...byCat.map(x=>x.total),1);
+  return`
+  <div class="page-header"><div><h2>${viewOnly?'Gastos Comunes':'Gastos del Edificio'}</h2></div></div>
+  ${!viewOnly?`<div class="card">
+    <div class="card-title" style="margin-bottom:10px">Selecciona categoría</div>
+    <div class="cat-grid">${EXPENSE_CATS.map(c=>`<button class="cat-btn${selectedCat===c.id?' selected':''}" onclick="setState({selectedCat:'${c.id}'})">
+      <span class="cat-icon">${c.icon}</span><span>${c.label}</span>${c.prorate?'<span style="font-size:9px;opacity:.7">prorrateo</span>':''}
+    </button>`).join('')}</div>
+    ${cat?`<div style="background:#f9fafb;border-radius:8px;padding:12px;border:1px solid #e5e5e5">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">${cat.icon} ${cat.label} ${cat.prorate?'<span class="badge badge-gold">Prorrateo m²</span>':''}</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Monto ($) *</label><input class="form-control" id="eAmount" type="number" oninput="updateProrate()"></div>
+        <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="eDate" type="date" value="${today()}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descripción / N° Factura</label><input class="form-control" id="eDesc"></div>
+      ${cat.prorate?`<div id="proratePreview" style="display:none;margin-top:10px"><div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:5px">📊 Prorrateo:</div><table><thead><tr><th>Depto</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead><tbody id="prorateBody"></tbody></table></div>`:''}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary" id="btnSaveExpense">Registrar</button>
+        <button class="btn" onclick="setState({selectedCat:null})">Cancelar</button>
+      </div>
+    </div>`:''}
+  </div>`:''}
+  ${byCat.length>0?`<div class="card"><div class="card-header"><span class="card-title">Por categoría</span></div>
+    ${byCat.sort((a,b)=>b.total-a.total).map(c=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.icon} ${c.label}</span><span style="font-weight:700">${fmt(c.total)}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.total/maxVal*100)}%;background:var(--navy)"></div></div></div>`).join('')}
+  </div>`:''}
+  <div class="card"><table><thead><tr><th>Categoría</th><th>Descripción</th><th>Mes</th><th>Fecha</th><th>Monto</th><th>Tipo</th></tr></thead>
+  <tbody>${state.comunidadData.gastos.length===0?`<tr><td colspan="6" class="empty">Sin gastos</td></tr>`:state.comunidadData.gastos.map(e=>`<tr>
+    <td>${e.icon} <b>${e.label}</b></td><td>${e.description||'—'}</td><td>${e.month}</td>
+    <td>${fmtD(e.date)}</td><td style="font-weight:700;color:var(--red)">${fmt(e.amount)}</td>
+    <td>${e.prorate?'<span class="badge badge-gold">Prorrateo</span>':'<span class="badge badge-gray">Fijo</span>'}</td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+
+function buildFines(){
+  const{multas,residentes,unidades}=state.comunidadData;
+  const curM=thisMonth();
+  return`
+  <div class="page-header"><div><h2>Multas</h2><p>${multas.filter(f=>f.status==='pendiente').length} pendientes</p></div><button class="btn btn-danger" id="btnAddFine">+ Nueva multa</button></div>
+  <div id="fineForm" style="display:none" class="card">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Residente *</label>
+        <select class="form-control" id="fResident">
+          <option value="">Seleccionar...</option>
+          ${residentes.map(r=>{const u=unidades.find(x=>x.id===r.unidad_id);return`<option value="${r.id}|${r.unidad_id}">Depto ${u?.numero||''} · ${r.nombre}</option>`}).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Monto ($) *</label><input class="form-control" id="fAmount" type="number"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Fecha *</label><input class="form-control" id="fDate" type="date" value="${today()}"></div>
+      <div class="form-group"><label class="form-label">Mes</label><input class="form-control" id="fMonth" type="month" value="${curM}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Motivo *</label><input class="form-control" id="fReason"></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-danger" id="btnSaveFine">Aplicar multa</button><button class="btn" id="btnCancelFine">Cancelar</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>Depto</th><th>Residente</th><th>Motivo</th><th>Mes</th><th>Monto</th><th>Estado</th></tr></thead>
+  <tbody>${multas.length===0?`<tr><td colspan="6" class="empty">Sin multas</td></tr>`:multas.map(f=>{
+    const r=residentes.find(x=>x.id===f.usuario_id);
+    const u=unidades.find(x=>x.id===f.unidad_id);
+    return`<tr><td><b>Depto ${u?.numero||'—'}</b></td><td>${r?.nombre||'—'}</td><td>${f.reason}</td><td>${f.month}</td><td style="font-weight:700;color:var(--red)">${fmt(f.amount)}</td><td><span class="badge ${f.status==='pagada'?'badge-green':'badge-red'}">${f.status==='pagada'?'✓ Pagada':'⚠ Pendiente'}</span></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function buildWorkers(){
+  const{trabajadores}=state.comunidadData;
+  const{workerTab}=state;
+  const active=trabajadores.filter(w=>w.activo);
+  const contrato=active.filter(w=>w.tipo==='contrato');
+  const honor=active.filter(w=>w.tipo==='honorarios');
+  const desv=trabajadores.filter(w=>!w.activo);
+  return`
+  <div class="page-header"><div><h2>Trabajadores</h2><p>${active.length} activos</p></div><button class="btn btn-primary" id="btnAddWorker">+ Agregar</button></div>
+  <div class="tab-bar">
+    <button class="tab-btn${workerTab==='contrato'?' active':''}" onclick="setState({workerTab:'contrato'})">📋 Contrato (${contrato.length})</button>
+    <button class="tab-btn${workerTab==='honorarios'?' active':''}" onclick="setState({workerTab:'honorarios'})">📄 Honorarios (${honor.length})</button>
+    <button class="tab-btn${workerTab==='desvinculados'?' active':''}" onclick="setState({workerTab:'desvinculados'})">🚪 Desvinculados (${desv.length})</button>
+  </div>
+  <div id="workerForm" style="display:none" class="card">
+    <div class="tab-bar"><button class="tab-btn active" id="wTypeContrato" onclick="switchWorkerType('contrato')">📋 Contrato</button><button class="tab-btn" id="wTypeHonorarios" onclick="switchWorkerType('honorarios')">📄 Honorarios</button></div>
+    <input type="hidden" id="wType" value="contrato">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="wName"></div>
+      <div class="form-group"><label class="form-label">RUT *</label><input class="form-control" id="wRut"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Cargo *</label><input class="form-control" id="wRole" placeholder="Conserje"></div>
+      <div class="form-group"><label class="form-label">Fecha inicio</label><input class="form-control" id="wStart" type="date" value="${today()}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Sueldo / Honorario ($) *</label><input class="form-control" id="wSalary" type="number"></div>
+    <div id="contratoFields">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">AFP</label><select class="form-control" id="wAfp">${AFP_LIST.map(a=>`<option>${a}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label">Salud</label><select class="form-control" id="wHealth" onchange="toggleIsapre()"><option>Fonasa</option><option>Isapre</option></select></div>
+      </div>
+      <div id="isapreFields" style="display:none" class="form-row">
+        <div class="form-group"><label class="form-label">Isapre</label><select class="form-control" id="wIsapre">${ISAPRE_LIST.map(i=>`<option>${i}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label">Monto plan ($)</label><input class="form-control" id="wIsapreAmt" type="number"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-primary" id="btnSaveWorker">Guardar</button><button class="btn" id="btnCancelWorker">Cancelar</button></div>
+  </div>
+  ${workerTab==='contrato'?buildContratoList(contrato):workerTab==='honorarios'?buildHonorariosList(honor):buildDesvinculadosList(desv)}`;
+}
+
+function buildContratoList(workers){
+  if(!workers.length)return'<div class="card"><div class="empty">Sin trabajadores con contrato</div></div>';
+  return workers.map(w=>{
+    const liq=calcLiquidacion(w);
+    return`<div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:#ede9fe;color:#5b21b6">${w.nombre.charAt(0)}</div>
+          <div><div style="font-weight:700">${w.nombre}</div><div style="font-size:11px;color:#6b7280">${w.rol} · ${w.rut}</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn btn-sm btn-primary" onclick="viewLiquidacion('${w.id}')">Liquidación</button>
+          <button class="btn btn-sm btn-danger" onclick="openFiniquito('${w.id}')">Finiquito</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="deleteWorker('${w.id}','${w.nombre}')">🗑 Eliminar</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <table class="liq-table">
+          <tr><td>Sueldo bruto</td><td style="text-align:right;font-weight:700">${fmt(liq.bruto)}</td></tr>
+          <tr><td>AFP ${w.afp_type}</td><td style="text-align:right;color:var(--red)">-${fmt(liq.afp)}</td></tr>
+          <tr><td>Salud</td><td style="text-align:right;color:var(--red)">-${fmt(liq.salud)}</td></tr>
+          <tr><td>Seg. cesantía</td><td style="text-align:right;color:var(--red)">-${fmt(liq.segCes)}</td></tr>
+          <tr><td>Imp. 2° cat.</td><td style="text-align:right;color:var(--red)">-${fmt(liq.imp)}</td></tr>
+          <tr class="total"><td>Líquido</td><td style="text-align:right;color:var(--green)">${fmt(liq.liquido)}</td></tr>
+        </table>
+        <table class="liq-table">
+          <tr><td>SIS empleador</td><td style="text-align:right">${fmt(liq.sis)}</td></tr>
+          <tr><td>Gratificación 25%</td><td style="text-align:right">${fmt(liq.gratif)}</td></tr>
+          <tr><td>Costo total</td><td style="text-align:right;font-weight:700">${fmt(liq.bruto+liq.sis)}</td></tr>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildHonorariosList(workers){
+  if(!workers.length)return'<div class="card"><div class="empty">Sin trabajadores a honorarios</div></div>';
+  return workers.map(w=>{
+    const bruto=w.gross_salary||0;const ret=Math.round(bruto*0.1525);
+    return`<div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:#fef3c7;color:#92400e">${w.nombre.charAt(0)}</div>
+          <div><div style="font-weight:700">${w.nombre}</div><div style="font-size:11px;color:#6b7280">${w.rol} · ${w.rut}</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn btn-sm btn-warning" onclick="viewBoleta('${w.id}')">Boleta</button>
+          <button class="btn btn-sm btn-danger" onclick="desvincularWorker('${w.id}')">Desvincular</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="deleteWorker('${w.id}','${w.nombre}')">🗑 Eliminar</button>
+        </div>
+      </div>
+      <table class="liq-table" style="max-width:300px">
+        <tr><td>Honorario bruto</td><td style="text-align:right;font-weight:700">${fmt(bruto)}</td></tr>
+        <tr><td>Retención 15.25%</td><td style="text-align:right;color:var(--red)">-${fmt(ret)}</td></tr>
+        <tr class="total"><td>Líquido</td><td style="text-align:right;color:var(--green)">${fmt(bruto-ret)}</td></tr>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function buildDesvinculadosList(workers){
+  if(!workers.length)return'<div class="card"><div class="empty">Sin desvinculados</div></div>';
+  return`<div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Tipo</th><th>Término</th><th></th></tr></thead>
+  <tbody>${workers.map(w=>`<tr>
+    <td>${w.nombre}</td><td>${w.rol}</td><td>${w.tipo}</td><td>${fmtD(w.end_date)}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteWorker('${w.id}','${w.nombre}')">🗑 Eliminar</button></td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+
+function buildBank(){
+  const{pagos,gastos,unidades}=state.comunidadData;
+  const totalIn=pagos.reduce((s,p)=>s+p.amount,0);
+  const totalOut=gastos.reduce((s,g)=>s+g.amount,0);
+  const allMovs=[...pagos.map(p=>({...p,_t:'crédito',_desc:`GC Depto ${unidades.find(u=>u.id===p.unidad_id)?.numero||''}`})),...gastos.map(g=>({...g,_t:'débito',_desc:`${g.icon} ${g.label}`}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  let saldo=totalIn-totalOut;
+  const movs=allMovs.map(m=>{const s=saldo;saldo+=m._t==='débito'?m.amount:-m.amount;return{...m,saldo:s}});
+  return`
+  <div class="page-header"><div><h2>Cuenta Corriente</h2></div><span class="badge badge-gold">Simulación · Fintoc próximamente</span></div>
+  <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric"><div class="metric-label">Créditos</div><div class="metric-value green">${fmt(totalIn)}</div></div>
+    <div class="metric"><div class="metric-label">Débitos</div><div class="metric-value red">${fmt(totalOut)}</div></div>
+    <div class="metric"><div class="metric-label">Saldo</div><div class="metric-value ${totalIn-totalOut>=0?'green':'red'}">${fmt(totalIn-totalOut)}</div></div>
+  </div>
+  <div class="card"><table><thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th><th>Saldo</th></tr></thead>
+  <tbody>${movs.length===0?`<tr><td colspan="5" class="empty">Sin movimientos</td></tr>`:movs.map(m=>`<tr>
+    <td>${fmtD(m.date)}</td><td>${m._desc}</td>
+    <td><span class="badge ${m._t==='crédito'?'badge-green':'badge-red'}">${m._t}</span></td>
+    <td style="font-weight:700;color:${m._t==='crédito'?'var(--green)':'var(--red)'}">${m._t==='crédito'?'+':'-'}${fmt(m.amount)}</td>
+    <td>${fmt(m.saldo)}</td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ── FIX 3: Informes con pestaña votaciones descargable ──
+function buildReports(){
+  const months=[...new Set([...state.comunidadData.pagos.map(p=>p.month),...state.comunidadData.gastos.map(g=>g.month)])].sort().reverse();
+  if(!months.length)months.push(thisMonth());
+  const sel=state.reportMonth;
+  const tab=state.reportTab;
+  const{totalIn,totalOut,balance,morose,mp,me,paidUnits}=getMetrics(sel);
+  const com=state.selectedComunidad;
+  return`
+  <div class="page-header"><div><h2>Informes</h2></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select class="form-control" style="width:auto" id="reportMonth">${months.map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}</option>`).join('')}</select>
+      <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn${tab==='general'?' active':''}" onclick="setState({reportTab:'general'})">📊 Balance</button>
+    <button class="tab-btn${tab==='unidades'?' active':''}" onclick="setState({reportTab:'unidades'})">🏠 Por unidad</button>
+    <button class="tab-btn${tab==='prorate'?' active':''}" onclick="setState({reportTab:'prorate'})">📐 Prorrateo</button>
+    <button class="tab-btn${tab==='votaciones'?' active':''}" onclick="setState({reportTab:'votaciones'})">🗳️ Votaciones</button>
+  </div>
+  ${tab==='general'?`
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Ingresos — ${sel}</span></div>
+      <table><thead><tr><th>Depto</th><th>Residente</th><th>Monto</th><th>Método</th></tr></thead>
+      <tbody>${mp.length===0?`<tr><td colspan="4" class="empty">Sin ingresos</td></tr>`:mp.map(p=>`<tr><td><b>${state.comunidadData.unidades.find(u=>u.id===p.unidad_id)?.numero||'—'}</b></td><td>${state.comunidadData.residentes.find(r=>r.id===p.usuario_id)?.nombre||'—'}</td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td></tr>`).join('')}</tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Gastos — ${sel}</span></div>
+      <table><thead><tr><th>Categoría</th><th>Descripción</th><th>Monto</th></tr></thead>
+      <tbody>${me.length===0?`<tr><td colspan="3" class="empty">Sin gastos</td></tr>`:me.map(e=>`<tr><td>${e.icon} ${e.label}</td><td>${e.description||'—'}</td><td class="red" style="font-weight:700">${fmt(e.amount)}</td></tr>`).join('')}</tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="stat-row"><span>Total ingresos</span><span class="green" style="font-weight:700">${fmt(totalIn)}</span></div>
+    <div class="stat-row"><span>Total gastos</span><span class="red" style="font-weight:700">${fmt(totalOut)}</span></div>
+    <div class="stat-row"><span>Morosos</span><span class="badge badge-red">${morose.length}</span></div>
+    <div class="stat-row" style="font-weight:700;font-size:14px"><span>Saldo neto</span><span class="${balance>=0?'green':'red'}">${fmt(balance)}</span></div>
+  </div>`:''}
+  ${tab==='unidades'?`<div class="card">${state.comunidadData.unidades.map(u=>{
+    const r=state.comunidadData.residentes.find(x=>x.unidad_id===u.id);
+    if(!r)return'';
+    const paid=paidUnits.has(u.id);
+    const pago=state.comunidadData.pagos.find(p=>p.unidad_id===u.id&&p.month===sel);
+    const pf=getPendingFines(u.id,sel);
+    const finesAmt=pf.reduce((s,f)=>s+f.amount,0);
+    const prorateRows=me.filter(e=>e.prorate).map(e=>{const rows=calcProrate(e.amount,state.comunidadData.unidades);const row=rows.find(x=>x.unitId===u.id);return row?{label:e.icon+' '+e.label,amount:row.amount}:null;}).filter(Boolean);
+    const totalPro=prorateRows.reduce((s,x)=>s+x.amount,0);
+    return`<div style="border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><div style="font-weight:700">🏠 Depto ${u.numero} · Piso ${u.piso}</div><div style="font-size:11px;color:#6b7280">${r.nombre} · ${r.email||''}</div></div>
+        <span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Pagado':'⚠ Pendiente'}</span>
+      </div>
+      <table style="font-size:12px;margin-bottom:8px">
+        <tr><td style="padding:3px 8px;color:#6b7280">GC base</td><td style="padding:3px 8px;font-weight:600">${fmt(u.monthly_fee||85000)}</td></tr>
+        ${prorateRows.map(x=>`<tr><td style="padding:3px 8px;color:#6b7280">${x.label}</td><td style="padding:3px 8px">${fmt(x.amount)}</td></tr>`).join('')}
+        ${finesAmt>0?`<tr><td style="padding:3px 8px;color:var(--red)">Multas</td><td style="padding:3px 8px;color:var(--red)">${fmt(finesAmt)}</td></tr>`:''}
+        <tr style="border-top:1px solid #e5e5e5"><td style="padding:5px 8px;font-weight:700">Total</td><td style="padding:5px 8px;font-weight:700;color:var(--navy)">${fmt((u.monthly_fee||85000)+finesAmt+totalPro)}</td></tr>
+      </table>
+      ${paid&&pago?`<button class="btn btn-sm btn-primary no-print" onclick="viewReceipt('${pago.id}')">⬇ Comprobante</button>`:''}
+    </div>`;
+  }).join('')}</div>`:''}
+  ${tab==='prorate'?`<div class="card">
+    ${me.filter(e=>e.prorate).length===0?'<div class="empty">Sin gastos con prorrateo</div>':
+    me.filter(e=>e.prorate).map(e=>`<div style="margin-bottom:16px">
+      <div style="font-weight:700;margin-bottom:6px">${e.icon} ${e.label} · ${fmt(e.amount)}</div>
+      <table><thead><tr><th>Depto</th><th>Residente</th><th>m²</th><th>%</th><th>A cobrar</th></tr></thead>
+      <tbody>${calcProrate(e.amount,state.comunidadData.unidades).map(p=>{const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);const r=state.comunidadData.residentes.find(x=>x.unidad_id===p.unitId);return`<tr><td>Depto ${u?.numero||''}</td><td>${r?.nombre||'—'}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:var(--navy)">${fmt(p.amount)}</td></tr>`;}).join('')}</tbody></table>
+    </div>`).join('')}
+  </div>`:''}
+  ${tab==='votaciones'?buildReporteVotaciones(com):''}`;
+}
+
+// ── FIX 3: Reporte de votaciones ──
+function buildReporteVotaciones(com){
+  const{votaciones,votos,residentes}=state.comunidadData;
+  if(!votaciones.length)return'<div class="card"><div class="empty">Sin votaciones registradas</div></div>';
+
+  return`
+  <div class="card" id="reporteVotacionesCard">
+    <div class="card-header">
+      <span class="card-title">🗳️ Actas de Votaciones — ${com?.nombre||''}</span>
+      <button class="btn btn-primary btn-sm no-print" onclick="window.print()">🖨 Imprimir / Descargar PDF</button>
+    </div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:14px">Generado el ${new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+    ${votaciones.map(v=>{
+      const votosDev=votos.filter(x=>x.votacion_id===v.id);
+      const totalVotos=votosDev.length;
+      const opciones=v.opciones||[];
+      const ganadora=opciones.reduce((prev,op)=>{const n=votosDev.filter(x=>x.opcion_elegida===op).length;return n>(prev.n||0)?{op,n}:prev},{});
+      const participacion=Math.round(totalVotos/Math.max(residentes.length,1)*100);
+      return`<div style="border:1px solid #e5e5e5;border-radius:8px;padding:14px;margin-bottom:14px;border-left:4px solid var(--gold)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${v.titulo}</div>
+            ${v.descripcion?`<div style="font-size:12px;color:#6b7280;margin-top:2px">${v.descripcion}</div>`:''}
+            <div style="font-size:11px;color:#9ca3af;margin-top:4px">
+              Creada por: ${v.creada_por||'—'} ·
+              Inicio: ${v.fecha_inicio_dt?new Date(v.fecha_inicio_dt).toLocaleString('es-CL'):fmtD(v.fecha_inicio)} ·
+              Cierre: ${v.fecha_cierre_dt?new Date(v.fecha_cierre_dt).toLocaleString('es-CL'):fmtD(v.fecha_cierre)}
+            </div>
+          </div>
+          <span class="vot-estado-badge ${v.estado==='activa'?'vot-activa':v.estado==='programada'?'vot-programada':'vot-cerrada'}">${v.estado}</span>
+        </div>
+        <table style="font-size:12px;margin-bottom:10px">
+          <thead><tr><th style="text-align:left;padding:6px 8px;background:#f9fafb;border-bottom:1px solid #e5e5e5">Opción</th><th style="text-align:center;padding:6px 8px;background:#f9fafb;border-bottom:1px solid #e5e5e5">Votos</th><th style="text-align:center;padding:6px 8px;background:#f9fafb;border-bottom:1px solid #e5e5e5">%</th><th style="padding:6px 8px;background:#f9fafb;border-bottom:1px solid #e5e5e5">Resultado</th></tr></thead>
+          <tbody>
+            ${opciones.map(op=>{
+              const n=votosDev.filter(x=>x.opcion_elegida===op).length;
+              const pct=totalVotos>0?Math.round(n/totalVotos*100):0;
+              const esGanadora=op===ganadora.op&&totalVotos>0;
+              return`<tr style="${esGanadora?'background:#f0fdf4;font-weight:700':''}">
+                <td style="padding:6px 8px;border-bottom:1px solid #f3f4f6">${esGanadora?'🏆 ':''} ${op}</td>
+                <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #f3f4f6">${n}</td>
+                <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #f3f4f6">${pct}%</td>
+                <td style="padding:6px 8px;border-bottom:1px solid #f3f4f6">
+                  <div style="height:8px;background:#e5e5e5;border-radius:4px;overflow:hidden;width:100px">
+                    <div style="height:100%;background:${esGanadora?'var(--green)':'var(--navy)'};border-radius:4px;width:${pct}%"></div>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <div style="display:flex;gap:16px;font-size:11px;color:#6b7280;padding:8px;background:#f9fafb;border-radius:6px">
+          <span>📊 Total votos: <b>${totalVotos}</b></span>
+          <span>👥 Residentes: <b>${residentes.length}</b></span>
+          <span>📈 Participación: <b>${participacion}%</b></span>
+          ${totalVotos>0&&ganadora.op?`<span style="color:var(--green);font-weight:700">✓ Resultado: ${ganadora.op}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+    <div style="margin-top:16px;padding-top:12px;border-top:2px dashed #e5e5e5;text-align:center;font-size:10px;color:#9ca3af">
+      Vecinoo — ${com?.nombre||''} · ${com?.direccion||''} · vecinoo.cl
+    </div>
+  </div>`;
+}
+
+// ── FIX 2 APLICADO: Votaciones con hora y programación ──
+function buildVotaciones(){
+  const{votaciones,votos,residentes}=state.comunidadData;
+  const full=isFullAccess();
+  const userId=state.currentUser?.id;
+  const now=new Date();
+
+  // Auto-activar programadas
+  votaciones.forEach(async v=>{
+    if(v.estado==='programada'&&v.fecha_inicio_dt){
+      if(new Date(v.fecha_inicio_dt)<=now){
+        await sb.from('votaciones').update({estado:'activa'}).eq('id',v.id);
+      }
+    }
+  });
+
+  const activas=votaciones.filter(v=>v.estado==='activa');
+  const programadas=votaciones.filter(v=>v.estado==='programada');
+  const cerradas=votaciones.filter(v=>v.estado==='cerrada');
+
+  function buildVotacionCard(v,readonly=false){
+    const opciones=v.opciones||[];
+    const votosDev=votos.filter(x=>x.votacion_id===v.id);
+    const miVoto=votos.find(x=>x.votacion_id===v.id&&x.usuario_id===userId);
+    const yaVote=!!miVoto;
+    const mostrarResultados=yaVote||readonly;
+    const totalVotos=votosDev.length;
+    const inicioStr=v.fecha_inicio_dt?new Date(v.fecha_inicio_dt).toLocaleString('es-CL'):fmtD(v.fecha_inicio);
+    const cierreStr=v.fecha_cierre_dt?new Date(v.fecha_cierre_dt).toLocaleString('es-CL'):fmtD(v.fecha_cierre);
+
+    return`<div class="votacion-card">
+      <div class="votacion-header">
+        <div>
+          <div style="font-weight:700;font-size:14px">${v.titulo}</div>
+          ${v.descripcion?`<div style="font-size:12px;color:#6b7280;margin-top:3px">${v.descripcion}</div>`:''}
+          <div style="font-size:10px;color:#9ca3af;margin-top:5px">
+            🕐 Inicio: ${inicioStr} · Cierre: ${cierreStr} · ${totalVotos} votos
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <span class="vot-estado-badge ${v.estado==='activa'?'vot-activa':v.estado==='programada'?'vot-programada':'vot-cerrada'}">${v.estado==='activa'?'✓ Activa':v.estado==='programada'?'🕐 Programada':'Cerrada'}</span>
+          ${yaVote?`<span class="badge badge-gold">✓ Ya votaste</span>`:''}
+          ${full&&v.estado==='activa'?`<button class="btn btn-sm btn-danger" onclick="cerrarVotacion('${v.id}')">Cerrar</button>`:''}
+          ${full&&v.estado==='programada'?`<button class="btn btn-sm btn-success" onclick="activarVotacion('${v.id}')">Activar ahora</button>`:''}
+          ${full?`<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="deleteVotacion('${v.id}')">🗑</button>`:''}
+        </div>
+      </div>
+      ${v.estado==='programada'?`<div class="vot-schedule-box">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:3px">⏳ Esta votación comenzará automáticamente el:</div>
+        <div class="vot-countdown">${inicioStr}</div>
+      </div>`:''}
+      ${mostrarResultados?
+        opciones.map(op=>{
+          const n=votosDev.filter(x=>x.opcion_elegida===op).length;
+          const pct=totalVotos>0?Math.round(n/totalVotos*100):0;
+          const esMiVoto=miVoto?.opcion_elegida===op;
+          return`<div class="resultado-row">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+              <span style="font-weight:${esMiVoto?'700':'400'}">${esMiVoto?'✓ ':''} ${op}</span>
+              <span style="font-weight:700">${n} votos · ${pct}%</span>
+            </div>
+            <div class="voto-bar"><div class="voto-fill" style="width:${pct}%;background:${esMiVoto?'var(--green)':'var(--navy)'}"></div></div>
+          </div>`;
+        }).join('')
+      :v.estado==='activa'?`<div style="margin-top:8px">
+          ${opciones.map(op=>`<div class="opcion-voto" onclick="emitirVoto('${v.id}','${op}')">
+            <span style="font-size:13px">${op}</span>
+            <span style="font-size:11px;color:#6b7280">Votar →</span>
+          </div>`).join('')}
+          <p style="font-size:10px;color:#9ca3af;margin-top:8px">Tu voto es anónimo · Solo una vez</p>
+        </div>`:''
+      }
+      ${(yaVote||readonly)&&totalVotos>0?`<div class="acta-box">
+        <div style="font-weight:700;margin-bottom:6px">📋 Resumen del acta</div>
+        <div style="font-size:12px;color:#6b7280">Total: <b>${totalVotos}</b> de <b>${residentes.length}</b> · Participación: <b>${Math.round(totalVotos/Math.max(residentes.length,1)*100)}%</b></div>
+      </div>`:''}
+    </div>`;
+  }
+
+  return`
+  <div class="page-header">
+    <div><h2>Votaciones</h2><p>${activas.length} activas · ${programadas.length} programadas · ${cerradas.length} cerradas</p></div>
+    ${full?`<button class="btn btn-gold" id="btnAddVotacion">🗳️ Nueva votación</button>`:''}
+  </div>
+  ${full?`<div id="votacionForm" style="display:none" class="card">
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="vTitulo"></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="vDesc" rows="2"></textarea></div>
+
+    <!-- FIX 2: Toggle inicio inmediato o programado -->
+    <div style="background:#f0f4ff;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #c7d2fe">
+      <div style="font-weight:700;font-size:12px;color:var(--navy);margin-bottom:10px">⏰ Cuándo iniciar la votación</div>
+      <div class="toggle-row">
+        <label class="toggle"><input type="checkbox" id="vInmediato" checked onchange="toggleVotacionTiming()"><span class="toggle-slider"></span></label>
+        <span style="font-size:12px;font-weight:600">Iniciar ahora mismo</span>
+      </div>
+      <div id="vTimingFields" style="display:none">
+        <div class="form-row" style="margin-top:8px">
+          <div class="form-group"><label class="form-label">Fecha y hora de inicio *</label><input class="form-control" id="vInicioDt" type="datetime-local" value="${nowDateTime()}"></div>
+          <div class="form-group"><label class="form-label">Fecha y hora de cierre *</label><input class="form-control" id="vCierreDt" type="datetime-local"></div>
+        </div>
+      </div>
+      <div id="vTimingInmediato">
+        <div class="form-group" style="margin-top:8px"><label class="form-label">Fecha y hora de cierre *</label>
+          <input class="form-control" id="vCierreDtInmediato" type="datetime-local">
+          <p style="font-size:10px;color:#6b7280;margin-top:3px">La votación comenzará al publicar y cerrará en la fecha indicada</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-div">Opciones de votación</div>
+    <div id="opcionesContainer">
+      <div class="form-row" style="margin-bottom:8px">
+        <input class="form-control opcion-input" placeholder="Opción 1 (ej: A favor)">
+        <input class="form-control opcion-input" placeholder="Opción 2 (ej: En contra)">
+      </div>
+    </div>
+    <button class="btn btn-sm" id="btnAddOpcion" style="margin-bottom:12px">+ Agregar opción</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gold" id="btnSaveVotacion">Publicar votación</button>
+      <button class="btn" id="btnCancelVotacion">Cancelar</button>
+    </div>
+  </div>`:''}
+  ${activas.length>0?`<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">✓ Activas (${activas.length})</div>${activas.map(v=>buildVotacionCard(v,false)).join('')}</div>`:''}
+  ${programadas.length>0?`<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#1e40af;margin-bottom:8px">🕐 Programadas (${programadas.length})</div>${programadas.map(v=>buildVotacionCard(v,true)).join('')}</div>`:''}
+  ${cerradas.length>0?`<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Cerradas (${cerradas.length})</div>${cerradas.map(v=>buildVotacionCard(v,true)).join('')}</div>`:''}
+  ${activas.length===0&&programadas.length===0&&cerradas.length===0?`<div class="card"><div class="empty">Sin votaciones</div></div>`:''}`;
+}
+
+function buildCommunity(){
+  const{alertas,residentes,unidades}=state.comunidadData;
+  const full=isFullAccess();
+  const ALERT_TYPES=[{id:'ruido',icon:'🔊',label:'Ruido molesto'},{id:'seguridad',icon:'🚨',label:'Seguridad'},{id:'daño',icon:'🔨',label:'Daño'},{id:'aviso',icon:'📢',label:'Aviso'},{id:'emergencia',icon:'🚒',label:'Emergencia'}];
+  const typeMap={ruido:'🔊',seguridad:'🚨',daño:'🔨',aviso:'📢',emergencia:'🚒'};
+  return`
+  <div class="page-header"><div><h2>Alertas Comunitarias</h2><p>${alertas.filter(a=>a.status==='activa').length} activas</p></div><button class="btn btn-danger" id="btnAddAlert">+ Nueva alerta</button></div>
+  <div id="alertForm" style="display:none" class="card">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="aType">${ALERT_TYPES.map(t=>`<option value="${t.id}">${t.icon} ${t.label}</option>`).join('')}</select></div>
+      ${full?`<div class="form-group"><label class="form-label">Reportado por</label><select class="form-control" id="aResident"><option value="">Administración</option>${residentes.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('')}</select></div>`:''}
+    </div>
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="aTitle"></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="aDesc" rows="2"></textarea></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-danger" id="btnSaveAlert">Enviar</button><button class="btn" id="btnCancelAlert">Cancelar</button></div>
+  </div>
+  ${alertas.length===0?'<div class="card"><div class="empty">Sin alertas</div></div>':
+  alertas.map(a=>{
+    const r=residentes.find(x=>x.id===a.usuario_id);
+    const u=unidades.find(x=>x.id===a.unidad_id);
+    return`<div class="alert-card ${a.tipo==='aviso'?'info':a.tipo==='ruido'?'warning':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:700;font-size:13px">${typeMap[a.tipo]||'📢'} ${a.titulo}</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px">${a.descripcion||''}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px">${r?`${r.nombre} · Depto ${u?.numero||''}`:'Administración'} · ${fmtD(a.date)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="badge ${a.status==='activa'?'badge-red':'badge-green'}">${a.status}</span>
+          ${full&&a.status==='activa'?`<button class="btn btn-sm btn-success" onclick="resolveAlert('${a.id}')">Resolver</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+function buildDocuments(){
+  const{documentos}=state.comunidadData;
+  const defaults=[
+    {icon:'🚨',title:'Plan de Emergencia',desc:'Procedimientos ante emergencias'},
+    {icon:'📜',title:'Reglamento de Copropiedad',desc:'Normas del edificio'},
+    {icon:'📝',title:'Ficha Ingreso Residente',desc:'Formulario para nuevos residentes'},
+    {icon:'📋',title:'Reglamento de Convivencia',desc:'Normas de convivencia'},
+    {icon:'🏊',title:'Reglamento Piscina',desc:'Normas piscina y áreas húmedas'},
+    {icon:'🅿️',title:'Reglamento Estacionamientos',desc:'Normas estacionamientos'},
+    {icon:'📞',title:'Contactos de Emergencia',desc:'Bomberos, Carabineros, SAMU'},
+    {icon:'🔑',title:'Contrato de Arrendamiento',desc:'Modelo de contrato'},
+  ];
+  const docs=documentos.length>0?documentos:defaults;
+  return`
+  <div class="page-header"><h2>Documentos</h2></div>
+  <div class="doc-grid">${docs.map(d=>`<div class="doc-card">
+    <div class="doc-icon">${d.icon}</div>
+    <div class="doc-title">${d.title||d.titulo}</div>
+    <div class="doc-desc">${d.desc||d.descripcion||''}</div>
+    ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-primary btn-sm">⬇ Descargar</a>`:`<button class="btn btn-sm" onclick="alert('Documento pendiente')">⬇ Descargar PDF</button>`}
+  </div>`).join('')}</div>`;
+}
+
+function buildChangePassword(){
+  const u=state.currentUser;
+  return`
+  <div class="page-header"><h2>Cambiar clave</h2></div>
+  <div class="card" style="max-width:440px">
+    <div style="margin-bottom:14px;padding:12px;background:#f0f4ff;border-radius:8px;border-left:3px solid var(--gold);font-size:12px">
+      <div style="font-weight:700">${u?.nombre||''}</div>
+      <div style="color:#6b7280">${u?.email||''}</div>
+    </div>
+    <div class="form-group"><label class="form-label">Clave actual *</label><input class="form-control" id="pwActual" type="password"></div>
+    <div class="form-group"><label class="form-label">Nueva clave *</label><input class="form-control" id="pwNueva" type="password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="form-group"><label class="form-label">Confirmar nueva clave *</label><input class="form-control" id="pwConfirm" type="password"></div>
+    <button class="btn btn-primary" id="btnCambiarClave">Cambiar clave</button>
+  </div>`;
+}
+
+function buildSettings(){
+  const com=state.selectedComunidad;
+  return`
+  <div class="page-header"><h2>Configuración</h2></div>
+  <div class="card">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre</label><input class="form-control" id="bName" value="${com?.nombre||''}"></div>
+      <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="bCity" value="${com?.ciudad||''}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="bAddr" value="${com?.direccion||''}"></div>
+    <div class="form-group"><label class="form-label">Código (solo lectura)</label><input class="form-control" value="${com?.codigo_acceso||''}" disabled></div>
+    <button class="btn btn-primary" id="btnSaveSettings">Guardar</button>
+  </div>`;
+}
+
+function buildMyAccount(){
+  const u=state.currentUser;
+  const unit=state.comunidadData.unidades.find(x=>x.id===u?.unidad_id);
+  const myP=state.comunidadData.pagos.filter(p=>p.usuario_id===u?.id);
+  const curM=thisMonth();
+  const paid=myP.some(p=>p.month===curM);
+  const pf=getPendingFines(u?.unidad_id,curM);
+  const totalDue=getTotalDue(u?.unidad_id,curM);
+  return`
+  <div class="page-header"><h2>Mi Cuenta</h2></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div class="avatar" style="width:46px;height:46px;font-size:17px;background:var(--navy);color:var(--gold)">${u?.nombre?.charAt(0)||'?'}</div>
+      <div>
+        <h3 style="font-size:15px;font-weight:700">${u?.nombre||''}</h3>
+        <p style="color:#6b7280;font-size:12px">Depto ${unit?.numero||'—'} · Piso ${unit?.piso||'—'}</p>
+        <p style="color:#6b7280;font-size:11px">${u?.rut||''} ${u?.email?'· '+u.email:''}</p>
+      </div>
+    </div>
+    ${unit?`<div style="background:#f9fafb;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;border-left:3px solid var(--gold)">
+      <div style="font-weight:700;margin-bottom:5px">📐 Mis superficies</div>
+      <div class="stat-row"><span>Departamento</span><span>${unit.sqm}m²</span></div>
+      ${unit.parking?`<div class="stat-row"><span>Estacionamiento ${unit.parking_num}</span><span>${unit.parking_sqm}m²</span></div>`:''}
+      ${unit.storage?`<div class="stat-row"><span>Bodega ${unit.storage_num}</span><span>${unit.storage_sqm}m²</span></div>`:''}
+      <div class="stat-row" style="font-weight:700"><span>Total</span><span>${getTotalSqm(unit)}m²</span></div>
+    </div>`:''}
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+      <div class="metric"><div class="metric-label">Estado</div><div style="margin-top:6px"><span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Al día':'⚠ Moroso'}</span></div></div>
+      <div class="metric"><div class="metric-label">GC Base</div><div class="metric-value blue">${fmt(unit?.monthly_fee||85000)}</div></div>
+      <div class="metric"><div class="metric-label">Total a pagar</div><div class="metric-value ${paid?'green':'amber'}">${fmt(paid?0:totalDue)}</div></div>
+    </div>
+    ${pf.length>0?`<div style="margin-top:10px;background:#fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#991b1b"><b>⚠ Multas pendientes:</b><br>${pf.map(f=>`• ${f.reason} — ${fmt(f.amount)}`).join('<br>')}</div>`:''}
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Historial de pagos</span></div>
+    ${myP.length===0?'<div class="empty">Sin pagos</div>':
+    `<table><thead><tr><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>${myP.map(p=>`<tr><td>${p.month}</td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td>${p.method}</td><td>${fmtD(p.date)}</td><td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td></tr>`).join('')}</tbody></table>`}
+  </div>`;
+}
+
+function buildMyPayments(){
+  const u=state.currentUser;
+  const myP=u?state.comunidadData.pagos.filter(p=>p.usuario_id===u.id):[];
+  return`
+  <div class="page-header"><h2>Mis Comprobantes</h2></div>
+  <div class="card">
+    ${myP.length===0?'<div class="empty">Sin comprobantes</div>':
+    `<table><thead><tr><th>Mes</th><th>Total</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>${myP.map(p=>`<tr><td><b>${p.month}</b></td><td class="green" style="font-weight:700">${fmt(p.amount)}</td><td><span class="badge badge-blue">${p.method}</span></td><td>${fmtD(p.date)}</td><td><button class="btn btn-sm btn-primary" onclick="viewReceipt('${p.id}')">⬇ Comprobante</button></td></tr>`).join('')}</tbody></table>`}
+  </div>`;
+}
+
+function buildModal(){
+  const m=state.modal;
+  if(!m)return'';
+  if(m.type==='confirm'){
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal" style="max-width:400px">
+      <div class="modal-header"><span class="modal-title">⚠️ Confirmar</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <p style="font-size:13px;margin-bottom:18px;line-height:1.6">${m.message}</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="setState({modal:null})">Cancelar</button><button class="btn btn-danger" onclick="${m.onConfirm}">Confirmar</button></div>
+    </div></div>`;
+  }
+  if(m.type==='manage_resident'){
+    const r=m.resident;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal" style="max-width:420px">
+      <div class="modal-header"><span class="modal-title">🔑 Gestionar clave — ${r.nombre}</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div style="background:#f0f4ff;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;border-left:3px solid var(--gold)">
+        <div style="font-weight:700">${r.nombre}</div>
+        <div style="color:#6b7280">${r.rut||''} · ${r.email||''}</div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+          <span style="color:#6b7280">Clave actual:</span>
+          <code id="claveVisible" style="background:#e5e5e5;padding:2px 8px;border-radius:4px;font-size:13px">••••••••</code>
+          <button class="btn btn-sm" onclick="toggleClaveVisible('${r.clave}')">👁 Ver</button>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Nueva clave *</label><input class="form-control" id="mrNuevaClave" type="text"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="resetResidentClave('${r.id}')">Guardar nueva clave</button>
+        <button class="btn" onclick="setState({modal:null})">Cancelar</button>
+      </div>
+    </div></div>`;
+  }
+  if(m.type==='edit_comunidad'){
+    const c=m.comunidad;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Editar — ${c.nombre}</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Nombre</label><input class="form-control" id="ec_nombre" value="${c.nombre}"></div><div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ec_ciudad" value="${c.ciudad||''}"></div></div>
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ec_dir" value="${c.direccion||''}"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Plan</label><select class="form-control" id="ec_plan"><option value="basico" ${c.plan==='basico'?'selected':''}>Básico</option><option value="profesional" ${c.plan==='profesional'?'selected':''}>Profesional</option><option value="enterprise" ${c.plan==='enterprise'?'selected':''}>Enterprise</option></select></div>
+        <div class="form-group"><label class="form-label">Mantención/mes ($)</label><input class="form-control" id="ec_mant" type="number" value="${c.monto_mantencion||0}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Implementación ($)</label><input class="form-control" id="ec_impl" type="number" value="${c.monto_implementacion||0}" style="max-width:200px"></div>
+      <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ec_notas" rows="2">${c.notas||''}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" onclick="saveEditComunidad('${c.id}')">Guardar</button>
+        <button class="btn btn-warning" onclick="toggleComunidad('${c.id}',${c.activa})">${c.activa?'Desactivar':'Activar'}</button>
+        <button class="btn" onclick="setState({modal:null})">Cancelar</button>
+      </div>
+    </div></div>`;
+  }
+  if(m.type==='edit_unit'){
+    const u=m.unit;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Editar Depto ${u.numero}</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">N° Depto</label><input class="form-control" id="eu_number" value="${u.numero}"></div>
+        <div class="form-group"><label class="form-label">Piso</label><input class="form-control" id="eu_floor" type="number" value="${u.piso}"></div>
+        <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_sqm" type="number" value="${u.sqm}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="eu_fee" type="number" value="${u.monthly_fee||85000}" style="max-width:180px"></div>
+      <div class="section-div">Estacionamiento</div>
+      <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_parking" ${u.parking?'checked':''} onchange="toggleField('eu_parkFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
+      <div id="eu_parkFields" style="display:${u.parking?'grid':'none'}" class="form-row">
+        <div class="form-group"><label class="form-label">N°</label><input class="form-control" id="eu_parkNum" value="${u.parking_num||''}"></div>
+        <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_parkSqm" type="number" value="${u.parking_sqm||0}"></div>
+      </div>
+      <div class="section-div">Bodega</div>
+      <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_storage" ${u.storage?'checked':''} onchange="toggleField('eu_storFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene bodega?</span></div>
+      <div id="eu_storFields" style="display:${u.storage?'grid':'none'}" class="form-row">
+        <div class="form-group"><label class="form-label">N°</label><input class="form-control" id="eu_storNum" value="${u.storage_num||''}"></div>
+        <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_storSqm" type="number" value="${u.storage_sqm||0}"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" onclick="saveEditUnit('${u.id}')">Guardar</button>
+        <button class="btn" onclick="setState({modal:null})">Cancelar</button>
+      </div>
+    </div></div>`;
+  }
+  if(m.type==='receipt'){
+    const p=m.payment;
+    const r=state.comunidadData.residentes.find(x=>x.id===p.usuario_id);
+    const u=state.comunidadData.unidades.find(x=>x.id===p.unidad_id);
+    const com=state.selectedComunidad;
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Comprobante de Pago</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="receipt">
+        <div class="receipt-header">
+          <div style="margin-bottom:6px">${LOGO_ICON_HTML}</div>
+          <p style="color:#6b7280;font-size:12px;margin-top:6px">Comprobante de Gasto Común</p>
+          <p style="font-size:11px;font-weight:600;color:var(--navy)">${com?.nombre||''}</p>
+          <p style="font-size:10px;color:#9ca3af">N° ${p.receipt_id||p.id?.slice(0,8)}</p>
+        </div>
+        <div class="receipt-row"><span style="color:#6b7280">Residente</span><span style="font-weight:700">${r?.nombre||'—'}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${r?.rut||'—'}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Departamento</span><span>Depto ${u?.numero||'—'} · Piso ${u?.piso||'—'}</span></div>
+        ${u?.parking?`<div class="receipt-row"><span style="color:#6b7280">Estacionamiento</span><span>${u.parking_num} · ${u.parking_sqm}m²</span></div>`:''}
+        ${u?.storage?`<div class="receipt-row"><span style="color:#6b7280">Bodega</span><span>${u.storage_num} · ${u.storage_sqm}m²</span></div>`:''}
+        <div class="receipt-row"><span style="color:#6b7280">Período</span><span>${p.month}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Fecha</span><span>${fmtD(p.date)}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Método</span><span>${p.method}</span></div>
+        <div class="receipt-row"><span>GC Base</span><span>${fmt(p.base_amount||p.amount)}</span></div>
+        <div class="receipt-total"><span>TOTAL PAGADO</span><span style="color:var(--green)">${fmt(p.amount)}</span></div>
+        <div style="margin-top:12px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px dashed #e5e5e5;padding-top:10px">vecinoo.cl · ${new Date().getFullYear()}</div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
+  }
+  if(m.type==='liquidacion'){
+    const w=m.worker;const liq=calcLiquidacion(w);
+    const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal modal-lg">
+      <div class="modal-header"><span class="modal-title">Liquidación de Sueldo</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="receipt">
+        <div class="receipt-header"><div style="margin-bottom:4px">${LOGO_ICON_HTML}</div><p style="color:#6b7280;margin-top:4px">Liquidación — ${mes}</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.rol}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">AFP / Salud</span><span>${w.afp_type} / ${w.health_type}</span></div>
+        <div style="height:6px"></div>
+        <div class="receipt-row" style="font-weight:700"><span>Sueldo bruto</span><span>${fmt(liq.bruto)}</span></div>
+        <div class="receipt-row"><span style="color:var(--red)">AFP (${(liq.afpPct*100).toFixed(2)}%)</span><span style="color:var(--red)">-${fmt(liq.afp)}</span></div>
+        <div class="receipt-row"><span style="color:var(--red)">Salud</span><span style="color:var(--red)">-${fmt(liq.salud)}</span></div>
+        <div class="receipt-row"><span style="color:var(--red)">Seg. cesantía (0.6%)</span><span style="color:var(--red)">-${fmt(liq.segCes)}</span></div>
+        <div class="receipt-row"><span style="color:var(--red)">Imp. 2° categoría</span><span style="color:var(--red)">-${fmt(liq.imp)}</span></div>
+        <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:var(--green)">${fmt(liq.liquido)}</span></div>
+        <div style="margin-top:10px;background:#f9fafb;padding:10px;border-radius:6px;border-left:3px solid var(--gold)">
+          <div class="receipt-row"><span>SIS empleador (1.54%)</span><span>${fmt(liq.sis)}</span></div>
+          <div class="receipt-row" style="font-weight:700"><span>Costo total empleador</span><span>${fmt(liq.bruto+liq.sis)}</span></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
+  }
+  if(m.type==='boleta'){
+    const w=m.worker;const bruto=w.gross_salary||0;const ret=Math.round(bruto*0.1525);
+    const mes=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal">
+      <div class="modal-header"><span class="modal-title">Boleta de Honorarios</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="receipt">
+        <div class="receipt-header"><div style="margin-bottom:4px">${LOGO_ICON_HTML}</div><p style="color:#6b7280;margin-top:4px">Boleta de Honorarios — ${mes}</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Prestador</span><span style="font-weight:700">${w.nombre}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">RUT</span><span>${w.rut}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Servicio</span><span>${w.rol}</span></div>
+        <div style="height:6px"></div>
+        <div class="receipt-row" style="font-weight:700"><span>Honorario bruto</span><span>${fmt(bruto)}</span></div>
+        <div class="receipt-row"><span style="color:var(--red)">Retención 15.25%</span><span style="color:var(--red)">-${fmt(ret)}</span></div>
+        <div class="receipt-total"><span>LÍQUIDO A PAGAR</span><span style="color:var(--green)">${fmt(bruto-ret)}</span></div>
+        <div style="margin-top:10px;font-size:10px;color:#9ca3af;text-align:center">Retención vigente desde 01/01/2026 — Art. 74 LIR</div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button><button class="btn" onclick="setState({modal:null})">Cerrar</button></div>
+    </div></div>`;
+  }
+  if(m.type==='finiquito'){
+    const w=m.worker;const type=m.finType||'renuncia';const lastDay=m.lastDay||today();
+    const fin=calcFiniquito(w,type,lastDay);
+    return`<div class="modal-overlay" id="modalOverlay"><div class="modal modal-lg">
+      <div class="modal-header"><span class="modal-title">Cálculo de Finiquito</span><button class="close-btn" onclick="setState({modal:null})">×</button></div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-control" id="finType" onchange="updateFiniquito('${w.id}')">
+            <option value="renuncia" ${type==='renuncia'?'selected':''}>Renuncia voluntaria</option>
+            <option value="despido" ${type==='despido'?'selected':''}>Despido Art. 161</option>
+            <option value="mutuo" ${type==='mutuo'?'selected':''}>Mutuo acuerdo</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Último día trabajado</label>
+          <input class="form-control" id="finLastDay" type="date" value="${lastDay}" onchange="updateFiniquito('${w.id}')">
+        </div>
+      </div>
+      <div class="receipt">
+        <div class="receipt-header"><div style="margin-bottom:4px">${LOGO_ICON_HTML}</div><p style="color:#6b7280;margin-top:4px">Finiquito de Trabajo</p></div>
+        <div class="receipt-row"><span style="color:#6b7280">Trabajador</span><span style="font-weight:700">${w.nombre}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Cargo</span><span>${w.rol}</span></div>
+        <div class="receipt-row"><span style="color:#6b7280">Antigüedad</span><span>${fin.years} años ${fin.months} meses</span></div>
+        <div style="height:6px"></div>
+        <div class="receipt-row"><span>Días proporcionales</span><span>${fmt(fin.dias)}</span></div>
+        <div class="receipt-row"><span>Vacaciones proporcionales</span><span>${fmt(fin.vac)}</span></div>
+        ${type==='despido'?`<div class="receipt-row"><span>Indemnización</span><span>${fmt(fin.ind)}</span></div>`:''}
+        <div class="receipt-total"><span>TOTAL FINIQUITO</span><span style="color:var(--navy)">${fmt(fin.total)}</span></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir</button>
+        <button class="btn btn-danger" onclick="confirmarFiniquito('${w.id}')">Confirmar desvinculación</button>
+        <button class="btn" onclick="setState({modal:null})">Cerrar</button>
+      </div>
+    </div></div>`;
+  }
+  return'';
+}
+
+function attachEvents(){
+  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>setState({view:btn.dataset.view})));
+  // Unidades
+  document.getElementById('btnAddUnit')?.addEventListener('click',()=>toggleForm('unitForm'));
+  document.getElementById('btnCancelUnit')?.addEventListener('click',()=>toggleForm('unitForm',false));
+  document.getElementById('btnSaveUnit')?.addEventListener('click',async()=>{
+    const number=document.getElementById('uNumber').value.trim();
+    const floor=document.getElementById('uFloor').value;
+    const sqm=document.getElementById('uSqm').value;
+    if(!number||!floor||!sqm){showAlert('Completa los campos obligatorios','error');return;}
+    const parking=document.getElementById('uParking').checked;
+    const storage=document.getElementById('uStorage').checked;
+    const{data,error}=await sb.from('unidades').insert({
+      comunidad_id:state.selectedComunidad.id,numero:number,piso:parseInt(floor),sqm:parseFloat(sqm),
+      monthly_fee:parseInt(document.getElementById('uFee').value)||85000,
+      parking,parking_num:parking?document.getElementById('uParkingNum').value:'',
+      parking_sqm:parking?parseFloat(document.getElementById('uParkingSqm').value||0):0,
+      storage,storage_num:storage?document.getElementById('uStorageNum').value:'',
+      storage_sqm:storage?parseFloat(document.getElementById('uStorageSqm').value||0):0
+    }).select();
+    if(error){showAlert('Error: '+error.message,'error');return;}
+    setState({comunidadData:{...state.comunidadData,unidades:[...state.comunidadData.unidades,...data]}});
+    showAlert('✓ Unidad agregada');
+  });
+  // Residentes
+  document.getElementById('btnAddResident')?.addEventListener('click',()=>toggleForm('residentForm'));
+  document.getElementById('btnCancelResident')?.addEventListener('click',()=>toggleForm('residentForm',false));
+  document.getElementById('btnSaveResident')?.addEventListener('click',async()=>{
+    const nombre=document.getElementById('rName').value.trim();
+    const unitId=document.getElementById('rUnit').value;
+    const clave=document.getElementById('rClave').value.trim();
+    const rol=document.getElementById('rRole').value;
+    if(!nombre||!unitId||!clave){showAlert('Completa campos obligatorios','error');return;}
+    const{data,error}=await sb.from('usuarios').insert({comunidad_id:state.selectedComunidad.id,unidad_id:unitId,nombre,email:document.getElementById('rEmail').value,rut:document.getElementById('rRut').value,phone:document.getElementById('rPhone').value,rol,clave,activo:true}).select();
+    if(error){showAlert('Error: '+error.message,'error');return;}
+    setState({comunidadData:{...state.comunidadData,residentes:[...state.comunidadData.residentes,...data]}});showAlert('Residente registrado');
+  });
+  // Pagos
+  document.getElementById('btnAddPayment')?.addEventListener('click',()=>toggleForm('paymentForm'));
+  document.getElementById('btnCancelPayment')?.addEventListener('click',()=>toggleForm('paymentForm',false));
+  document.getElementById('btnSavePayment')?.addEventListener('click',async()=>{
+    const userId=document.getElementById('pResident').value;
+    const amount=document.getElementById('pAmount').value;
+    const date=document.getElementById('pDate').value;
+    const method=document.getElementById('pMethod').value;
+    if(!userId||!amount||!date){showAlert('Completa campos','error');return;}
+    const r=state.comunidadData.residentes.find(x=>x.id===userId);
+    const curM=date.substr(0,7);
+    const pf=getPendingFines(r?.unidad_id,curM);
+    const finesAmt=pf.reduce((s,f)=>s+f.amount,0);
+    const{data,error}=await sb.from('pagos').insert({comunidad_id:state.selectedComunidad.id,unidad_id:r?.unidad_id,usuario_id:userId,amount:parseInt(amount),base_amount:parseInt(amount)-finesAmt,date,method,month:curM}).select();
+    if(error){showAlert('Error al registrar pago','error');return;}
+    if(pf.length>0){await sb.from('multas').update({status:'pagada'}).in('id',pf.map(f=>f.id));const multas=state.comunidadData.multas.map(f=>pf.find(x=>x.id===f.id)?{...f,status:'pagada'}:f);setState({comunidadData:{...state.comunidadData,multas}});}
+    setState({comunidadData:{...state.comunidadData,pagos:[...data,...state.comunidadData.pagos]},modal:{type:'receipt',payment:data[0]}});
+  });
+  // Multas
+  document.getElementById('btnAddFine')?.addEventListener('click',()=>toggleForm('fineForm'));
+  document.getElementById('btnCancelFine')?.addEventListener('click',()=>toggleForm('fineForm',false));
+  document.getElementById('btnSaveFine')?.addEventListener('click',async()=>{
+    const sel=document.getElementById('fResident').value;
+    const amount=document.getElementById('fAmount').value;
+    const reason=document.getElementById('fReason').value.trim();
+    const date=document.getElementById('fDate').value;
+    const month=document.getElementById('fMonth').value;
+    if(!sel||!amount||!reason){showAlert('Completa campos','error');return;}
+    const[userId,unitId]=sel.split('|');
+    const{data,error}=await sb.from('multas').insert({comunidad_id:state.selectedComunidad.id,unidad_id:unitId,usuario_id:userId,amount:parseInt(amount),reason,date,month,status:'pendiente'}).select();
+    if(error){showAlert('Error','error');return;}
+    setState({comunidadData:{...state.comunidadData,multas:[...data,...state.comunidadData.multas]}});showAlert('Multa aplicada');
+  });
+  // Trabajadores
+  document.getElementById('btnAddWorker')?.addEventListener('click',()=>toggleForm('workerForm'));
+  document.getElementById('btnCancelWorker')?.addEventListener('click',()=>toggleForm('workerForm',false));
+  document.getElementById('btnSaveWorker')?.addEventListener('click',async()=>{
+    const nombre=document.getElementById('wName').value.trim();
+    const rut=document.getElementById('wRut').value.trim();
+    const rol=document.getElementById('wRole').value.trim();
+    const tipo=document.getElementById('wType').value;
+    const gross_salary=parseInt(document.getElementById('wSalary').value)||0;
+    const start_date=document.getElementById('wStart').value;
+    if(!nombre||!rut||!rol){showAlert('Completa campos','error');return;}
+    const afp_type=tipo==='contrato'?document.getElementById('wAfp').value:'';
+    const health_type=tipo==='contrato'?document.getElementById('wHealth').value:'';
+    const{data,error}=await sb.from('trabajadores').insert({comunidad_id:state.selectedComunidad.id,nombre,rut,rol,tipo,gross_salary,start_date,afp_type,health_type,health_amount:health_type==='Isapre'?parseInt(document.getElementById('wIsapreAmt')?.value||0):0,activo:true}).select();
+    if(error){showAlert('Error','error');return;}
+    setState({comunidadData:{...state.comunidadData,trabajadores:[...state.comunidadData.trabajadores,...data]}});showAlert('Trabajador agregado');
+  });
+  // Votaciones
+  document.getElementById('btnAddVotacion')?.addEventListener('click',()=>toggleForm('votacionForm'));
+  document.getElementById('btnCancelVotacion')?.addEventListener('click',()=>toggleForm('votacionForm',false));
+  document.getElementById('btnAddOpcion')?.addEventListener('click',()=>{
+    const c=document.getElementById('opcionesContainer');if(!c)return;
+    const d=document.createElement('div');d.style.marginBottom='8px';
+    d.innerHTML=`<input class="form-control opcion-input" placeholder="Nueva opción">`;
+    c.appendChild(d);
+  });
+  // FIX 2: Guardar votación con fecha/hora
+  document.getElementById('btnSaveVotacion')?.addEventListener('click',async()=>{
+    const titulo=document.getElementById('vTitulo').value.trim();
+    const desc=document.getElementById('vDesc').value;
+    const inmediato=document.getElementById('vInmediato')?.checked;
+    const opciones=[...document.querySelectorAll('.opcion-input')].map(i=>i.value.trim()).filter(Boolean);
+    if(!titulo||opciones.length<2){showAlert('Completa título y al menos 2 opciones','error');return;}
+    let inicioDt,cierreDt,estado;
+    if(inmediato){
+      cierreDt=document.getElementById('vCierreDtInmediato')?.value;
+      if(!cierreDt){showAlert('Ingresa fecha y hora de cierre','error');return;}
+      inicioDt=new Date().toISOString();
+      estado='activa';
+    } else {
+      inicioDt=document.getElementById('vInicioDt')?.value;
+      cierreDt=document.getElementById('vCierreDt')?.value;
+      if(!inicioDt||!cierreDt){showAlert('Ingresa fecha/hora de inicio y cierre','error');return;}
+      estado=new Date(inicioDt)<=new Date()?'activa':'programada';
+    }
+    const{data,error}=await sb.from('votaciones').insert({
+      comunidad_id:state.selectedComunidad.id,titulo,descripcion:desc,
+      opciones:JSON.stringify(opciones),
+      fecha_inicio:inicioDt.split('T')[0],
+      fecha_inicio_dt:new Date(inicioDt).toISOString(),
+      fecha_cierre:cierreDt.split('T')[0],
+      fecha_cierre_dt:new Date(cierreDt).toISOString(),
+      estado,creada_por:state.currentUser?.nombre||'Admin'
+    }).select();
+    if(error){showAlert('Error al crear votación: '+error.message,'error');return;}
+    setState({comunidadData:{...state.comunidadData,votaciones:[...data,...state.comunidadData.votaciones]}});
+    showAlert(estado==='activa'?'✓ Votación activa ahora':'✓ Votación programada');
+    toggleForm('votacionForm',false);
+  });
+  // Alertas
+  document.getElementById('btnAddAlert')?.addEventListener('click',()=>toggleForm('alertForm'));
+  document.getElementById('btnCancelAlert')?.addEventListener('click',()=>toggleForm('alertForm',false));
+  document.getElementById('btnSaveAlert')?.addEventListener('click',async()=>{
+    const titulo=document.getElementById('aTitle').value.trim();
+    const tipo=document.getElementById('aType').value;
+    const descripcion=document.getElementById('aDesc').value;
+    if(!titulo){showAlert('Ingresa un título','error');return;}
+    const full=isFullAccess();
+    const residentSel=full?document.getElementById('aResident')?.value:'';
+    const usuario_id=residentSel||state.currentUser?.id||null;
+    const unidad_id=usuario_id?state.comunidadData.residentes.find(r=>r.id===usuario_id)?.unidad_id:null;
+    const{data,error}=await sb.from('alertas').insert({comunidad_id:state.selectedComunidad.id,tipo,titulo,descripcion,usuario_id,unidad_id,date:today(),time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),status:'activa'}).select();
+    if(error){showAlert('Error','error');return;}
+    setState({comunidadData:{...state.comunidadData,alertas:[...data,...state.comunidadData.alertas]}});showAlert('Alerta enviada');
+  });
+  // Gasto
+  document.getElementById('btnSaveExpense')?.addEventListener('click',async()=>{
+    const amount=document.getElementById('eAmount')?.value;
+    const date=document.getElementById('eDate')?.value;
+    if(!amount||!date){showAlert('Completa campos','error');return;}
+    const cat=EXPENSE_CATS.find(c=>c.id===state.selectedCat);
+    const{data,error}=await sb.from('gastos').insert({comunidad_id:state.selectedComunidad.id,cat_id:cat.id,label:cat.label,icon:cat.icon,prorate:cat.prorate,amount:parseInt(amount),date,description:document.getElementById('eDesc')?.value||'',month:date.substr(0,7)}).select();
+    if(error){showAlert('Error','error');return;}
+    setState({comunidadData:{...state.comunidadData,gastos:[...data,...state.comunidadData.gastos]},selectedCat:null});showAlert('Gasto registrado');
+  });
+  // Contraseña
+  document.getElementById('btnCambiarClave')?.addEventListener('click',async()=>{
+    const actual=document.getElementById('pwActual').value;
+    const nueva=document.getElementById('pwNueva').value;
+    const confirm=document.getElementById('pwConfirm').value;
+    if(!actual||!nueva||!confirm){showAlert('Completa todos los campos','error');return;}
+    if(actual!==state.currentUser.clave){showAlert('La clave actual es incorrecta','error');return;}
+    if(nueva.length<6){showAlert('La nueva clave debe tener al menos 6 caracteres','error');return;}
+    if(nueva!==confirm){showAlert('Las claves no coinciden','error');return;}
+    const{error}=await sb.from('usuarios').update({clave:nueva}).eq('id',state.currentUser.id);
+    if(error){showAlert('Error al cambiar clave','error');return;}
+    setState({currentUser:{...state.currentUser,clave:nueva}});
+    showAlert('Clave cambiada exitosamente ✓');
+    ['pwActual','pwNueva','pwConfirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  });
+  // Configuración
+  document.getElementById('btnSaveSettings')?.addEventListener('click',async()=>{
+    const nombre=document.getElementById('bName').value.trim();
+    const ciudad=document.getElementById('bCity').value.trim();
+    const direccion=document.getElementById('bAddr').value.trim();
+    await sb.from('comunidades').update({nombre,ciudad,direccion}).eq('id',state.selectedComunidad.id);
+    setState({selectedComunidad:{...state.selectedComunidad,nombre,ciudad,direccion}});showAlert('Guardado');
+  });
+  document.getElementById('reportMonth')?.addEventListener('change',function(){setState({reportMonth:this.value});});
+  // Nueva comunidad
+  document.getElementById('btnAddUnidadForm')?.addEventListener('click',()=>{
+    const container=document.getElementById('unidadesContainer');if(!container)return;
+    const idx=container.children.length;
+    const div=document.createElement('div');div.setAttribute('data-unit','true');
+    div.style.cssText='border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;background:#f9fafb';
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:12px;font-weight:600">Unidad ${idx+1}</span><button class="btn btn-sm btn-danger" onclick="this.closest('[data-unit]').remove()">✕</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label class="form-label">N° Depto *</label><input class="form-control unit-numero"></div>
+      <div><label class="form-label">Piso *</label><input class="form-control unit-piso" type="number"></div>
+      <div><label class="form-label">m² *</label><input class="form-control unit-sqm" type="number"></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="form-label">GC mensual ($)</label><input class="form-control unit-fee" type="number" value="85000" style="max-width:160px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label class="form-label">N° Estacionamiento (vacío = no tiene)</label><input class="form-control unit-park-num"><input class="form-control unit-park-sqm" type="number" placeholder="m² estac." style="margin-top:4px"></div>
+      <div><label class="form-label">N° Bodega (vacío = no tiene)</label><input class="form-control unit-stor-num"><input class="form-control unit-stor-sqm" type="number" placeholder="m² bodega" style="margin-top:4px"></div>
+    </div>`;
+    container.appendChild(div);
+  });
+  document.getElementById('btnCrearComunidad')?.addEventListener('click',async()=>{
+    const nombre=document.getElementById('ncNombre').value.trim();
+    const codigo_acceso=document.getElementById('ncCodigo').value.trim().toUpperCase();
+    const adminNombre=document.getElementById('ncAdminNombre').value.trim();
+    const adminClave=document.getElementById('ncAdminClave').value.trim();
+    if(!nombre||!codigo_acceso||!adminNombre||!adminClave){showAlert('Completa campos obligatorios','error');return;}
+    setState({loading:true});
+    const{data:comData,error:comError}=await sb.from('comunidades').insert({nombre,direccion:document.getElementById('ncDir').value,ciudad:document.getElementById('ncCiudad').value,region:document.getElementById('ncRegion').value,codigo_acceso,plan:document.getElementById('ncPlan').value,monto_implementacion:parseInt(document.getElementById('ncImpl').value||0),monto_mantencion:parseInt(document.getElementById('ncMant').value||0),notas:document.getElementById('ncNotas').value,activa:true,fecha_inicio:today()}).select();
+    if(comError){setState({loading:false});showAlert('Error: el código ya existe o falta información','error');return;}
+    const comId=comData[0].id;
+    await sb.from('usuarios').insert({comunidad_id:comId,nombre:adminNombre,email:document.getElementById('ncAdminEmail').value,phone:document.getElementById('ncAdminPhone').value,rol:'admin',clave:adminClave,activo:true});
+    const unitDivs=document.querySelectorAll('[data-unit]');
+    for(const div of unitDivs){
+      const numero=div.querySelector('.unit-numero').value.trim();
+      const piso=parseInt(div.querySelector('.unit-piso').value)||1;
+      const sqm=parseFloat(div.querySelector('.unit-sqm').value)||0;
+      const fee=parseInt(div.querySelector('.unit-fee').value)||85000;
+      const parkNum=div.querySelector('.unit-park-num').value.trim();
+      const parkSqm=parseFloat(div.querySelector('.unit-park-sqm').value)||0;
+      const storNum=div.querySelector('.unit-stor-num').value.trim();
+      const storSqm=parseFloat(div.querySelector('.unit-stor-sqm').value)||0;
+      if(numero&&sqm)await sb.from('unidades').insert({comunidad_id:comId,numero,piso,sqm,monthly_fee:fee,parking:!!parkNum,parking_num:parkNum,parking_sqm:parkSqm,storage:!!storNum,storage_num:storNum,storage_sqm:storSqm});
+    }
+    const comunidades=await loadAllComunidades();
+    setState({loading:false,comunidades,view:'sa_dashboard'});showAlert(`✓ Comunidad "${nombre}" creada`);
+  });
+  document.getElementById('modalOverlay')?.addEventListener('click',function(e){if(e.target===this)setState({modal:null});});
+}
+
+function toggleForm(id,show=null){const f=document.getElementById(id);if(!f)return;f.style.display=show===null?(f.style.display==='none'?'block':'none'):show?'block':'none';}
+
+// FIX 2: Toggle votación programada/inmediata
+window.toggleVotacionTiming=()=>{
+  const inmediato=document.getElementById('vInmediato')?.checked;
+  const timing=document.getElementById('vTimingFields');
+  const timingInm=document.getElementById('vTimingInmediato');
+  if(timing)timing.style.display=inmediato?'none':'block';
+  if(timingInm)timingInm.style.display=inmediato?'block':'none';
+};
+
+window.openSidebar=()=>{document.getElementById('mainSidebar')?.classList.add('open');document.getElementById('sidebar-overlay').style.display='block';};
+window.closeSidebar=()=>{document.getElementById('mainSidebar')?.classList.remove('open');document.getElementById('sidebar-overlay').style.display='none';};
+window.selectComunidad=id=>setState({selectedComunidad:state.comunidades.find(x=>x.id===id)});
+window.goToStep2=()=>{if(state.selectedComunidad){setState({loginStep:2});setTimeout(()=>document.getElementById('claveInput')?.focus(),100);}};
+window.goToSuperAdminLogin=()=>{setState({loginStep:3});setTimeout(()=>document.getElementById('superClave')?.focus(),100);};
+window.doSuperLogin=async()=>{
+  const clave=document.getElementById('superClave')?.value?.trim();
+  if(!clave)return;setState({loading:true});
+  const{data,error}=await sb.from('superadmin').select('*').eq('clave',clave).single();
+  setState({loading:false});
+  if(error||!data){showAlert('Clave incorrecta','error');return;}
+  const comunidades=await loadAllComunidades();
+  setState({screen:'superadmin',isSuperAdmin:true,view:'sa_dashboard',comunidades});
+};
+window.doLogin=async()=>{
+  const clave=document.getElementById('claveInput')?.value?.trim();
+  if(!clave){showAlert('Ingresa tu clave','error');return;}
+  setState({loading:true});
+  const{data,error}=await sb.from('usuarios').select('*').eq('comunidad_id',state.selectedComunidad.id).eq('clave',clave).eq('activo',true).maybeSingle();
+  if(error||!data){setState({loading:false});showAlert('Clave incorrecta','error');return;}
+  const comunidadData=await loadComunidadData(state.selectedComunidad.id);
+  const full=data.rol==='admin'||data.rol==='presidente'||data.rol==='tesorero';
+  setState({loading:false,screen:'app',currentUser:data,comunidadData,view:full?'dashboard':'my_account'});
+};
+window.logout=()=>setState({screen:'login',loginStep:1,currentUser:null,selectedComunidad:null,isSuperAdmin:false,comunidadData:{unidades:[],residentes:[],pagos:[],gastos:[],multas:[],trabajadores:[],alertas:[],documentos:[],votaciones:[],votos:[]}});
+window.backToSuperAdmin=async()=>{const comunidades=await loadAllComunidades();setState({screen:'superadmin',view:'sa_dashboard',comunidades});};
+window.enterComunidad=async id=>{
+  setState({loading:true});
+  const com=state.comunidades.find(x=>x.id===id);
+  const comunidadData=await loadComunidadData(id);
+  setState({loading:false,screen:'app',selectedComunidad:com,comunidadData,view:'dashboard',currentUser:{nombre:'Rodrigo (Superadmin)',rol:'admin',id:'superadmin',clave:''}});
+};
+window.editComunidad=id=>{const c=state.comunidades.find(x=>x.id===id);if(c)setState({modal:{type:'edit_comunidad',comunidad:c}});};
+window.saveEditComunidad=async id=>{
+  const updates={nombre:document.getElementById('ec_nombre').value.trim(),ciudad:document.getElementById('ec_ciudad').value.trim(),direccion:document.getElementById('ec_dir').value.trim(),plan:document.getElementById('ec_plan').value,monto_mantencion:parseInt(document.getElementById('ec_mant').value||0),monto_implementacion:parseInt(document.getElementById('ec_impl').value||0),notas:document.getElementById('ec_notas').value};
+  await sb.from('comunidades').update(updates).eq('id',id);
+  const comunidades=state.comunidades.map(c=>c.id===id?{...c,...updates}:c);
+  setState({comunidades,modal:null});showAlert('Comunidad actualizada');
+};
+window.toggleComunidad=async(id,activa)=>{
+  await sb.from('comunidades').update({activa:!activa}).eq('id',id);
+  const comunidades=state.comunidades.map(c=>c.id===id?{...c,activa:!activa}:c);
+  setState({comunidades,modal:null});showAlert(activa?'Desactivada':'Activada');
+};
+window.deleteComunidad=(id,nombre)=>setState({modal:{type:'confirm',message:`⚠️ ¿Eliminar "${nombre}"? Esta acción es IRREVERSIBLE.`,onConfirm:`doDeleteComunidad('${id}')`}});
+window.doDeleteComunidad=async id=>{
+  setState({loading:true});
+  await sb.from('votos').delete().in('votacion_id',(await sb.from('votaciones').select('id').eq('comunidad_id',id)).data?.map(v=>v.id)||[]);
+  for(const t of['votaciones','alertas','multas','gastos','pagos','trabajadores','usuarios','unidades','documentos']){
+    await sb.from(t).delete().eq('comunidad_id',id);
+  }
+  await sb.from('comunidades').delete().eq('id',id);
+  const comunidades=state.comunidades.filter(c=>c.id!==id);
+  setState({loading:false,comunidades,modal:null});showAlert('Comunidad eliminada');
+};
+window.viewReceipt=id=>{const p=state.comunidadData.pagos.find(x=>x.id===id);if(p)setState({modal:{type:'receipt',payment:p}});};
+window.viewLiquidacion=id=>setState({modal:{type:'liquidacion',worker:state.comunidadData.trabajadores.find(w=>w.id===id)}});
+window.viewBoleta=id=>setState({modal:{type:'boleta',worker:state.comunidadData.trabajadores.find(w=>w.id===id)}});
+window.openFiniquito=id=>setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:'renuncia',lastDay:today()}});
+window.updateFiniquito=id=>{const type=document.getElementById('finType')?.value;const lastDay=document.getElementById('finLastDay')?.value;setState({modal:{type:'finiquito',worker:state.comunidadData.trabajadores.find(w=>w.id===id),finType:type,lastDay}});};
+window.confirmarFiniquito=async id=>{
+  const type=document.getElementById('finType')?.value||'renuncia';
+  const lastDay=document.getElementById('finLastDay')?.value||today();
+  await sb.from('trabajadores').update({activo:false,end_date:lastDay,end_reason:type}).eq('id',id);
+  const trabajadores=state.comunidadData.trabajadores.map(w=>w.id===id?{...w,activo:false,end_date:lastDay}:w);
+  setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador desvinculado');
+};
+window.desvincularWorker=id=>setState({modal:{type:'confirm',message:'¿Confirmar desvinculación?',onConfirm:`doDesvincular('${id}')`}});
+window.doDesvincular=async id=>{
+  await sb.from('trabajadores').update({activo:false,end_date:today()}).eq('id',id);
+  const trabajadores=state.comunidadData.trabajadores.map(w=>w.id===id?{...w,activo:false}:w);
+  setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador desvinculado');
+};
+window.deleteWorker=(id,nombre)=>setState({modal:{type:'confirm',message:`¿Eliminar a ${nombre}?`,onConfirm:`doDeleteWorker('${id}')`}});
+window.doDeleteWorker=async id=>{
+  await sb.from('trabajadores').delete().eq('id',id);
+  const trabajadores=state.comunidadData.trabajadores.filter(w=>w.id!==id);
+  setState({comunidadData:{...state.comunidadData,trabajadores},modal:null});showAlert('Trabajador eliminado');
+};
+window.resolveAlert=async id=>{
+  await sb.from('alertas').update({status:'resuelta'}).eq('id',id);
+  const alertas=state.comunidadData.alertas.map(a=>a.id===id?{...a,status:'resuelta'}:a);
+  setState({comunidadData:{...state.comunidadData,alertas}});showAlert('Alerta resuelta');
+};
+window.deleteUnit=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta unidad?',onConfirm:`doDeleteUnit('${id}')`}});
+window.doDeleteUnit=async id=>{
+  await sb.from('unidades').delete().eq('id',id);
+  setState({comunidadData:{...state.comunidadData,unidades:state.comunidadData.unidades.filter(u=>u.id!==id)},modal:null});showAlert('Unidad eliminada');
+};
+window.deleteResident=(id,nombre)=>setState({modal:{type:'confirm',message:`¿Eliminar a ${nombre}?`,onConfirm:`doDeleteResident('${id}')`}});
+window.doDeleteResident=async id=>{
+  await sb.from('usuarios').update({activo:false}).eq('id',id);
+  setState({comunidadData:{...state.comunidadData,residentes:state.comunidadData.residentes.filter(r=>r.id!==id)},modal:null});showAlert('Residente eliminado');
+};
+window.emitirVoto=async(votacionId,opcion)=>{
+  const userId=state.currentUser?.id;
+  if(!userId){showAlert('Debes iniciar sesión','error');return;}
+  const yaVoto=state.comunidadData.votos.find(v=>v.votacion_id===votacionId&&v.usuario_id===userId);
+  if(yaVoto){showAlert('Ya has votado en esta votación','error');return;}
+  const r=state.comunidadData.residentes.find(x=>x.id===userId);
+  const{data,error}=await sb.from('votos').insert({votacion_id:votacionId,usuario_id:userId,unidad_id:r?.unidad_id||null,opcion_elegida:opcion}).select();
+  if(error){showAlert('Error al registrar voto','error');return;}
+  setState({comunidadData:{...state.comunidadData,votos:[...state.comunidadData.votos,...data]}});showAlert('✓ Voto registrado. ¡Gracias por participar!');
+};
+window.cerrarVotacion=async id=>{
+  await sb.from('votaciones').update({estado:'cerrada'}).eq('id',id);
+  const votaciones=state.comunidadData.votaciones.map(v=>v.id===id?{...v,estado:'cerrada'}:v);
+  setState({comunidadData:{...state.comunidadData,votaciones}});showAlert('Votación cerrada');
+};
+window.activarVotacion=async id=>{
+  await sb.from('votaciones').update({estado:'activa'}).eq('id',id);
+  const votaciones=state.comunidadData.votaciones.map(v=>v.id===id?{...v,estado:'activa'}:v);
+  setState({comunidadData:{...state.comunidadData,votaciones}});showAlert('✓ Votación activada ahora');
+};
+window.deleteVotacion=id=>setState({modal:{type:'confirm',message:'¿Eliminar esta votación y todos sus votos?',onConfirm:`doDeleteVotacion('${id}')`}});
+window.doDeleteVotacion=async id=>{
+  await sb.from('votos').delete().eq('votacion_id',id);
+  await sb.from('votaciones').delete().eq('id',id);
+  const votaciones=state.comunidadData.votaciones.filter(v=>v.id!==id);
+  const votos=state.comunidadData.votos.filter(v=>v.votacion_id!==id);
+  setState({comunidadData:{...state.comunidadData,votaciones,votos},modal:null});showAlert('Votación eliminada');
+};
+window.toggleClaveVisible=clave=>{const el=document.getElementById('claveVisible');if(el)el.textContent=el.textContent==='••••••••'?clave:'••••••••';};
+window.resetResidentClave=async id=>{
+  const nueva=document.getElementById('mrNuevaClave')?.value?.trim();
+  if(!nueva||nueva.length<4){showAlert('La clave debe tener al menos 4 caracteres','error');return;}
+  const{error}=await sb.from('usuarios').update({clave:nueva}).eq('id',id);
+  if(error){showAlert('Error al actualizar clave','error');return;}
+  const residentes=state.comunidadData.residentes.map(r=>r.id===id?{...r,clave:nueva}:r);
+  setState({comunidadData:{...state.comunidadData,residentes},modal:null});showAlert('Clave actualizada ✓');
+};
+window.saveEditUnit=async id=>{
+  const numero=document.getElementById('eu_number')?.value.trim();
+  const piso=parseInt(document.getElementById('eu_floor')?.value);
+  const sqm=parseFloat(document.getElementById('eu_sqm')?.value);
+  const monthly_fee=parseInt(document.getElementById('eu_fee')?.value)||85000;
+  const parking=document.getElementById('eu_parking')?.checked;
+  const storage=document.getElementById('eu_storage')?.checked;
+  if(!numero||!piso||!sqm){showAlert('Completa campos','error');return;}
+  const updates={numero,piso,sqm,monthly_fee,parking,parking_num:parking?document.getElementById('eu_parkNum')?.value||'':'',parking_sqm:parking?parseFloat(document.getElementById('eu_parkSqm')?.value||0):0,storage,storage_num:storage?document.getElementById('eu_storNum')?.value||'':'',storage_sqm:storage?parseFloat(document.getElementById('eu_storSqm')?.value||0):0};
+  await sb.from('unidades').update(updates).eq('id',id);
+  const unidades=state.comunidadData.unidades.map(u=>u.id===id?{...u,...updates}:u);
+  setState({comunidadData:{...state.comunidadData,unidades},modal:null});showAlert('Unidad actualizada');
+};
+window.onResidentChange=function(sel){
+  const r=state.comunidadData.residentes.find(x=>x.id===sel.value);
+  const u=r?state.comunidadData.unidades.find(x=>x.id===r.unidad_id):null;
+  const curM=today().substr(0,7);
+  const pf=r?getPendingFines(r.unidad_id,curM):[];
+  const fa=pf.reduce((s,f)=>s+f.amount,0);
+  const base=u?.monthly_fee||85000;
+  const unitInp=document.getElementById('pUnit');const baseInp=document.getElementById('pBase');const finesInp=document.getElementById('pFinesAmt');const amtInp=document.getElementById('pAmount');const finesInfo=document.getElementById('pFinesInfo');
+  if(unitInp)unitInp.value=u?`Depto ${u.numero} · P${u.piso}`:'—';
+  if(baseInp)baseInp.value=base;if(finesInp)finesInp.value=fa;if(amtInp)amtInp.value=base+fa;
+  if(finesInfo){if(pf.length>0){finesInfo.style.display='block';finesInfo.innerHTML=`⚠ Multas pendientes: ${fmt(fa)}`;}else finesInfo.style.display='none';}
+};
+window.toggleField=id=>{const f=document.getElementById(id);if(f)f.style.display=f.style.display==='none'?'grid':'none';};
+window.switchWorkerType=type=>{
+  document.getElementById('wType').value=type;
+  document.getElementById('wTypeContrato').className='tab-btn'+(type==='contrato'?' active':'');
+  document.getElementById('wTypeHonorarios').className='tab-btn'+(type==='honorarios'?' active':'');
+  const cf=document.getElementById('contratoFields');if(cf)cf.style.display=type==='contrato'?'block':'none';
+};
+window.toggleIsapre=()=>{const v=document.getElementById('wHealth')?.value;const f=document.getElementById('isapreFields');if(f)f.style.display=v==='Isapre'?'grid':'none';};
+window.updateProrate=()=>{
+  const amt=parseInt(document.getElementById('eAmount')?.value||0);
+  const prev=document.getElementById('proratePreview');const body=document.getElementById('prorateBody');
+  if(!prev||!body)return;
+  if(amt>0){prev.style.display='block';body.innerHTML=calcProrate(amt,state.comunidadData.unidades).map(p=>{const u=state.comunidadData.unidades.find(x=>x.id===p.unitId);return`<tr><td>Depto ${u?.numero||''}</td><td>${p.sqm}m²</td><td>${(p.pct*100).toFixed(1)}%</td><td style="font-weight:700;color:var(--navy)">${fmt(p.amount)}</td></tr>`;}).join('');}else prev.style.display='none';
+};
+window.installPWA=()=>{if(state.installPrompt){state.installPrompt.prompt();state.installPrompt.userChoice.then(()=>setState({installPrompt:null}));}};
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();setState({installPrompt:e});});
+
+// ── INICIO ──
+async function init(){
+  setState({loading:true});
+  const comunidades=await loadComunidades();
+  setState({loading:false,comunidades});
+}
+init();
+</script>
+</body>
+</html>
