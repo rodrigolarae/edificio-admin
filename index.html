@@ -515,42 +515,147 @@ function buildSADashboard(){
 
 function buildSANueva(){
   return`
-  <div class="page-header"><h2>Nueva comunidad</h2></div>
-  <div class="card">
-    <div class="section-div">Datos del edificio</div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="ncNombre" placeholder="Edificio Los Almendros"></div>
-      <div class="form-group"><label class="form-label">Código de acceso *</label><input class="form-control" id="ncCodigo" placeholder="ALMENDROS2024" style="text-transform:uppercase"></div>
+  <div class="page-header"><h2>Nueva comunidad</h2><p>Crea el edificio en 3 pasos</p></div>
+
+  <!-- PASO 1: DATOS -->
+  <div class="card" style="border-left:4px solid var(--gold)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">1</div>
+      <div style="font-weight:700;font-size:13px">Datos del edificio y administrador</div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir"></div>
+      <div class="form-group"><label class="form-label">Nombre del edificio *</label><input class="form-control" id="ncNombre" placeholder="Edificio Los Almendros"></div>
+      <div class="form-group"><label class="form-label">Código de acceso *</label>
+        <input class="form-control" id="ncCodigo" placeholder="ALMENDROS2024" style="text-transform:uppercase">
+        <p style="font-size:10px;color:#6b7280;margin-top:2px">Clave que los residentes usan para encontrar su edificio</p>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ncDir" placeholder="Av. Ejemplo 1234"></div>
       <div class="form-group"><label class="form-label">Ciudad</label><input class="form-control" id="ncCiudad" placeholder="Santiago"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Región</label><input class="form-control" id="ncRegion"></div>
+      <div class="form-group"><label class="form-label">Región</label><input class="form-control" id="ncRegion" placeholder="Metropolitana"></div>
       <div class="form-group"><label class="form-label">Plan</label>
-        <select class="form-control" id="ncPlan"><option value="basico">Básico</option><option value="profesional">Profesional</option><option value="enterprise">Enterprise</option></select>
+        <select class="form-control" id="ncPlan">
+          <option value="basico">Básico — hasta 20 unidades</option>
+          <option value="profesional">Profesional — hasta 100 unidades</option>
+          <option value="enterprise">Enterprise — sin límite</option>
+        </select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Implementación ($)</label><input class="form-control" id="ncImpl" type="number" placeholder="200000"></div>
       <div class="form-group"><label class="form-label">Mantención mensual ($)</label><input class="form-control" id="ncMant" type="number" placeholder="20000"></div>
     </div>
-    <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ncNotas" rows="2"></textarea></div>
-    <div class="section-div">Administrador del edificio</div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre admin *</label><input class="form-control" id="ncAdminNombre"></div>
-      <div class="form-group"><label class="form-label">Email admin</label><input class="form-control" id="ncAdminEmail" type="email"></div>
+    <div class="form-group"><label class="form-label">Notas internas</label><textarea class="form-control" id="ncNotas" rows="2" placeholder="Solo visibles para Vecinoo"></textarea></div>
+
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e5e5">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Administrador del edificio</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre admin *</label><input class="form-control" id="ncAdminNombre"></div>
+        <div class="form-group"><label class="form-label">Clave inicial *</label><input class="form-control" id="ncAdminClave" placeholder="Min. 6 caracteres"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="ncAdminEmail" type="email"></div>
+        <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="ncAdminPhone"></div>
+      </div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Clave inicial *</label><input class="form-control" id="ncAdminClave"></div>
-      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="ncAdminPhone"></div>
+  </div>
+
+  <!-- PASO 2: INVENTARIO AUTOMÁTICO -->
+  <div class="card" style="border-left:4px solid var(--green)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">2</div>
+      <div>
+        <div style="font-weight:700;font-size:13px">Inventario del edificio</div>
+        <div style="font-size:11px;color:#6b7280">El sistema creará todos los ítems automáticamente numerados</div>
+      </div>
     </div>
-    <div class="section-div">Unidades del edificio</div>
-    <div id="unidadesContainer"></div>
-    <button class="btn btn-sm" id="btnAddUnidadForm" style="margin-bottom:12px">+ Agregar unidad</button>
-    ${state.loading?`<div class="loading"><span class="spinner"></span>Creando...</div>`:`<div style="display:flex;gap:8px"><button class="btn btn-primary" id="btnCrearComunidad">Crear comunidad</button><button class="btn" onclick="setState({view:'sa_dashboard'})">Cancelar</button></div>`}
-  </div>`;
+
+    <div style="background:#f0fdf4;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #bbf7d0">
+      <div style="font-size:11px;color:#065f46;font-weight:600;margin-bottom:8px">🏠 Departamentos</div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">Cantidad de deptos *</label>
+          <input class="form-control" id="ncCantDeptos" type="number" min="1" max="200" placeholder="12" oninput="previewInventario()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Numeración inicial</label>
+          <input class="form-control" id="ncNumInicio" type="number" value="101" placeholder="101" oninput="previewInventario()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">GC mensual por depto ($)</label>
+          <input class="form-control" id="ncGC" type="number" value="85000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Formato numeración</label>
+          <select class="form-control" id="ncFormato" onchange="previewInventario()">
+            <option value="secuencial">Secuencial (101, 102, 103...)</option>
+            <option value="por_piso">Por piso (101, 102, 201, 202...)</option>
+            <option value="letras">Con letra (A1, A2, B1, B2...)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">m² promedio por depto</label>
+          <input class="form-control" id="ncSqm" type="number" value="65" placeholder="65">
+        </div>
+      </div>
+      ${''/* Preview numeración */}
+      <div id="previewNums" style="display:none;background:#fff;border-radius:6px;padding:8px;font-size:11px;color:#374151;border:1px solid #d1fae5;margin-top:6px">
+        <span style="font-weight:600;color:#065f46">Vista previa: </span><span id="previewNumsText"></span>
+      </div>
+    </div>
+
+    <div style="background:#eff6ff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid #bfdbfe">
+      <div style="font-size:11px;color:#1e40af;font-weight:600;margin-bottom:8px">🅿️ Estacionamientos</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Cantidad de estacionamientos</label>
+          <input class="form-control" id="ncCantEstac" type="number" min="0" value="0" placeholder="0">
+          <p style="font-size:10px;color:#6b7280;margin-top:2px">0 = sin estacionamientos</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Numeración inicial</label>
+          <input class="form-control" id="ncEstacInicio" type="text" value="E-1" placeholder="E-1">
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#fefce8;border-radius:8px;padding:12px;border:1px solid #fef08a">
+      <div style="font-size:11px;color:#854d0e;font-weight:600;margin-bottom:8px">📦 Bodegas</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Cantidad de bodegas</label>
+          <input class="form-control" id="ncCantBodegas" type="number" min="0" value="0" placeholder="0">
+          <p style="font-size:10px;color:#6b7280;margin-top:2px">0 = sin bodegas</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Numeración inicial</label>
+          <input class="form-control" id="ncBodegaInicio" type="text" value="B-1" placeholder="B-1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: RESUMEN -->
+  <div class="card" id="ncResumenCard" style="display:none;border-left:4px solid var(--navy)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">3</div>
+      <div style="font-weight:700;font-size:13px">Resumen antes de crear</div>
+    </div>
+    <div id="ncResumenContent"></div>
+  </div>
+
+  ${state.loading?
+    `<div class="loading"><span class="spinner"></span>Creando comunidad y generando inventario...</div>`:
+    `<div style="display:flex;gap:8px">
+      <button class="btn btn-primary" id="btnCrearComunidad" onclick="previewResumen()">Revisar y crear →</button>
+      <button class="btn" onclick="setState({view:'sa_dashboard'})">Cancelar</button>
+    </div>`
+  }`;
 }
 
 function buildSAFacturacion(){
@@ -1903,32 +2008,7 @@ function attachEvents(){
     </div>`;
     container.appendChild(div);
   });
-  document.getElementById('btnCrearComunidad')?.addEventListener('click',async()=>{
-    const nombre=document.getElementById('ncNombre').value.trim();
-    const codigo_acceso=document.getElementById('ncCodigo').value.trim().toUpperCase();
-    const adminNombre=document.getElementById('ncAdminNombre').value.trim();
-    const adminClave=document.getElementById('ncAdminClave').value.trim();
-    if(!nombre||!codigo_acceso||!adminNombre||!adminClave){showAlert('Completa campos obligatorios','error');return;}
-    setState({loading:true});
-    const{data:comData,error:comError}=await sb.from('comunidades').insert({nombre,direccion:document.getElementById('ncDir').value,ciudad:document.getElementById('ncCiudad').value,region:document.getElementById('ncRegion').value,codigo_acceso,plan:document.getElementById('ncPlan').value,monto_implementacion:parseInt(document.getElementById('ncImpl').value||0),monto_mantencion:parseInt(document.getElementById('ncMant').value||0),notas:document.getElementById('ncNotas').value,activa:true,fecha_inicio:today()}).select();
-    if(comError){setState({loading:false});showAlert('Error: el código ya existe o falta información','error');return;}
-    const comId=comData[0].id;
-    await sb.from('usuarios').insert({comunidad_id:comId,nombre:adminNombre,email:document.getElementById('ncAdminEmail').value,phone:document.getElementById('ncAdminPhone').value,rol:'admin',clave:adminClave,activo:true});
-    const unitDivs=document.querySelectorAll('[data-unit]');
-    for(const div of unitDivs){
-      const numero=div.querySelector('.unit-numero').value.trim();
-      const piso=parseInt(div.querySelector('.unit-piso').value)||1;
-      const sqm=parseFloat(div.querySelector('.unit-sqm').value)||0;
-      const fee=parseInt(div.querySelector('.unit-fee').value)||85000;
-      const parkNum=div.querySelector('.unit-park-num').value.trim();
-      const parkSqm=parseFloat(div.querySelector('.unit-park-sqm').value)||0;
-      const storNum=div.querySelector('.unit-stor-num').value.trim();
-      const storSqm=parseFloat(div.querySelector('.unit-stor-sqm').value)||0;
-      if(numero&&sqm)await sb.from('unidades').insert({comunidad_id:comId,numero,piso,sqm,monthly_fee:fee,parking:!!parkNum,parking_num:parkNum,parking_sqm:parkSqm,storage:!!storNum,storage_num:storNum,storage_sqm:storSqm});
-    }
-    const comunidades=await loadAllComunidades();
-    setState({loading:false,comunidades,view:'sa_dashboard'});showAlert(`✓ Comunidad "${nombre}" creada`);
-  });
+  document.getElementById('btnCrearComunidad')?.addEventListener('click',()=>previewResumen());
   document.getElementById('modalOverlay')?.addEventListener('click',function(e){if(e.target===this)setState({modal:null});});
 }
 
@@ -2115,6 +2195,207 @@ window.updateProrate=()=>{
 };
 window.installPWA=()=>{if(state.installPrompt){state.installPrompt.prompt();state.installPrompt.userChoice.then(()=>setState({installPrompt:null}));}};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();setState({installPrompt:e});});
+
+
+/* ============================================================
+   SUPERADMIN — INVENTARIO AUTOMÁTICO
+============================================================ */
+
+// Generar números de departamento según formato
+function generarNumeracion(cant, inicio, formato) {
+  const nums = [];
+  const n = parseInt(inicio) || 101;
+  if (formato === 'secuencial') {
+    for (let i = 0; i < cant; i++) nums.push(String(n + i));
+  } else if (formato === 'por_piso') {
+    // 2 dptos por piso por defecto
+    const dxp = 2;
+    for (let i = 0; i < cant; i++) {
+      const piso = Math.floor(i / dxp) + 1;
+      const pos = (i % dxp) + 1;
+      nums.push(`${piso}0${pos}`);
+    }
+  } else if (formato === 'letras') {
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let letra = 0, num = 1;
+    for (let i = 0; i < cant; i++) {
+      nums.push(`${letras[letra]}${num}`);
+      num++;
+      if (num > 4) { num = 1; letra = (letra + 1) % letras.length; }
+    }
+  }
+  return nums;
+}
+
+// Generar numeración estacionamientos/bodegas
+function generarNumsItem(cant, inicio) {
+  const nums = [];
+  const prefijo = inicio.replace(/\d+$/, '');
+  const numInicio = parseInt(inicio.replace(/\D/g, '')) || 1;
+  for (let i = 0; i < cant; i++) nums.push(`${prefijo}${numInicio + i}`);
+  return nums;
+}
+
+// Preview en tiempo real
+window.previewInventario = function() {
+  const cant = parseInt(document.getElementById('ncCantDeptos')?.value) || 0;
+  const inicio = document.getElementById('ncNumInicio')?.value || '101';
+  const formato = document.getElementById('ncFormato')?.value || 'secuencial';
+  const preview = document.getElementById('previewNums');
+  const previewText = document.getElementById('previewNumsText');
+  if (!preview || !previewText) return;
+  if (cant <= 0) { preview.style.display = 'none'; return; }
+  const nums = generarNumeracion(cant, inicio, formato);
+  const shown = nums.slice(0, 8);
+  previewText.textContent = shown.join(', ') + (nums.length > 8 ? ` ... hasta ${nums[nums.length-1]}` : '');
+  preview.style.display = 'block';
+};
+
+// Mostrar resumen antes de crear
+window.previewResumen = function() {
+  const nombre = document.getElementById('ncNombre')?.value.trim();
+  const codigo = document.getElementById('ncCodigo')?.value.trim().toUpperCase();
+  const adminNombre = document.getElementById('ncAdminNombre')?.value.trim();
+  const adminClave = document.getElementById('ncAdminClave')?.value.trim();
+  const cant = parseInt(document.getElementById('ncCantDeptos')?.value) || 0;
+
+  if (!nombre || !codigo || !adminNombre || !adminClave) {
+    showAlert('Completa: nombre, código, admin y clave', 'error'); return;
+  }
+  if (cant < 1) { showAlert('Ingresa al menos 1 departamento', 'error'); return; }
+
+  const inicio = document.getElementById('ncNumInicio')?.value || '101';
+  const formato = document.getElementById('ncFormato')?.value || 'secuencial';
+  const gc = parseInt(document.getElementById('ncGC')?.value) || 85000;
+  const sqm = parseInt(document.getElementById('ncSqm')?.value) || 65;
+  const cantEstac = parseInt(document.getElementById('ncCantEstac')?.value) || 0;
+  const cantBodegas = parseInt(document.getElementById('ncCantBodegas')?.value) || 0;
+  const numDeptos = generarNumeracion(cant, inicio, formato);
+  const numEstac = generarNumsItem(cantEstac, document.getElementById('ncEstacInicio')?.value || 'E-1');
+  const numBodegas = generarNumsItem(cantBodegas, document.getElementById('ncBodegaInicio')?.value || 'B-1');
+
+  const card = document.getElementById('ncResumenCard');
+  const resumen = document.getElementById('ncResumenContent');
+  if (!card || !resumen) return;
+
+  resumen.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:#f9fafb;border-radius:8px;padding:10px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:4px">Edificio</div>
+        <div style="font-weight:700">${nombre}</div>
+        <div style="font-size:11px;color:#6b7280">Código: ${codigo}</div>
+      </div>
+      <div style="background:#f9fafb;border-radius:8px;padding:10px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:4px">Administrador</div>
+        <div style="font-weight:700">${adminNombre}</div>
+        <div style="font-size:11px;color:#6b7280">Clave: ${adminClave}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      <div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center;border:1px solid #bbf7d0">
+        <div style="font-size:22px;font-weight:900;color:#065f46">${cant}</div>
+        <div style="font-size:10px;color:#065f46;font-weight:600">🏠 Deptos</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px">${numDeptos[0]} → ${numDeptos[numDeptos.length-1]}</div>
+      </div>
+      <div style="background:#eff6ff;border-radius:8px;padding:10px;text-align:center;border:1px solid #bfdbfe">
+        <div style="font-size:22px;font-weight:900;color:#1e40af">${cantEstac}</div>
+        <div style="font-size:10px;color:#1e40af;font-weight:600">🅿️ Estac.</div>
+        ${cantEstac>0?`<div style="font-size:10px;color:#6b7280;margin-top:2px">${numEstac[0]} → ${numEstac[numEstac.length-1]}</div>`:'<div style="font-size:10px;color:#9ca3af">Sin estacionamientos</div>'}
+      </div>
+      <div style="background:#fefce8;border-radius:8px;padding:10px;text-align:center;border:1px solid #fef08a">
+        <div style="font-size:22px;font-weight:900;color:#854d0e">${cantBodegas}</div>
+        <div style="font-size:10px;color:#854d0e;font-weight:600">📦 Bodegas</div>
+        ${cantBodegas>0?`<div style="font-size:10px;color:#6b7280;margin-top:2px">${numBodegas[0]} → ${numBodegas[numBodegas.length-1]}</div>`:'<div style="font-size:10px;color:#9ca3af">Sin bodegas</div>'}
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px">
+      <div style="font-weight:700;margin-bottom:5px">GC por depto: <span style="color:var(--green)">${new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(gc)}/mes</span> · m² promedio: <span style="color:var(--navy)">${sqm}m²</span></div>
+      <div style="color:#6b7280">Total ingresos potenciales: <b style="color:var(--green)">${new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(gc*cant)}/mes</b></div>
+    </div>
+    <button class="btn btn-primary" onclick="crearComunidadConInventario()" style="width:100%">✓ Crear comunidad con ${cant + cantEstac + cantBodegas} ítems</button>
+  `;
+  card.style.display = 'block';
+  card.scrollIntoView({ behavior: 'smooth' });
+};
+
+// Crear comunidad con inventario completo
+window.crearComunidadConInventario = async function() {
+  const nombre = document.getElementById('ncNombre').value.trim();
+  const codigo_acceso = document.getElementById('ncCodigo').value.trim().toUpperCase();
+  const adminNombre = document.getElementById('ncAdminNombre').value.trim();
+  const adminClave = document.getElementById('ncAdminClave').value.trim();
+  const cant = parseInt(document.getElementById('ncCantDeptos').value) || 0;
+  const inicio = document.getElementById('ncNumInicio').value || '101';
+  const formato = document.getElementById('ncFormato').value || 'secuencial';
+  const gc = parseInt(document.getElementById('ncGC').value) || 85000;
+  const sqm = parseInt(document.getElementById('ncSqm').value) || 65;
+  const cantEstac = parseInt(document.getElementById('ncCantEstac').value) || 0;
+  const cantBodegas = parseInt(document.getElementById('ncCantBodegas').value) || 0;
+
+  setState({ loading: true });
+
+  // 1. Crear comunidad
+  const { data: comData, error: comError } = await sb.from('comunidades').insert({
+    nombre, direccion: document.getElementById('ncDir').value,
+    ciudad: document.getElementById('ncCiudad').value,
+    region: document.getElementById('ncRegion').value,
+    codigo_acceso, plan: document.getElementById('ncPlan').value,
+    monto_implementacion: parseInt(document.getElementById('ncImpl').value || 0),
+    monto_mantencion: parseInt(document.getElementById('ncMant').value || 0),
+    notas: document.getElementById('ncNotas').value,
+    activa: true, fecha_inicio: today()
+  }).select();
+
+  if (comError) {
+    setState({ loading: false });
+    showAlert('Error: ' + (comError.message.includes('unique') ? 'El código ya existe' : comError.message), 'error');
+    return;
+  }
+  const comId = comData[0].id;
+
+  // 2. Crear admin
+  await sb.from('usuarios').insert({
+    comunidad_id: comId, nombre: adminNombre,
+    email: document.getElementById('ncAdminEmail').value,
+    phone: document.getElementById('ncAdminPhone').value,
+    rol: 'admin', clave: adminClave, activo: true
+  });
+
+  // 3. Crear unidades automáticamente
+  const numDeptos = generarNumeracion(cant, inicio, formato);
+  const unidadesInsert = numDeptos.map((num, i) => {
+    let piso = 1;
+    if (formato === 'secuencial') piso = Math.floor(i / 2) + 1;
+    else if (formato === 'por_piso') piso = Math.floor(i / 2) + 1;
+    else piso = Math.floor(i / 4) + 1;
+    return { comunidad_id: comId, numero: num, piso, sqm, monthly_fee: gc, parking: false, storage: false };
+  });
+
+  // Insertar en lotes de 50
+  for (let i = 0; i < unidadesInsert.length; i += 50) {
+    await sb.from('unidades').insert(unidadesInsert.slice(i, i + 50));
+  }
+
+  // 4. Crear estacionamientos
+  if (cantEstac > 0) {
+    const numEstac = generarNumsItem(cantEstac, document.getElementById('ncEstacInicio').value || 'E-1');
+    await sb.from('estacionamientos').insert(
+      numEstac.map(num => ({ comunidad_id: comId, numero: num }))
+    );
+  }
+
+  // 5. Crear bodegas
+  if (cantBodegas > 0) {
+    const numBodegas = generarNumsItem(cantBodegas, document.getElementById('ncBodegaInicio').value || 'B-1');
+    await sb.from('bodegas').insert(
+      numBodegas.map(num => ({ comunidad_id: comId, numero: num }))
+    );
+  }
+
+  const comunidades = await loadAllComunidades();
+  setState({ loading: false, comunidades, view: 'sa_dashboard' });
+  showAlert(`✓ "${nombre}" creada con ${cant} deptos${cantEstac>0?', '+cantEstac+' estac.':''}${cantBodegas>0?', '+cantBodegas+' bodegas':''}`);
+};
 
 // ── INICIO ──
 async function init(){
