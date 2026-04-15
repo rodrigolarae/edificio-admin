@@ -357,7 +357,7 @@ function isSuperAdminMode(){return state.isSuperAdmin;}
 function getPendingFines(unitId,month){return state.comunidadData.multas.filter(f=>f.unidad_id===unitId&&f.status==='pendiente'&&f.month===month);}
 function getTotalDue(unitId,month){
   const u=state.comunidadData.unidades.find(x=>x.id===unitId);
-  return(u?.monthly_fee||85000)+getPendingFines(unitId,month).reduce((s,f)=>s+f.amount,0);
+  return(u?.monthly_fee||0)+getPendingFines(unitId,month).reduce((s,f)=>s+f.amount,0);
 }
 
 // ── FIX 2: Verificar si votación debe activarse automáticamente ──
@@ -585,8 +585,8 @@ function buildSANueva(){
           <input class="form-control" id="ncNumInicio" type="number" value="101" placeholder="101" oninput="previewInventario()">
         </div>
         <div class="form-group">
-          <label class="form-label">GC mensual por depto ($)</label>
-          <input class="form-control" id="ncGC" type="number" value="85000">
+          <label class="form-label">GC mensual por depto ($) <span style="color:#9ca3af;font-weight:400">— opcional, editable después</span></label>
+          <input class="form-control" id="ncGC" type="number" placeholder="Ej: 65000 (dejar vacío si no sabes aún)">
         </div>
       </div>
       <div class="form-row">
@@ -594,7 +594,7 @@ function buildSANueva(){
           <label class="form-label">Formato numeración</label>
           <select class="form-control" id="ncFormato" onchange="previewInventario()">
             <option value="secuencial">Secuencial (101, 102, 103...)</option>
-            <option value="por_piso">Por piso (101, 102, 201, 202...)</option>
+            <option value="por_piso">Por piso · 4-6 dptos/piso (101, 102... 201, 202...)</option>
             <option value="letras">Con letra (A1, A2, B1, B2...)</option>
           </select>
         </div>
@@ -856,7 +856,7 @@ function buildUnits(){
       <div class="form-group"><label class="form-label">Piso *</label><input class="form-control" id="uFloor" type="number" placeholder="1"></div>
       <div class="form-group"><label class="form-label">Metraje (m²) *</label><input class="form-control" id="uSqm" type="number" placeholder="65"></div>
     </div>
-    <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="uFee" type="number" value="85000" style="max-width:180px"></div>
+    <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="uFee" type="number" placeholder="Ej: 65000" style="max-width:180px"></div>
     <div class="section-div">Estacionamiento</div>
     <div class="toggle-row"><label class="toggle"><input type="checkbox" id="uParking" onchange="toggleField('parkingFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
     <div id="parkingFields" style="display:none" class="form-row">
@@ -883,7 +883,7 @@ function buildUnits(){
         <td>${u.parking?`<span class="badge badge-blue">${u.parking_num} ${u.parking_sqm}m²</span>`:'—'}</td>
         <td>${u.storage?`<span class="badge badge-amber">${u.storage_num} ${u.storage_sqm}m²</span>`:'—'}</td>
         <td><b>${getTotalSqm(u)}m²</b></td>
-        <td>${fmt(u.monthly_fee||85000)}</td>
+        <td>${u.monthly_fee>0?fmt(u.monthly_fee):'<span style="color:#9ca3af">—</span>'}</td>
         <td>${r?`<span class="badge badge-green">${r.nombre}</span>`:'<span class="badge badge-gray">Disponible</span>'}</td>
         ${canManage?`<td style="white-space:nowrap">
           <button class="btn btn-sm" onclick="setState({modal:{type:'edit_unit',unit:${JSON.stringify(u).replace(/"/g,'&quot;')}}})" style="margin-right:4px">✏️</button>
@@ -1266,10 +1266,10 @@ function buildReports(){
         <span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Pagado':'⚠ Pendiente'}</span>
       </div>
       <table style="font-size:12px;margin-bottom:8px">
-        <tr><td style="padding:3px 8px;color:#6b7280">GC base</td><td style="padding:3px 8px;font-weight:600">${fmt(u.monthly_fee||85000)}</td></tr>
+        <tr><td style="padding:3px 8px;color:#6b7280">GC base</td><td style="padding:3px 8px;font-weight:600">${u.monthly_fee>0?fmt(u.monthly_fee):'<span style="color:#9ca3af">Por definir</span>'}</td></tr>
         ${prorateRows.map(x=>`<tr><td style="padding:3px 8px;color:#6b7280">${x.label}</td><td style="padding:3px 8px">${fmt(x.amount)}</td></tr>`).join('')}
         ${finesAmt>0?`<tr><td style="padding:3px 8px;color:var(--red)">Multas</td><td style="padding:3px 8px;color:var(--red)">${fmt(finesAmt)}</td></tr>`:''}
-        <tr style="border-top:1px solid #e5e5e5"><td style="padding:5px 8px;font-weight:700">Total</td><td style="padding:5px 8px;font-weight:700;color:var(--navy)">${fmt((u.monthly_fee||85000)+finesAmt+totalPro)}</td></tr>
+        <tr style="border-top:1px solid #e5e5e5"><td style="padding:5px 8px;font-weight:700">Total</td><td style="padding:5px 8px;font-weight:700;color:var(--navy)">${(u.monthly_fee||0)+finesAmt+totalPro>0?fmt((u.monthly_fee||0)+finesAmt+totalPro):'<span style="color:#9ca3af">GC no definido</span>'}</td></tr>
       </table>
       ${paid&&pago?`<button class="btn btn-sm btn-primary no-print" onclick="viewReceipt('${pago.id}')">⬇ Comprobante</button>`:''}
     </div>`;
@@ -1596,7 +1596,7 @@ function buildMyAccount(){
     </div>`:''}
     <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
       <div class="metric"><div class="metric-label">Estado</div><div style="margin-top:6px"><span class="badge ${paid?'badge-green':'badge-red'}">${paid?'✓ Al día':'⚠ Moroso'}</span></div></div>
-      <div class="metric"><div class="metric-label">GC Base</div><div class="metric-value blue">${fmt(unit?.monthly_fee||85000)}</div></div>
+      <div class="metric"><div class="metric-label">GC Base</div><div class="metric-value blue">${unit?.monthly_fee>0?fmt(unit.monthly_fee):'<span style="color:#9ca3af;font-size:12px">Por definir</span>'}</div></div>
       <div class="metric"><div class="metric-label">Total a pagar</div><div class="metric-value ${paid?'green':'amber'}">${fmt(paid?0:totalDue)}</div></div>
     </div>
     ${pf.length>0?`<div style="margin-top:10px;background:#fee2e2;border-radius:8px;padding:10px;font-size:11px;color:#991b1b"><b>⚠ Multas pendientes:</b><br>${pf.map(f=>`• ${f.reason} — ${fmt(f.amount)}`).join('<br>')}</div>`:''}
@@ -1679,7 +1679,7 @@ function buildModal(){
         <div class="form-group"><label class="form-label">Piso</label><input class="form-control" id="eu_floor" type="number" value="${u.piso}"></div>
         <div class="form-group"><label class="form-label">m²</label><input class="form-control" id="eu_sqm" type="number" value="${u.sqm}"></div>
       </div>
-      <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="eu_fee" type="number" value="${u.monthly_fee||85000}" style="max-width:180px"></div>
+      <div class="form-group"><label class="form-label">GC mensual ($)</label><input class="form-control" id="eu_fee" type="number" value="${u.monthly_fee||''}" placeholder="GC mensual ($)" style="max-width:180px"></div>
       <div class="section-div">Estacionamiento</div>
       <div class="toggle-row"><label class="toggle"><input type="checkbox" id="eu_parking" ${u.parking?'checked':''} onchange="toggleField('eu_parkFields')"><span class="toggle-slider"></span></label><span style="font-size:12px">¿Tiene estacionamiento?</span></div>
       <div id="eu_parkFields" style="display:${u.parking?'grid':'none'}" class="form-row">
@@ -1824,7 +1824,7 @@ function attachEvents(){
     const storage=document.getElementById('uStorage').checked;
     const{data,error}=await sb.from('unidades').insert({
       comunidad_id:state.selectedComunidad.id,numero:number,piso:parseInt(floor),sqm:parseFloat(sqm),
-      monthly_fee:parseInt(document.getElementById('uFee').value)||85000,
+      monthly_fee:parseInt(document.getElementById('uFee').value)||0,
       parking,parking_num:parking?document.getElementById('uParkingNum').value:'',
       parking_sqm:parking?parseFloat(document.getElementById('uParkingSqm').value||0):0,
       storage,storage_num:storage?document.getElementById('uStorageNum').value:'',
@@ -2001,7 +2001,7 @@ function attachEvents(){
       <div><label class="form-label">Piso *</label><input class="form-control unit-piso" type="number"></div>
       <div><label class="form-label">m² *</label><input class="form-control unit-sqm" type="number"></div>
     </div>
-    <div style="margin-bottom:8px"><label class="form-label">GC mensual ($)</label><input class="form-control unit-fee" type="number" value="85000" style="max-width:160px"></div>
+    <div style="margin-bottom:8px"><label class="form-label">GC mensual ($)</label><input class="form-control unit-fee" type="number" placeholder="GC mensual ($)" style="max-width:160px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div><label class="form-label">N° Estacionamiento (vacío = no tiene)</label><input class="form-control unit-park-num"><input class="form-control unit-park-sqm" type="number" placeholder="m² estac." style="margin-top:4px"></div>
       <div><label class="form-label">N° Bodega (vacío = no tiene)</label><input class="form-control unit-stor-num"><input class="form-control unit-stor-sqm" type="number" placeholder="m² bodega" style="margin-top:4px"></div>
@@ -2158,7 +2158,7 @@ window.saveEditUnit=async id=>{
   const numero=document.getElementById('eu_number')?.value.trim();
   const piso=parseInt(document.getElementById('eu_floor')?.value);
   const sqm=parseFloat(document.getElementById('eu_sqm')?.value);
-  const monthly_fee=parseInt(document.getElementById('eu_fee')?.value)||85000;
+  const monthly_fee=parseInt(document.getElementById('eu_fee')?.value)||0;
   const parking=document.getElementById('eu_parking')?.checked;
   const storage=document.getElementById('eu_storage')?.checked;
   if(!numero||!piso||!sqm){showAlert('Completa campos','error');return;}
@@ -2173,7 +2173,7 @@ window.onResidentChange=function(sel){
   const curM=today().substr(0,7);
   const pf=r?getPendingFines(r.unidad_id,curM):[];
   const fa=pf.reduce((s,f)=>s+f.amount,0);
-  const base=u?.monthly_fee||85000;
+  const base=u?.monthly_fee||0;
   const unitInp=document.getElementById('pUnit');const baseInp=document.getElementById('pBase');const finesInp=document.getElementById('pFinesAmt');const amtInp=document.getElementById('pAmount');const finesInfo=document.getElementById('pFinesInfo');
   if(unitInp)unitInp.value=u?`Depto ${u.numero} · P${u.piso}`:'—';
   if(baseInp)baseInp.value=base;if(finesInp)finesInp.value=fa;if(amtInp)amtInp.value=base+fa;
@@ -2202,26 +2202,37 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();setState({i
 ============================================================ */
 
 // Generar números de departamento según formato
+// Por piso: 4-6 dptos por piso, calculado dinámicamente según total
+function calcDxp(cant) {
+  if (cant <= 16) return 4;
+  if (cant <= 30) return 5;
+  return 6;
+}
+
 function generarNumeracion(cant, inicio, formato) {
   const nums = [];
   const n = parseInt(inicio) || 101;
+
   if (formato === 'secuencial') {
     for (let i = 0; i < cant; i++) nums.push(String(n + i));
+
   } else if (formato === 'por_piso') {
-    // 2 dptos por piso por defecto
-    const dxp = 2;
+    const dxp = calcDxp(cant); // 4, 5 o 6 según cantidad total
     for (let i = 0; i < cant; i++) {
       const piso = Math.floor(i / dxp) + 1;
-      const pos = (i % dxp) + 1;
-      nums.push(`${piso}0${pos}`);
+      const pos  = (i % dxp) + 1;
+      // Formato: piso + número correlativo con 2 dígitos (101, 102... 201, 202...)
+      nums.push(`${piso}${String(pos).padStart(2, '0')}`);
     }
+
   } else if (formato === 'letras') {
     const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const dxp = calcDxp(cant);
     let letra = 0, num = 1;
     for (let i = 0; i < cant; i++) {
       nums.push(`${letras[letra]}${num}`);
       num++;
-      if (num > 4) { num = 1; letra = (letra + 1) % letras.length; }
+      if (num > dxp) { num = 1; letra = (letra + 1) % letras.length; }
     }
   }
   return nums;
@@ -2266,7 +2277,7 @@ window.previewResumen = function() {
 
   const inicio = document.getElementById('ncNumInicio')?.value || '101';
   const formato = document.getElementById('ncFormato')?.value || 'secuencial';
-  const gc = parseInt(document.getElementById('ncGC')?.value) || 85000;
+  const gc = parseInt(document.getElementById('ncGC')?.value) || 0;
   const sqm = parseInt(document.getElementById('ncSqm')?.value) || 65;
   const cantEstac = parseInt(document.getElementById('ncCantEstac')?.value) || 0;
   const cantBodegas = parseInt(document.getElementById('ncCantBodegas')?.value) || 0;
@@ -2327,7 +2338,7 @@ window.crearComunidadConInventario = async function() {
   const cant = parseInt(document.getElementById('ncCantDeptos').value) || 0;
   const inicio = document.getElementById('ncNumInicio').value || '101';
   const formato = document.getElementById('ncFormato').value || 'secuencial';
-  const gc = parseInt(document.getElementById('ncGC').value) || 85000;
+  const gc = parseInt(document.getElementById('ncGC').value) || 0;
   const sqm = parseInt(document.getElementById('ncSqm').value) || 65;
   const cantEstac = parseInt(document.getElementById('ncCantEstac').value) || 0;
   const cantBodegas = parseInt(document.getElementById('ncCantBodegas').value) || 0;
@@ -2363,12 +2374,10 @@ window.crearComunidadConInventario = async function() {
 
   // 3. Crear unidades automáticamente
   const numDeptos = generarNumeracion(cant, inicio, formato);
+  const dxpInsert = calcDxp(cant);
   const unidadesInsert = numDeptos.map((num, i) => {
-    let piso = 1;
-    if (formato === 'secuencial') piso = Math.floor(i / 2) + 1;
-    else if (formato === 'por_piso') piso = Math.floor(i / 2) + 1;
-    else piso = Math.floor(i / 4) + 1;
-    return { comunidad_id: comId, numero: num, piso, sqm, monthly_fee: gc, parking: false, storage: false };
+    const piso = Math.floor(i / dxpInsert) + 1;
+    return { comunidad_id: comId, numero: num, piso, sqm, monthly_fee: gc||0, parking: false, storage: false };
   });
 
   // Insertar en lotes de 50
