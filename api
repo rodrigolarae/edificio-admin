@@ -1,1 +1,52 @@
+// api/send-email.js — Vercel Serverless Function
+// Sube este archivo a: /api/send-email.js en tu repositorio GitHub
+// Agrega en Vercel > Settings > Environment Variables:
+//   RESEND_KEY = re_xxxxxxxxxxxx  (tu key completa de Resend)
 
+export default async function handler(req, res) {
+  // Solo POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { to, subject, html, from } = req.body;
+
+  // Validaciones básicas
+  if (!to || !subject || !html) {
+    return res.status(400).json({ error: 'Faltan campos: to, subject, html' });
+  }
+
+  const RESEND_KEY = process.env.RESEND_KEY;
+  if (!RESEND_KEY) {
+    return res.status(500).json({ error: 'RESEND_KEY no configurada en Vercel' });
+  }
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: from || 'Vecinoo <noreply@vecinoo.cl>',
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Resend error:', data);
+      return res.status(response.status).json({ error: data });
+    }
+
+    return res.status(200).json({ ok: true, id: data.id });
+
+  } catch (error) {
+    console.error('send-email error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+}
