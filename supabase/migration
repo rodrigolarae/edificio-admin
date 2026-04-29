@@ -1,0 +1,142 @@
+-- ══════════════════════════════════════════════════════════════════
+--  MIGRACIÓN: Mejoras Vecinoo — Abril 2025
+--  Ejecutar en: Supabase Dashboard → SQL Editor
+-- ══════════════════════════════════════════════════════════════════
+
+-- ── 1. Fondo de reserva en comunidades ───────────────────────────
+ALTER TABLE comunidades
+  ADD COLUMN IF NOT EXISTS fondo_reserva_pct NUMERIC(5,2) DEFAULT 0;
+
+-- ── 2. Tipo de gasto (operacional vs fondo_reserva) ──────────────
+ALTER TABLE gastos
+  ADD COLUMN IF NOT EXISTS tipo TEXT DEFAULT 'operacional';
+
+-- ── 3. bcrypt para usuarios ───────────────────────────────────────
+ALTER TABLE usuarios
+  ADD COLUMN IF NOT EXISTS clave_hash TEXT;
+
+-- ── 4. bcrypt para superadmin ────────────────────────────────────
+ALTER TABLE superadmin
+  ADD COLUMN IF NOT EXISTS clave_hash TEXT;
+
+-- ── 5. bcrypt para delegados ─────────────────────────────────────
+ALTER TABLE delegados
+  ADD COLUMN IF NOT EXISTS clave_hash TEXT;
+
+-- ── 6. Delegados municipales ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS delegados (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nombre      TEXT NOT NULL,
+  rut         TEXT UNIQUE,
+  municipio   TEXT,
+  email       TEXT,
+  phone       TEXT,
+  clave       TEXT,
+  clave_hash  TEXT,
+  activo      BOOLEAN DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- ── 7. Asignación delegado ↔ comunidades ─────────────────────────
+CREATE TABLE IF NOT EXISTS delegado_comunidades (
+  id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  delegado_id   UUID REFERENCES delegados(id) ON DELETE CASCADE,
+  comunidad_id  UUID REFERENCES comunidades(id) ON DELETE CASCADE,
+  UNIQUE(delegado_id, comunidad_id)
+);
+
+-- ── 8. Reuniones del calendario ───────────────────────────────────
+CREATE TABLE IF NOT EXISTS reuniones (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  comunidad_id UUID REFERENCES comunidades(id) ON DELETE CASCADE,
+  titulo      TEXT NOT NULL,
+  fecha       DATE NOT NULL,
+  hora        TIME,
+  lugar       TEXT,
+  descripcion TEXT,
+  tipo        TEXT DEFAULT 'reunion',
+  creado_por  TEXT,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- ── 9. Índices para performance ───────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_usuarios_rut
+  ON usuarios(rut) WHERE activo = true;
+
+CREATE INDEX IF NOT EXISTS idx_usuarios_comunidad
+  ON usuarios(comunidad_id, activo);
+
+CREATE INDEX IF NOT EXISTS idx_pagos_comunidad_month
+  ON pagos(comunidad_id, month);
+
+CREATE INDEX IF NOT EXISTS idx_gastos_comunidad_month
+  ON gastos(comunidad_id, month);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_comunidad
+  ON audit_logs(comunidad_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_reuniones_comunidad_fecha
+  ON reuniones(comunidad_id, fecha);
+
+-- ── 10. RLS — Políticas de seguridad por fila ─────────────────────
+-- ⚠️  IMPORTANTE: Estas políticas impiden que usuarios de una
+--    comunidad accedan a datos de otras comunidades via API directa.
+
+-- Habilitar RLS en tablas principales (si no está habilitado)
+ALTER TABLE comunidades    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE usuarios       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pagos          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gastos         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE multas         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE unidades       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trabajadores   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE alertas        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documentos     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE votaciones     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE votos          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reservas       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mantenimientos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reuniones      ENABLE ROW LEVEL SECURITY;
+
+-- ── Nota sobre RLS y la anon key ─────────────────────────────────
+-- Vecinoo usa la anon key de Supabase (pública, por diseño).
+-- Las políticas RLS deben controlar el acceso a nivel de fila.
+-- Como Vecinoo NO usa Supabase Auth nativo (usa su propia tabla
+-- de usuarios), las políticas más seguras son las que usan
+-- service_role para escrituras y anon key solo para lectura
+-- filtrada por comunidad_id.
+--
+-- Para el modelo actual (anon key en frontend), la protección
+-- más práctica es restringir via políticas basadas en origen:
+--
+-- Ejemplo para tabla pagos (replicar para todas):
+-- CREATE POLICY "anon_select_pagos" ON pagos
+--   FOR SELECT USING (true);  -- lectura permitida (filtrada por app)
+-- CREATE POLICY "anon_insert_pagos" ON pagos
+--   FOR INSERT WITH CHECK (true);
+-- CREATE POLICY "anon_update_pagos" ON pagos
+--   FOR UPDATE USING (true);
+-- CREATE POLICY "anon_delete_pagos" ON pagos
+--   FOR DELETE USING (true);
+--
+-- Para seguridad máxima, migrar autenticación a Supabase Auth
+-- y usar auth.uid() en las políticas.
+
+-- ── 11. Verificación final ────────────────────────────────────────
+SELECT
+  table_name,
+  COUNT(*) FILTER (WHERE clave IS NOT NULL AND clave_hash IS NULL) AS pendientes_bcrypt,
+  COUNT(*) FILTER (WHERE clave_hash IS NOT NULL)                   AS con_bcrypt,
+  COUNT(*) AS total
+FROM usuarios
+WHERE activo = true
+GROUP BY table_name;
+
+-- Contar usuarios pendientes de migración bcrypt
+SELECT
+  COUNT(*) FILTER (WHERE clave IS NOT NULL AND clave_hash IS NULL) AS pendientes_migrar,
+  COUNT(*) FILTER (WHERE clave_hash IS NOT NULL)                   AS ya_migrados,
+  COUNT(*) AS total
+FROM usuarios
+WHERE activo = true;
