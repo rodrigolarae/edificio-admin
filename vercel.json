@@ -21,6 +21,6 @@
     }
   ],
   "env": {
-    "RESEND_KEY": "@resend_key"
+    "RESEND_KEY": "@RESEND_KEY"
   }
 }
