@@ -1,12 +1,18 @@
-// Vecinoo Service Worker v1
-const CACHE_NAME = 'vecinoo-v1';
+// Vecinoo Service Worker v2
+const CACHE_NAME = 'vecinoo-v2';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
+  );
 });
 
 // Cache básico para que la app funcione offline
