@@ -2021,6 +2021,32 @@ function buildDashboard(){
         </div>`;
       }).join('')}
     </div>`:''}
+       // ========== NUEVAS MÉTRICAS AVANZADAS ==========
+  const ivc = calcIVC();
+  let ivcColor = ivc < 30 ? "green" : ivc < 60 ? "orange" : "red";
+  let ivcLabel = ivc < 30 ? "Baja vulnerabilidad" : ivc < 60 ? "Vulnerabilidad media" : "Alta vulnerabilidad";
+  const altoRiesgo = state.comunidadData.unidades.filter(u => predecirRiesgoMora(u.id).riesgo === "alto");
+  const conflictosPiso = getConflictosPorPiso();
+  const bench = getBenchmark();
+  const recomendaciones = getRecomendaciones();
+
+  html += `<div class="card" style="border-left:4px solid ${ivcColor}; margin-bottom:12px"><div class="card-header"><span class="card-title">📊 Índice de Vulnerabilidad Comunitaria (IVC)</span></div><div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap"><div style="text-align:center"><div style="font-size:32px; font-weight:800; color:${ivcColor}">${ivc}<span style="font-size:14px">/100</span></div><div style="font-size:12px; color:#6b7280">${ivcLabel}</div></div><div style="flex:1"><div class="progress-bar" style="height:12px"><div class="progress-fill" style="width:${ivc}%; background:${ivcColor}"></div></div></div></div></div>`;
+
+  if(altoRiesgo.length > 0){
+    html += `<div class="card" style="border-left:4px solid var(--red); margin-bottom:12px"><div class="card-header"><span class="card-title">⚠️ Predicción: ${altoRiesgo.length} unidad(es) en riesgo alto de mora</span></div><div class="stat-row">Se recomienda contactar a: ${altoRiesgo.map(u => `Depto ${u.numero}`).join(", ")}</div></div>`;
+  }
+
+  if(conflictosPiso.length > 0 && conflictosPiso[0].densidadMultas > 0.5){
+    html += `<div class="card"><div class="card-header"><span class="card-title">🔥 Conflictos por piso (multas/unidad)</span></div><table style="width:100%">${conflictosPiso.slice(0,5).map(p => `<tr><td><b>Piso ${p.piso}</b></td><td>${p.densidadMultas.toFixed(1)} multas/unidad</span></td><td><div class="progress-bar"><div style="width:${Math.min(100, p.densidadMultas*100)}%;background:var(--red)"></div></div></td></tr>`).join('')}</table></div>`;
+  }
+
+  html += `<div class="card"><div class="card-header"><span class="card-title">📈 Comparación con otras comunidades (RM)</span></div><div class="stat-row">Morosidad: <b>${bench.morosidad.actual}%</b> ${bench.morosidad.mejor ? '✓ Mejor' : '✗ Peor'} que el promedio (${bench.morosidad.benchmark}%)</div><div class="stat-row">Hacinamiento: <b>${bench.hacinamiento.actual}</b> ${bench.hacinamiento.mejor ? '✓ Mejor' : '✗ Peor'}</div><div class="stat-row">Rotación: <b>${bench.rotacion.actual}%</b> ${bench.rotacion.mejor ? '✓ Mejor' : '✗ Peor'}</div><div class="stat-row">Conflictos: <b>${bench.conflictos.actual}</b> ${bench.conflictos.mejor ? '✓ Mejor' : '✗ Peor'}</div></div>`;
+
+  html += `<div class="card" style="border-left:4px solid var(--gold); margin-bottom:12px"><div class="card-header"><span class="card-title">🎯 Acciones recomendadas (basado en datos)</span></div><ul style="margin:8px 0 0 20px">${recomendaciones.map(r => `<li style="font-size:12px; margin-bottom:6px">${r}</li>`).join('')}</ul></div>`;
+
+  if(isFullAccess()){
+    html += `<div class="card" style="background:#f0f4ff"><div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center"><div><b>📢 Datos para políticas públicas</b><br><span style="font-size:11px; color:#6b7280">Genera informes estándar SUBDERE/MINVU</span></div><div style="display:flex; gap:8px"><button class="btn btn-primary btn-sm" onclick="exportarInformePoliticas()">📄 Informe PDF</button><button class="btn btn-sm" onclick="exportarDatosAnonimos()">📊 Exportar datos anónimos (JSON)</button></div></div></div>`;
+  }
     <div class="grid-2">
       <div class="card">
         <div class="card-header"><span class="card-title">📊 Balance mensual</span></div>
@@ -8383,5 +8409,150 @@ async function init(){
 }
 init();
 </script>
-</body>
+// ==================== NUEVAS MÉTRICAS AVANZADAS (POLÍTICAS PÚBLICAS) ====================
+function predecirRiesgoMora(unitId) {
+  const pagos = state.comunidadData.pagos.filter(p => p.unidad_id === unitId);
+  if (pagos.length < 3) return { riesgo: "insuficiente", mensaje: "No hay historial suficiente", color: "gray" };
+  const ultimos = pagos.sort((a,b) => b.month.localeCompare(a.month)).slice(0,6);
+  const mesesUltimos = ultimos.map(p => p.month.slice(5));
+  const mesesEsperados = [];
+  const d = new Date();
+  for (let i = 0; i < 6; i++) {
+    const fecha = new Date(d.getFullYear(), d.getMonth() - i, 1);
+    mesesEsperados.push(String(fecha.getMonth()+1).padStart(2,'0'));
+  }
+  let atrasos = 0;
+  for (let i = 0; i < mesesEsperados.length; i++) if (!mesesUltimos.includes(mesesEsperados[i])) atrasos++;
+  if (atrasos >= 3) return { riesgo: "alto", mensaje: "Ya acumula 3+ meses sin pagar", color: "red" };
+  if (atrasos === 2) return { riesgo: "medio", mensaje: "Riesgo de caer en mora crónica", color: "orange" };
+  return { riesgo: "bajo", mensaje: "Historial de pagos estable", color: "green" };
+}
+
+function calcIVC() {
+  const{unidades,residentes,multas,auditLogs}=state.comunidadData;
+  const hac = calcHacinamiento(unidades);
+  const rot = calcRotacion(residentes, auditLogs);
+  const conf = calcConflictos(multas, unidades);
+  const morosidad = unidades.filter(u => esUnidadMorosa(u.id)).length / Math.max(unidades.length,1);
+  let puntos = 0;
+  const pesosHac = { optimo:0, moderado:10, critico:20, severo:25 };
+  puntos += pesosHac[hac.nivel] || 0;
+  const pesosRot = { estable:0, moderada:10, alta:20, critica:25 };
+  puntos += pesosRot[rot.nivel] || 0;
+  const pesosConf = { bajo:0, moderado:10, alto:20, critico:25 };
+  puntos += pesosConf[conf.nivel] || 0;
+  puntos += Math.round(morosidad * 25);
+  return Math.min(100, puntos);
+}
+
+function getConflictosPorPiso() {
+  const { unidades, multas } = state.comunidadData;
+  const porPiso = {};
+  unidades.forEach(u => { porPiso[u.piso] = { deptos: 0, multas: 0, multados: new Set() }; });
+  multas.forEach(m => {
+    const u = unidades.find(x => x.id === m.unidad_id);
+    if (u) {
+      if(!porPiso[u.piso]) porPiso[u.piso] = { deptos:0, multas:0, multados: new Set() };
+      porPiso[u.piso].deptos++;
+      porPiso[u.piso].multas++;
+      porPiso[u.piso].multados.add(m.unidad_id);
+    }
+  });
+  const resultado = Object.entries(porPiso).map(([piso, data]) => ({
+    piso: parseInt(piso),
+    densidadMultas: data.multas / Math.max(data.deptos,1),
+    unidadesConflictivas: data.multados.size
+  }));
+  return resultado.sort((a,b) => b.densidadMultas - a.densidadMultas);
+}
+
+let benchmarkDataGlobal = { region: "RM", promedioMorosidad: 12.5, promedioHacinamiento: 0.06, promedioRotacion: 18, promedioConflictos: 0.5 };
+function getBenchmark() {
+  const unidades = state.comunidadData.unidades;
+  const morosidadActual = unidades.filter(u => esUnidadMorosa(u.id)).length / Math.max(unidades.length,1) * 100;
+  const hac = calcHacinamiento(unidades);
+  const rot = calcRotacion(state.comunidadData.residentes, state.comunidadData.auditLogs);
+  const conf = calcConflictos(state.comunidadData.multas, unidades);
+  return {
+    morosidad: { actual: morosidadActual.toFixed(1), benchmark: benchmarkDataGlobal.promedioMorosidad, mejor: morosidadActual < benchmarkDataGlobal.promedioMorosidad },
+    hacinamiento: { actual: hac.valor ? hac.valor.toFixed(2) : "N/D", benchmark: benchmarkDataGlobal.promedioHacinamiento, mejor: (hac.valor||99) < benchmarkDataGlobal.promedioHacinamiento },
+    rotacion: { actual: rot.rotacionPct, benchmark: benchmarkDataGlobal.promedioRotacion, mejor: rot.rotacionPct < benchmarkDataGlobal.promedioRotacion },
+    conflictos: { actual: conf.densidad, benchmark: benchmarkDataGlobal.promedioConflictos, mejor: conf.densidad < benchmarkDataGlobal.promedioConflictos }
+  };
+}
+
+function getRecomendaciones() {
+  const rec = [];
+  const unidades = state.comunidadData.unidades;
+  const morosos = unidades.filter(u => esUnidadMorosa(u.id));
+  const conflictosPiso = getConflictosPorPiso();
+  const hac = calcHacinamiento(unidades);
+  const ivc = calcIVC();
+  if (morosos.length > 5) rec.push(`🔴 Hay ${morosos.length} morosos. Programa una reunión con ellos o envía un recordatorio masivo por WhatsApp.`);
+  if (conflictosPiso[0]?.densidadMultas > 1.5) rec.push(`⚠️ El piso ${conflictosPiso[0].piso} concentra muchos conflictos. Sugiere mediación vecinal.`);
+  if (hac.nivel === 'critico' || hac.nivel === 'severo') rec.push(`📦 Hacinamiento crítico. Deriva el caso a la DIDECO para evaluación de subsidio habitacional.`);
+  if (ivc > 70) rec.push(`🚨 El Índice de Vulnerabilidad es alto (${ivc}/100). Se recomienda intervención social prioritaria.`);
+  if (rec.length === 0) rec.push(`✅ Todo en orden. Mantén el seguimiento mensual de pagos y revisa las alertas de mantenimiento.`);
+  return rec.slice(0,4);
+}
+
+window.exportarInformePoliticas = () => {
+  const com = state.selectedComunidad;
+  const unidades = state.comunidadData.unidades;
+  const residentes = state.comunidadData.residentes;
+  const hac = calcHacinamiento(unidades);
+  const rot = calcRotacion(residentes, state.comunidadData.auditLogs);
+  const conf = calcConflictos(state.comunidadData.multas, unidades);
+  const ivc = calcIVC();
+  const morosidad = unidades.filter(u => esUnidadMorosa(u.id)).length / Math.max(unidades.length,1) * 100;
+  const deudaTotal = unidades.reduce((s,u) => s + getTotalDeudaUnidad(u.id), 0);
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe comunitario - ${com.nombre}</title><style>body{font-family:Arial;padding:20px} h1{color:#0F172A} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ccc;padding:8px}</style></head><body>
+  <h1>Informe de Diagnóstico Comunitario</h1>
+  <p><b>Comunidad:</b> ${com.nombre} - ${com.direccion || ''}<br><b>Fecha:</b> ${new Date().toLocaleDateString('es-CL')}<br><b>Unidades totales:</b> ${unidades.length}<br><b>Residentes activos:</b> ${residentes.length}</p>
+  <h2>Indicadores de Vulnerabilidad</h2>
+  <table><th>Indicador</th><th>Valor</th><th>Nivel</th></tr>
+  <tr><td>Índice de Vulnerabilidad Comunitaria (IVC)</td><td>${ivc}/100</span></td><td>${ivc<30?'Bajo':ivc<60?'Medio':'Alto'}</td></tr>
+  <tr><td>Hacinamiento</span></td><td>${hac.valor ? hac.valor+' p/m²' : 'N/D'}</td><td>${hac.label}</span></td></tr>
+  <tr><td>Rotación de residentes</span></td><td>${rot.rotacionPct}% anual</span></td><td>${rot.label}</span></td></tr>
+  <tr><td>Densidad de conflictos</span></td><td>${conf.densidad} multas/unidad</span></td><td>${conf.label}</span></td></tr>
+  <tr><td>Tasa de morosidad</span></td><td>${morosidad.toFixed(1)}%</span></td><td>${morosidad>15?'Crítica':morosidad>8?'Alta':'Moderada'}</span></td></tr>
+  <tr><td>Deuda total acumulada</span></td><td colspan="2">${fmt(deudaTotal)}</span></td></tr>
+  </table>
+  <h2>Recomendaciones para políticas públicas</h2>
+  <ul>${hac.nivel === 'critico' ? '<li>⚠️ Alta densidad de hacinamiento. Programa de ampliación de viviendas o subsidio de arriendo.</li>' : ''}${rot.nivel === 'alta' ? '<li>🔄 Rotación elevada. Implementar taller de mediación vecinal y estabilización de arriendos.</li>' : ''}${conf.nivel === 'alto' ? '<li>⚖️ Conflictos recurrentes. Instalar oficina de convivencia comunitaria.</li>' : ''}${morosidad > 15 ? '<li>💰 Morosidad crítica. Programa de renegociación de deudas y asistencia financiera.</li>' : ''}</ul>
+  <p style="margin-top:30px">Documento generado por Vecinoo – plataforma de gestión comunitaria certificada.</p></body></html>`;
+  const win = window.open();
+  win.document.write(html);
+  win.document.close();
+  win.print();
+};
+
+window.exportarDatosAnonimos = () => {
+  const unidades = state.comunidadData.unidades;
+  const residentes = state.comunidadData.residentes;
+  const data = {
+    fecha_exportacion: new Date().toISOString(),
+    comunidad: state.selectedComunidad.nombre,
+    comuna: state.selectedComunidad.ciudad,
+    indicadores: {
+      ivc: calcIVC(),
+      hacinamiento: calcHacinamiento(unidades),
+      rotacion: calcRotacion(residentes, state.comunidadData.auditLogs || []),
+      conflictos: calcConflictos(state.comunidadData.multas, unidades),
+      morosidad_pct: (unidades.filter(u => esUnidadMorosa(u.id)).length / Math.max(unidades.length,1) * 100).toFixed(1),
+      deuda_total: unidades.reduce((s,u) => s + getTotalDeudaUnidad(u.id), 0),
+    },
+    distribucion_pisos: getConflictosPorPiso()
+  };
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `datos_anonimos_${state.selectedComunidad.id}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showAlert("Datos anonimizados exportados. Puedes compartir este archivo con la municipalidad.", "success");
+};
+      </body>
 </html>
