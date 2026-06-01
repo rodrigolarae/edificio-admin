@@ -1,15 +1,13 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "env": {
+    "FLOW_API_KEY": "@flow_api_key",
+    "FLOW_SECRET": "@flow_secret",
+    "FLOW_API_URL": "https://sandbox.flow.cl/api",
+    "FLOW_CARGO_PCT": "5",
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
+    "RESEND_KEY": "@resend_key"
+  }
 }
