@@ -851,8 +851,22 @@ function buildLogin(){
       </div>`:''}
     </div>
   </div>`;
-}
-
+${loginStep===3?`
+<div class="login-step active">
+  <div style="text-align:center;margin-bottom:16px">
+    <div style="font-size:13px;color:#6b7280">Acceso</div>
+    <div style="font-size:18px;font-weight:700;color:#0F172A">🔐 Administrador de Plataforma</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Clave de superadministrador</label>
+    <input class="form-control" id="superClave" type="password" placeholder="••••••••"
+      style="font-size:16px" onkeydown="if(event.key==='Enter')doSuperLogin()">
+  </div>
+  ${loading?`<div class="loading"><span class="spinner"></span>Verificando...</div>`:`<button class="btn btn-primary btn-block" onclick="doSuperLogin()">Ingresar →</button>`}
+  <div style="text-align:center;margin-top:10px">
+    <button onclick="setState({loginStep:10})" style="background:transparent;border:none;color:#64748b;font-size:12px;cursor:pointer;font-family:inherit">← Volver</button>
+  </div>
+</div>`:''}
 function buildSuperAdminApp(){
   const{comunidades,view,alert}=state;
   const navItems=[
