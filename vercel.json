@@ -3,7 +3,7 @@
   "trailingSlash": false,
   "env": {
     "FLOW_API_KEY": "36AF96AB-6271-49F9-A7B9-79F29E7L2D23",
-    "FLOW_SECRET": "@flow_secret",
+    "FLOW_SECRET": "81729daa8847177bde83d94e7e6O9ee3c4affe63",
     "FLOW_API_URL": "https://sandbox.flow.cl/api",
     "FLOW_CARGO_PCT": "5",
     "SUPABASE_URL": "@supabase_url",
