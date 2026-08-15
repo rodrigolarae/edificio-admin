@@ -1,48 +1,50 @@
-/**
- * /api/send-email.js
- * Vercel Serverless Function — Email via Resend
- */
+// api/send-email.js
+// Edge Function de Vercel — envía correos usando Resend.
+// La API key vive en la variable de entorno RESEND_KEY (Vercel → Settings → Environment Variables),
+// nunca en el frontend ni en este archivo.
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Método no permitido' });
   }
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  const { to, subject, html, from } = req.body;
+
+  const { to, subject, html, from } = req.body || {};
+
   if (!to || !subject || !html) {
-    return res.status(400).json({ error: 'Faltan campos: to, subject, html' });
+    return res.status(400).json({ error: 'Faltan campos: to, subject y html son obligatorios' });
   }
-  if (!to.includes('@')) {
-    return res.status(400).json({ error: 'Email destinatario inválido' });
+
+  const RESEND_KEY = process.env.RESEND_KEY;
+  if (!RESEND_KEY) {
+    console.error('[send-email] RESEND_KEY no está configurada en Vercel');
+    return res.status(500).json({ error: 'Servicio de correo no configurado' });
   }
-  const apiKey = process.env.RESEND_KEY;
-  if (!apiKey) {
-    console.error('[send-email] RESEND_KEY no configurada');
-    return res.status(500).json({ error: 'Servidor de emails no configurado' });
-  }
+
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${RESEND_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: from || 'Vecinoo <noreply@vecinoo.cl>',
+        from: from || 'Vecinoo <notificaciones@vecinoo.cl>',
         to: [to],
         subject,
         html,
       }),
     });
-    const data = await response.json();
-    if (!response.ok) {
-      console.error('[send-email] Resend error:', data);
-      return res.status(response.status).json({ error: data.message || 'Error enviando email' });
+
+    const data = await resendRes.json();
+
+    if (!resendRes.ok) {
+      console.error('[send-email] Error de Resend:', data);
+      return res.status(resendRes.status).json({ error: data.message || 'Error al enviar el correo' });
     }
-    return res.status(200).json({ ok: true, id: data.id });
-  } catch (error) {
-    console.error('[send-email] Excepción:', error.message);
-    return res.status(500).json({ error: 'Error interno: ' + error.message });
+
+    return res.status(200).json({ success: true, id: data.id });
+  } catch (e) {
+    console.error('[send-email] Error inesperado:', e);
+    return res.status(500).json({ error: e.message || 'Error interno al enviar el correo' });
   }
 }
