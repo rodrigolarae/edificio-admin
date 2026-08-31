@@ -1,87 +1,86 @@
-// ══════════════════════════════════════════════════════════════
-// Vecinoo — Edge Function: /api/flow-crear-orden
-// Crea una orden de pago en Flow.cl con firma HMAC-SHA256
-// Desplegar en Vercel junto al index.html
-// ══════════════════════════════════════════════════════════════
+// api/flow-crear-orden-seguro.js
+import { createHash } from 'crypto'
+import { withAuth, supabaseAdmin } from './_lib/supabase.js'
 
-import crypto from 'crypto';
+// Variables de entorno (las configuras en Vercel, NUNCA en GitHub)
+const FLOW_API_KEY = process.env.FLOW_API_KEY
+const FLOW_SECRET_KEY = process.env.FLOW_SECRET_KEY
+const FLOW_API_URL = process.env.FLOW_API_URL || 'https://sandbox.flow.cl/api'
 
-const FLOW_API_URL = process.env.FLOW_API_URL || 'https://sandbox.flow.cl/api';
-const FLOW_API_KEY = process.env.FLOW_API_KEY;
-const FLOW_SECRET  = process.env.FLOW_SECRET;
-const CARGO_PCT    = parseFloat(process.env.FLOW_CARGO_PCT || '5');
-
-// Firma HMAC-SHA256 requerida por Flow.cl
-function firmarParams(params, secret) {
-  // Ordenar params alfabéticamente
-  const keys = Object.keys(params).sort();
-  const toSign = keys.map(k => k + params[k]).join('');
-  return crypto.createHmac('sha256', secret).update(toSign).digest('hex');
+function signParams(params, secret) {
+  const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&')
+  return createHash('sha256').update(sorted + secret).digest('hex')
 }
 
-export default async function handler(req, res) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Método no permitido' })
+    return
+  }
 
   try {
-    const {
-      commerceOrder, subject, amount, email,
-      urlReturn, urlConfirmation,
-      comunidadId, unidadId, mes, montoBase, cargoPlatf,
-    } = req.body;
+    const { amount, email, orderId, concepto, unidadId } = req.body
+    const user = req.user
 
-    if (!commerceOrder || !amount || !email) {
-      return res.status(400).json({ error: 'Datos incompletos' });
+    // Validaciones de negocio
+    if (!amount || amount < 1000) {
+      res.status(400).json({ error: 'Monto inválido' })
+      return
     }
 
-    // Calcular cargo Vecinoo sobre el monto
-    const montoConCargo = Math.round(amount * (1 + CARGO_PCT / 100));
+    // Verificar que el usuario pertenece a la unidad (anti-tampering)
+    if (user.unidad_id && user.unidad_id !== unidadId) {
+      res.status(403).json({ error: 'Unidad no corresponde al usuario' })
+      return
+    }
 
-    // Parámetros para Flow.cl
     const params = {
-      apiKey:          FLOW_API_KEY,
-      commerceOrder:   commerceOrder,
-      subject:         subject || `Pago GC ${mes}`,
-      currency:        'CLP',
-      amount:          montoConCargo,
-      email:           email,
-      urlReturn:       urlReturn,
-      urlConfirmation: urlConfirmation,
-    };
+      apiKey: FLOW_API_KEY,
+      commerceOrder: orderId || `VEC-${Date.now()}`,
+      subject: concepto || `GC ${user.comunidad_id}`,
+      currency: 'CLP',
+      amount: Math.round(amount),
+      email: email || user.email,
+      urlReturn: `${process.env.VERCEL_URL || req.headers.origin}/pago-resultado`,
+      urlConfirmation: `${process.env.VERCEL_URL || req.headers.origin}/api/flow-webhook`,
+    }
 
-    // Firmar
-    params.s = firmarParams(params, FLOW_SECRET);
+    params.s = signParams(params, FLOW_SECRET_KEY)
 
-    // Llamar a Flow.cl
-    const body = new URLSearchParams(params).toString();
+    const formData = new URLSearchParams()
+    Object.entries(params).forEach(([k, v]) => formData.append(k, v))
+
     const flowRes = await fetch(`${FLOW_API_URL}/payment/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    });
+      body: formData.toString()
+    })
 
-    const flowData = await flowRes.json();
+    const flowData = await flowRes.json()
 
-    if (flowData.token && flowData.url) {
-      return res.status(200).json({
-        token:    flowData.token,
-        url:      flowData.url,
-        orden:    commerceOrder,
-        monto:    montoConCargo,
-      });
-    } else {
-      console.error('Error Flow.cl:', flowData);
-      return res.status(500).json({
-        error: flowData.message || 'Error al crear orden en Flow.cl',
-        code:  flowData.code,
-      });
+    if (!flowRes.ok || flowData.code) {
+      console.error('Flow error:', flowData)
+      res.status(502).json({ error: 'Error al crear orden en Flow', detail: flowData.message })
+      return
     }
+
+    // Guardar referencia en BD (tabla pagos_flow)
+    await supabaseAdmin.from('pagos_flow').insert({
+      usuario_id: user.id,
+      comunidad_id: user.comunidad_id,
+      unidad_id: unidadId,
+      flow_token: flowData.token,
+      flow_url: flowData.url,
+      amount: params.amount,
+      status: 'pendiente',
+      created_at: new Date().toISOString()
+    })
+
+    res.status(200).json({ url: flowData.url, token: flowData.token, order: params.commerceOrder })
   } catch (err) {
-    console.error('Error edge function:', err);
-    return res.status(500).json({ error: 'Error interno: ' + err.message });
+    console.error('Error flow-crear-orden:', err)
+    res.status(500).json({ error: 'Error interno' })
   }
 }
+
+export default withAuth(handler, ['residente', 'admin', 'presidente', 'tesorero'])
