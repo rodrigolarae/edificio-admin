@@ -286,19 +286,47 @@ const SUPABASE_URL='https://ymeydrtkhqhdwjwgfpfx.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZXlkcnRraHFoZHdqd2dmcGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTczODUsImV4cCI6MjA5MTQ5MzM4NX0.OkfpKQWKFFsWXMAH1SRw0Zfu9WnK1dAvZPYzQzYHrMQ';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// ── FLOW.CL — Configuración de pago ──
-// SANDBOX: usar estas keys para pruebas
-// PRODUCCIÓN: reemplazar con las keys reales de flow.cl
+// ── CONFIGURACIÓN SEGURA ──
+// La secretKey de Flow.cl YA NO está aquí. Se usa solo en servidor (api/flow-crear-orden-seguro.js)
 const FLOW_CONFIG = {
-  apiKey: '36AF96AB-6271-49F9-A7B9-79F29E7L2D23',
-  secretKey: '81729daa8847177bde83d94e7e6O9ee3c4affe63',
-  apiUrl: 'https://sandbox.flow.cl/api',   // Producción: https://www.flow.cl/api
-  commerce: 'Vecinoo',
-  urlReturn: window.location.origin + '/pago-resultado',
-  urlConfirmation: window.location.origin + '/api/flow-webhook',
-  // Cargo Vecinoo por pago digital (porcentaje sobre el monto)
-  cargoPlataformaPct: 0, // Sin cargo adicional — Vecinoo cobra suscripción mensual
+  apiUrl: '/api/flow-crear-orden-seguro', // Ahora va por tu backend seguro
+  cargoPlataformaPct: 0
 };
+
+// ── Rate Limiter anti-fuerza bruta ──
+const rateLimiter = new Map();
+function checkRateLimit(key, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
+  const now = Date.now();
+  const attempts = rateLimiter.get(key) || [];
+  const recent = attempts.filter(t => now - t < windowMs);
+  if (recent.length >= maxAttempts) {
+    throw new Error('Demasiados intentos. Espera 15 minutos.');
+  }
+  recent.push(now);
+  rateLimiter.set(key, recent);
+  return true;
+}
+
+// ── Sanitización robusta anti-XSS ──
+function sanitize(str) {
+  if (str === null || str === undefined) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;')
+    .replace(/\\/g, '&#92;');
+}
+
+// ── Validación de RUT chileno (evita inyección) ──
+function validarRut(rut) {
+  if (!rut || typeof rut !== 'string') return false;
+  const limpio = rut.replace(/\./g, '').replace('-', '').toUpperCase();
+  if (!/^[0-9]{7,8}[0-9K]$/.test(limpio)) return false;
+  // Aquí puedes agregar el algoritmo módulo 11 si quieres validación estricta
+  return true;
+}
 
 // ── Helper seguro para operaciones Supabase ──
 // Evita crashes silenciosos y normaliza el manejo de errores
