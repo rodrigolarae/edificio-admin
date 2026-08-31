@@ -7237,20 +7237,45 @@ function calcMontoConCargo(monto){
 }
 
 // Iniciar pago en Flow.cl
-window.doIniciarPago = async function(montoPagar){
-  const u = state.comunidadData.unidades.find(x=>x.id===state.currentUser?.unidad_id);
-  const r = state.currentUser;
-  const com = state.selectedComunidad;
-  if(!u||!r||!com){ showAlert('Error al obtener datos','error'); return; }
+// ── PAGO SEGURO VIA BACKEND ──
+window.doIniciarPago = async function(monto, planId, cuotaIdx) {
+  try {
+    checkRateLimit('pago_' + (state.currentUser?.id || 'anon'), 3, 60000); // máx 3 pagos/minuto
+    
+    const token = localStorage.getItem('sb-access-token'); // o donde guardes el JWT
+    if (!token) {
+      showAlert('Debes iniciar sesión para pagar', 'error');
+      return;
+    }
 
-  const m = thisMonth();
-  const montoFinal = montoPagar || (()=>{
-    const base = u.monthly_fee||0;
-    const multas = state.comunidadData.multas.filter(f=>f.unidad_id===u.id&&f.status==='pendiente');
-    const totalMultas = multas.reduce((s,f)=>s+f.amount,0);
-    const deuda = calcDeudaAcumulada(u.id);
-    return base + totalMultas + (deuda.mesesSinPagar>0?deuda.totalDeuda:0);
-  })();
+    const res = await fetch('/api/flow-crear-orden-seguro', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        amount: monto,
+        email: state.currentUser?.email,
+        orderId: planId ? `PLAN-${planId}-${cuotaIdx}` : `GC-${Date.now()}`,
+        concepto: 'Gastos Comunes Vecinoo',
+        unidadId: state.currentUser?.unidad_id
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      showAlert(data.error || 'Error al iniciar pago', 'error');
+      return;
+    }
+
+    // Redirigir a Flow.cl
+    window.location.href = data.url;
+  } catch (err) {
+    console.error(err);
+    showAlert(err.message || 'Error de conexión', 'error');
+  }
+};
 
   if(montoFinal <= 0){ showAlert('No tienes montos pendientes','error'); return; }
 
