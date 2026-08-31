@@ -7360,11 +7360,7 @@ window.doConfirmarPago = async function(){
     }
 
     // ── FLOW — fallback si no hay Khipu ──
-    if(!FLOW_CONFIG.apiKey || FLOW_CONFIG.apiKey.includes('TU_API_KEY')){
-      setState({loading:false});
-      _mostrarInstruccionesFlow();
-      return;
-    }
+    const res = await fetch('/api/flow-crear-orden-seguro', 
 
     const res = await fetch('/api/flow-crear-orden', {
       method: 'POST',
