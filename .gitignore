@@ -1,0 +1,14 @@
+# Secrets
+.env
+.env.local
+.env.production
+config.js
+
+# Dependencias
+node_modules/
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
