@@ -293,9 +293,12 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 // PRODUCCIÓN: reemplazar con las keys reales de flow.cl
 // ── CONFIGURACIÓN SEGURA ──
 // La secretKey de Flow.cl YA NO está aquí. Se usa solo en servidor (api/flow-crear-orden-seguro.js)
+// ── FLOW.CL — Configuración frontend (SECRETS solo en servidor) ──
 const FLOW_CONFIG = {
-  apiUrl: '/api/flow-crear-orden-seguro', // Ahora va por tu backend seguro
-  cargoPlataformaPct: 0
+  apiUrl: '/api/flow-crear-orden-seguro',
+  urlReturn: window.location.origin + '/pago-resultado',
+  urlConfirmation: window.location.origin + '/api/flow-webhook',
+  cargoPlataformaPct: 0,
 };
 
 // ── Helper seguro para operaciones Supabase ──
