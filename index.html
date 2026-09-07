@@ -838,7 +838,7 @@ function buildLogin(){
           <p style="font-size:16px;color:#64748b;margin-bottom:48px">Sin cobros ocultos. Sin límite de funciones. Todo incluido desde el primer día.</p>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;text-align:left">
             ${[
-              {plan:'Comunidad', precio:'$25.000', per:'/mes + IVA', desc:'Para edificios y condominios privados', features:['Residentes ilimitados','Todas las funciones','Soporte por WhatsApp','Comprobantes PDF','Asistente IA'], highlight:false, cta:'Comenzar gratis 30 días'},
+              {plan:'Comunidad', precio:'$30.000', per:'/mes', desc:'Para edificios y condominios privados', features:['Residentes ilimitados','Todas las funciones','Soporte por WhatsApp','Comprobantes PDF','Asistente IA'], highlight:false, cta:'Comenzar gratis 30 días'},
               {plan:'Municipal', precio:'A convenir', per:'', desc:'Para municipalidades con múltiples edificios', features:['Comunidades ilimitadas','Panel de supervisión SUBDERE','IVC y mapa de riesgo','Registro de intervenciones','Exportación para SERVIU','Soporte prioritario'], highlight:true, cta:'Agendar reunión'},
             ].map(p=>`
             <div style="background:${p.highlight?'#0F172A':'white'};border-radius:20px;padding:28px;border:${p.highlight?'2px solid #E6B800':'1px solid #e2e8f0'};position:relative">
@@ -1284,7 +1284,7 @@ function buildSADashboard(){
   '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">'+
     '<div class="metric" style="border-top:3px solid var(--navy)">'+
       '<div class="metric-label">Comunidades activas</div>'+
-      '<div class="metric-value blue">'+activas.length+' <span style="font-size:12px;color:#9ca3af">/ '+comunidades.length+'</span></div>'+
+      '<div class="metric-value blue">'+acts.length+' <span style="font-size:12px;color:#9ca3af">/ '+comunidades.length+'</span></div>'+
     '</div>'+
     '<div class="metric" style="border-top:3px solid '+scoreColor(scoreGlobal)+'">'+
       '<div class="metric-label">Score salud global</div>'+
@@ -1446,7 +1446,7 @@ function buildSAComunidadDetail(){
       '<div class="stat-row"><span>Votaciones totales</span><span style="font-weight:700">3</span></div>'+
       '<div class="stat-row"><span>Cerradas con acta</span><span style="font-weight:700">2</span></div>'+
       '<div class="stat-row"><span>% participación</span><span style="color:var(--blue);font-weight:700">68%</span></div>'+
-      '<div class="stat-row"><span>Alertas activas</span><span style="color:var(--red);font-weight:700">2</span></div>'+
+      '<div class="stat-row"><span>Alertas acts</span><span style="color:var(--red);font-weight:700">2</span></div>'+
     '</div>'+
     '<div class="card">'+
       '<div class="card-header"><span class="card-title">🤝 Intervenciones</span></div>'+
