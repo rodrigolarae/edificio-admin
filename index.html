@@ -838,7 +838,7 @@ function buildLogin(){
           <p style="font-size:16px;color:#64748b;margin-bottom:48px">Sin cobros ocultos. Sin límite de funciones. Todo incluido desde el primer día.</p>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;text-align:left">
             ${[
-              {plan:'Comunidad', precio:'$30.000', per:'/mes', desc:'Para edificios y condominios privados', features:['Residentes ilimitados','Todas las funciones','Soporte por WhatsApp','Comprobantes PDF','Asistente IA'], highlight:false, cta:'3 meses gratis al contratar', nota:'*Aplica costo único de implementación'},
+              {plan:'Comunidad', precio:'$30.000', per:'/mes', desc:'Para edificios y condominios privados', features:['Residentes ilimitados','Todas las funciones','Soporte por WhatsApp','Comprobantes PDF','Asistente IA'], highlight:false, cta:'1 mes gratis al contratar', nota:'*Aplica costo único de implementación'},
               {plan:'Municipal', precio:'A convenir', per:'', desc:'Para municipalidades con múltiples edificios', features:['Comunidades ilimitadas','Panel de supervisión SUBDERE','IVC y mapa de riesgo','Registro de intervenciones','Exportación para SERVIU','Soporte prioritario'], highlight:true, cta:'Agendar reunión', nota:''},
             ].map(p=>`
             <div style="background:${p.highlight?'#0F172A':'white'};border-radius:20px;padding:28px;border:${p.highlight?'2px solid #E6B800':'1px solid #e2e8f0'};position:relative">
@@ -862,7 +862,7 @@ function buildLogin(){
       <!-- CTA FINAL -->
       <section style="background:linear-gradient(135deg,#0F172A,#1E3A8A);padding:72px 24px;text-align:center">
         <h2 style="font-size:36px;font-weight:800;color:white;margin-bottom:16px">¿Listo para ordenar tu comunidad?</h2>
-        <p style="font-size:16px;color:#94a3b8;margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto">3 meses gratis al contratar. Sin tarjeta de crédito.</p>
+        <p style="font-size:16px;color:#94a3b8;margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto">1 mes gratis al contratar. Sin tarjeta de crédito.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <button onclick="activarModoDemo()" style="background:#E6B800;color:#0F172A;border:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">▶ Ver demo ahora</button>
           <a href="https://wa.me/56973784675?text=Hola%2C%20quiero%20comenzar%20con%20Vecinoo" target="_blank"
