@@ -1,15 +1,19 @@
-// api/flow-crear-orden-seguro.js
-import { createHash } from 'crypto'
+// api/crear-orden.js — antes flow-crear-orden.js
+// Crea una orden de pago en Flow, usando las credenciales de Flow propias
+// de CADA comunidad (nunca una cuenta global compartida), para que el dinero
+// de cada comunidad llegue directo a su propia cuenta bancaria vía Flow.
+import { createHmac } from 'crypto'
 import { withAuth, supabaseAdmin } from './_lib/supabase.js'
 
-// Variables de entorno (las configuras en Vercel, NUNCA en GitHub)
-const FLOW_API_KEY = process.env.FLOW_API_KEY
-const FLOW_SECRET_KEY = process.env.FLOW_SECRET_KEY
-const FLOW_API_URL = process.env.FLOW_API_URL || 'https://sandbox.flow.cl/api'
+const FLOW_API_URL = process.env.FLOW_API_URL || 'https://www.flow.cl/api'
 
-function signParams(params, secret) {
-  const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&')
-  return createHash('sha256').update(sorted + secret).digest('hex')
+// Firma oficial de Flow: HMAC-SHA256 de los parámetros ordenados alfabéticamente
+// y concatenados como "nombreValor" (sin separadores), usando el secretKey como
+// llave del HMAC. Ver https://developers.flow.cl/docs/intro
+function signParams(params, secretKey) {
+  const keys = Object.keys(params).sort()
+  const toSign = keys.map(k => `${k}${params[k]}`).join('')
+  return createHmac('sha256', secretKey).update(toSign).digest('hex')
 }
 
 async function handler(req, res) {
@@ -22,30 +26,45 @@ async function handler(req, res) {
     const { amount, email, orderId, concepto, unidadId } = req.body
     const user = req.user
 
-    // Validaciones de negocio
     if (!amount || amount < 1000) {
       res.status(400).json({ error: 'Monto inválido' })
       return
     }
-
-    // Verificar que el usuario pertenece a la unidad (anti-tampering)
     if (user.unidad_id && user.unidad_id !== unidadId) {
       res.status(403).json({ error: 'Unidad no corresponde al usuario' })
       return
     }
+    if (!user.comunidad_id) {
+      res.status(400).json({ error: 'Tu cuenta no está asociada a una comunidad' })
+      return
+    }
+
+    // Buscar las credenciales de Flow propias de ESTA comunidad (nunca globales)
+    const { data: flowConfig, error: cfgErr } = await supabaseAdmin
+      .from('comunidades_flow_config')
+      .select('api_key, secret_key, activo')
+      .eq('comunidad_id', user.comunidad_id)
+      .maybeSingle()
+
+    if (cfgErr || !flowConfig || !flowConfig.activo) {
+      res.status(400).json({ error: 'Esta comunidad todavía no tiene configurado el cobro con Flow. Contacta al administrador.' })
+      return
+    }
+
+    const baseUrl = process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : req.headers.origin)
+    const commerceOrder = orderId || `VEC-${user.comunidad_id.slice(0, 8)}-${Date.now()}`
 
     const params = {
-      apiKey: FLOW_API_KEY,
-      commerceOrder: orderId || `VEC-${Date.now()}`,
-      subject: concepto || `GC ${user.comunidad_id}`,
+      apiKey: flowConfig.api_key,
+      commerceOrder,
+      subject: concepto || `Gasto común`,
       currency: 'CLP',
       amount: Math.round(amount),
       email: email || user.email,
-      urlReturn: `${process.env.VERCEL_URL || req.headers.origin}/pago-resultado`,
-      urlConfirmation: `${process.env.VERCEL_URL || req.headers.origin}/api/flow-webhook`,
+      urlReturn: `${baseUrl}/api/flow-resultado?comunidad_id=${user.comunidad_id}`,
+      urlConfirmation: `${baseUrl}/api/flow-webhook?comunidad_id=${user.comunidad_id}`,
     }
-
-    params.s = signParams(params, FLOW_SECRET_KEY)
+    params.s = signParams(params, flowConfig.secret_key)
 
     const formData = new URLSearchParams()
     Object.entries(params).forEach(([k, v]) => formData.append(k, v))
@@ -55,7 +74,6 @@ async function handler(req, res) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString()
     })
-
     const flowData = await flowRes.json()
 
     if (!flowRes.ok || flowData.code) {
@@ -64,19 +82,20 @@ async function handler(req, res) {
       return
     }
 
-    // Guardar referencia en BD (tabla pagos_flow)
     await supabaseAdmin.from('pagos_flow').insert({
       usuario_id: user.id,
       comunidad_id: user.comunidad_id,
       unidad_id: unidadId,
+      orden_id: commerceOrder,
       flow_token: flowData.token,
-      flow_url: flowData.url,
-      amount: params.amount,
+      monto_base: params.amount,
+      monto_total: params.amount,
+      email_residente: params.email,
       status: 'pendiente',
       created_at: new Date().toISOString()
     })
 
-    res.status(200).json({ url: flowData.url, token: flowData.token, order: params.commerceOrder })
+    res.status(200).json({ url: flowData.url, token: flowData.token, order: commerceOrder })
   } catch (err) {
     console.error('Error flow-crear-orden:', err)
     res.status(500).json({ error: 'Error interno' })
