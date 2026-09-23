@@ -1,41 +1,51 @@
 // ══════════════════════════════════════════════════════════════
 // Vecinoo — Edge Function: /api/flow-resultado
-// Flow redirige al usuario aquí después del pago
-// Muestra resultado y redirige de vuelta a la app
+// Flow redirige al usuario aquí después del pago.
+// Muestra resultado y redirige de vuelta a la app.
 // ══════════════════════════════════════════════════════════════
+import { createHmac } from 'crypto'
+import { supabaseAdmin } from './_lib/supabase.js'
+
+const FLOW_API_URL = process.env.FLOW_API_URL || 'https://www.flow.cl/api'
 
 export default async function handler(req, res) {
-  const { token, orden } = req.query;
+  const { token, orden } = req.query
+  const comunidadId = req.query.comunidad_id
 
-  if (!token) {
-    return res.redirect('/?pago=error');
+  if (!token || !comunidadId) {
+    return res.redirect('/?pago=error')
   }
 
   try {
-    // Consultar estado del pago en Flow
-    const crypto = await import('crypto');
-    const secret = process.env.FLOW_SECRET;
-    const apiKey = process.env.FLOW_API_KEY;
+    const { data: flowConfig } = await supabaseAdmin
+      .from('comunidades_flow_config')
+      .select('api_key, secret_key')
+      .eq('comunidad_id', comunidadId)
+      .maybeSingle()
 
-    const sig = crypto.default.createHmac('sha256', secret)
-      .update(`apiKey${apiKey}token${token}`)
-      .digest('hex');
+    if (!flowConfig) {
+      return res.redirect('/?pago=error')
+    }
 
-    const flowRes = await fetch(`https://sandbox.flow.cl/api/payment/getStatus`, {
+    const sig = createHmac('sha256', flowConfig.secret_key)
+      .update(`apiKey${flowConfig.api_key}token${token}`)
+      .digest('hex')
+
+    const flowRes = await fetch(`${FLOW_API_URL}/payment/getStatus`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ apiKey, token, s: sig }),
-    });
+      body: new URLSearchParams({ apiKey: flowConfig.api_key, token, s: sig }),
+    })
 
-    const data = await flowRes.json();
+    const data = await flowRes.json()
     // status 2 = pagado
     if (data.status === 2) {
-      return res.redirect(`/?pago=exitoso&orden=${orden}`);
+      return res.redirect(`/?pago=exitoso&orden=${orden || ''}`)
     } else {
-      return res.redirect(`/?pago=fallido&orden=${orden}`);
+      return res.redirect(`/?pago=fallido&orden=${orden || ''}`)
     }
-  } catch(e) {
-    console.error(e);
-    return res.redirect('/?pago=error');
+  } catch (e) {
+    console.error(e)
+    return res.redirect('/?pago=error')
   }
 }
