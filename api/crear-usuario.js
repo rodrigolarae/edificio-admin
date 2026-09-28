@@ -40,6 +40,7 @@ async function handler(req, res) {
     //    Si el correo ya tenía una cuenta (ej. es residente en otra comunidad también),
     //    reutilizamos esa cuenta en vez de fallar.
     let authId
+    let yaExistia = false
     const siteUrl = process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
     const { data: invited, error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       emailNorm,
@@ -64,6 +65,7 @@ async function handler(req, res) {
         return
       }
       authId = existente.id
+      yaExistia = true
     } else {
       authId = invited.user.id
     }
@@ -93,7 +95,7 @@ async function handler(req, res) {
       return
     }
 
-    res.status(200).json({ ok: true, usuario })
+    res.status(200).json({ ok: true, usuario, ya_existia: yaExistia })
   } catch (e) {
     res.status(500).json({ error: 'Error inesperado: ' + e.message })
   }
